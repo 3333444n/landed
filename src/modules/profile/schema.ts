@@ -13,6 +13,7 @@ import {
   unique,
   uuid,
 } from "drizzle-orm/pg-core";
+import { educationStatuses } from "./contracts";
 
 /*
  * Phase 0 tables (docs/04). Rules the database backs up:
@@ -105,9 +106,6 @@ export const employment = pgTable(
     ...monthDateChecks("employment"),
   ],
 );
-
-export const educationStatuses = ["in_progress", "completed", "incomplete"] as const;
-export type EducationStatus = (typeof educationStatuses)[number];
 
 export const education = pgTable(
   "education",
