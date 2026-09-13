@@ -22,21 +22,8 @@
   gap: var(--space-4);
 }
 
-.meta {
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--text-secondary);
-  margin-top: var(--space-2);
-}
-
-.chip {
-  display: inline-block;
-  border-radius: var(--radius-full);
-  padding: 2px var(--space-3);
-  font-size: 13px;
-  line-height: 16px;
-  font-weight: 500;
-  background: var(--accent-soft);
-  color: var(--text-primary);
-  margin-top: var(--space-3);
+/* A link styled as the primary button needs a box to honour the 40px control height. */
+.action {
+  display: inline-flex;
+  align-items: center;
 }
