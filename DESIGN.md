@@ -28,37 +28,37 @@ Minimalism here means fewer elements, not smaller ones. Remove before you decora
 
 Neutral first. One accent. Semantic colors only for meaning.
 
-| Token | Light | Dark | Use |
-|---|---|---|---|
-| `bg.canvas` | `#F5F5F7` | `#0B0B0D` | Page background |
-| `bg.surface` | `#FFFFFF` | `#161618` | Cards, panels (opaque) |
-| `bg.surface.raised` | `#FAFAFC` | `#1D1D20` | Nested surfaces inside a card |
-| `bg.glass` | `rgba(255,255,255,0.55)` | `rgba(22,22,24,0.55)` | Floating layer material, with `backdrop-filter` |
-| `bg.glass.tint` | `rgba(255,255,255,0.35)` | `rgba(22,22,24,0.35)` | Solid tint behind text on glass |
-| `text.primary` | `#111114` | `#F5F5F7` | Body and titles |
-| `text.secondary` | `#5F5F66` | `#A1A1AA` | Subtitles, helper text |
-| `text.tertiary` | `#8E8E96` | `#6E6E76` | Placeholders, timestamps |
-| `accent` | `#2F6FED` | `#5B8DFF` | Primary actions, links, focus rings |
-| `accent.soft` | `#E8EFFF` | `#1A2440` | Accent backgrounds (chips, selected rows) |
-| `success` | `#1F8A4C` | `#4CC47E` | Reviewed, submitted |
-| `warning` | `#B7791F` | `#E3B04B` | Needs review, unknown data |
-| `danger` | `#C5372C` | `#F0655A` | Errors, destructive actions |
+| Token               | Light                    | Dark                  | Use                                             |
+| ------------------- | ------------------------ | --------------------- | ----------------------------------------------- |
+| `bg.canvas`         | `#F5F5F7`                | `#0B0B0D`             | Page background                                 |
+| `bg.surface`        | `#FFFFFF`                | `#161618`             | Cards, panels (opaque)                          |
+| `bg.surface.raised` | `#FAFAFC`                | `#1D1D20`             | Nested surfaces inside a card                   |
+| `bg.glass`          | `rgba(255,255,255,0.55)` | `rgba(22,22,24,0.55)` | Floating layer material, with `backdrop-filter` |
+| `bg.glass.tint`     | `rgba(255,255,255,0.35)` | `rgba(22,22,24,0.35)` | Solid tint behind text on glass                 |
+| `text.primary`      | `#111114`                | `#F5F5F7`             | Body and titles                                 |
+| `text.secondary`    | `#5F5F66`                | `#A1A1AA`             | Subtitles, helper text                          |
+| `text.tertiary`     | `#8E8E96`                | `#6E6E76`             | Placeholders, timestamps                        |
+| `accent`            | `#2F6FED`                | `#5B8DFF`             | Primary actions, links, focus rings             |
+| `accent.soft`       | `#E8EFFF`                | `#1A2440`             | Accent backgrounds (chips, selected rows)       |
+| `success`           | `#1F8A4C`                | `#4CC47E`             | Reviewed, submitted                             |
+| `warning`           | `#B7791F`                | `#E3B04B`             | Needs review, unknown data                      |
+| `danger`            | `#C5372C`                | `#F0655A`             | Errors, destructive actions                     |
 
 Rules: never use pure black for text or backgrounds. Accent is for actions and focus, not for headings or decoration. Semantic colors appear as small chips or text, never as full-card backgrounds.
 
 ### Typography
 
-Family: **Geist** (grotesk, variable), loaded through `next/font`. Fallback stack: `Inter, "SF Pro Text", "Helvetica Neue", Arial, sans-serif`. Enable `font-feature-settings: "tnum"` on numeric columns.
+Family: **Helvetica Neue** (grotesk, variable), loaded through `next/font`. Fallback stack: `Inter, "SF Pro Text", Arial, sans-serif`. Enable `font-feature-settings: "tnum"` on numeric columns.
 
-| Style | Size / line height | Weight | Use |
-|---|---|---|---|
-| `title.xl` | 32 / 38 | 600 | Page titles |
-| `title.lg` | 24 / 30 | 600 | Section titles |
-| `title.md` | 18 / 24 | 600 | Card titles |
-| `body.lg` | 17 / 26 | 400 | Long-form reading (resume review) |
-| `body` | 15 / 22 | 400 | Default UI text |
-| `body.sm` | 13 / 18 | 400 | Helper text, metadata |
-| `label` | 13 / 16 | 500 | Buttons, chips, form labels (sentence case) |
+| Style      | Size / line height | Weight | Use                                         |
+| ---------- | ------------------ | ------ | ------------------------------------------- |
+| `title.xl` | 32 / 38            | 600    | Page titles                                 |
+| `title.lg` | 24 / 30            | 600    | Section titles                              |
+| `title.md` | 18 / 24            | 600    | Card titles                                 |
+| `body.lg`  | 17 / 26            | 400    | Long-form reading (resume review)           |
+| `body`     | 15 / 22            | 400    | Default UI text                             |
+| `body.sm`  | 13 / 18            | 400    | Helper text, metadata                       |
+| `label`    | 13 / 16            | 500    | Buttons, chips, form labels (sentence case) |
 
 Letter-spacing stays at the font default; tighten titles by at most `-0.01em`. Never letter-space uppercase text, because uppercase text does not exist in this UI except for proper acronyms.
 
@@ -68,13 +68,13 @@ Base unit 4px. Scale: 4, 8, 12, 16, 24, 32, 48, 64. Content max width 960px for 
 
 ### Radius
 
-| Token | Value | Use |
-|---|---|---|
-| `radius.sm` | 8px | Chips, small inputs |
-| `radius.md` | 12px | Inputs, buttons |
-| `radius.lg` | 16px | Cards |
-| `radius.xl` | 24px | Sheets, floating bars, popovers |
-| `radius.full` | 9999px | Pills, avatars |
+| Token         | Value  | Use                             |
+| ------------- | ------ | ------------------------------- |
+| `radius.sm`   | 8px    | Chips, small inputs             |
+| `radius.md`   | 12px   | Inputs, buttons                 |
+| `radius.lg`   | 16px   | Cards                           |
+| `radius.xl`   | 24px   | Sheets, floating bars, popovers |
+| `radius.full` | 9999px | Pills, avatars                  |
 
 Nested radius rule: inner radius = outer radius minus the padding between them, with a floor of `radius.sm`.
 
@@ -91,14 +91,20 @@ Cards: no shadow by default; tonal contrast against `bg.canvas` is enough. Raise
   -webkit-backdrop-filter: blur(20px) saturate(1.6);
   border-radius: var(--radius-xl);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.35),   /* top highlight, the "edge of the glass" */
-    0 12px 40px rgba(0,0,0,0.10);
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    /* top highlight, the "edge of the glass" */ 0 12px 40px rgba(0, 0, 0, 0.1);
 }
 @media (prefers-reduced-transparency: reduce) {
-  .glass { background: var(--bg-surface); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .glass {
+    background: var(--bg-surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 }
 @supports not (backdrop-filter: blur(1px)) {
-  .glass { background: var(--bg-surface); }
+  .glass {
+    background: var(--bg-surface);
+  }
 }
 ```
 
