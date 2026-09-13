@@ -1,0 +1,27 @@
+.inline {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.question {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-secondary);
+}
+
+.inline .danger {
+  color: var(--danger);
+}
+
+.inline .dangerFilled {
+  background: var(--danger);
+  color: #ffffff;
+}
+
+.error {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--danger);
+}

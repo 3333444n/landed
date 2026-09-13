@@ -1,0 +1,69 @@
+/*
+ * Design tokens from DESIGN.md, the only place colors, radii, spacing, type and motion values
+ * are defined. Components consume these variables and never hardcode values.
+ */
+:root {
+  color-scheme: light dark;
+
+  --bg-canvas: #f5f5f7;
+  --bg-surface: #ffffff;
+  --bg-surface-raised: #fafafc;
+  --bg-glass: rgba(255, 255, 255, 0.55);
+  --bg-glass-tint: rgba(255, 255, 255, 0.35);
+  --text-primary: #111114;
+  --text-secondary: #5f5f66;
+  --text-tertiary: #8e8e96;
+  --accent: #2f6fed;
+  --accent-soft: #e8efff;
+  --success: #1f8a4c;
+  --warning: #b7791f;
+  --danger: #c5372c;
+  --input-border: rgba(0, 0, 0, 0.08);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  --font-sans: "Helvetica Neue", Helvetica, Inter, "SF Pro Text", Arial, sans-serif;
+
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --duration-hover: 150ms;
+  --duration-reveal: 250ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-canvas: #0b0b0d;
+    --bg-surface: #161618;
+    --bg-surface-raised: #1d1d20;
+    --bg-glass: rgba(22, 22, 24, 0.55);
+    --bg-glass-tint: rgba(22, 22, 24, 0.35);
+    --text-primary: #f5f5f7;
+    --text-secondary: #a1a1aa;
+    --text-tertiary: #6e6e76;
+    --accent: #5b8dff;
+    --accent-soft: #1a2440;
+    --success: #4cc47e;
+    --warning: #e3b04b;
+    --danger: #f0655a;
+    --input-border: rgba(255, 255, 255, 0.1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-hover: 0ms;
+    --duration-reveal: 0ms;
+  }
+}

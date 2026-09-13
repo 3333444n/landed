@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import type { ActionState } from "@/app/actions";
+import type { ActionState } from "@/app/form-state";
 import { Button } from "./Button";
 import { Field } from "./Field";
 import styles from "./forms.module.css";

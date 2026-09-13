@@ -1,0 +1,19 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 40px;
+}
+
+.box {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--accent);
+  border-radius: var(--radius-sm);
+}
+
+.label {
+  font-size: 15px;
+  line-height: 22px;
+}

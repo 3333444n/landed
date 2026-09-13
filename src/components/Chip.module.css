@@ -1,0 +1,18 @@
+.chip {
+  display: inline-block;
+  border-radius: var(--radius-full);
+  padding: 2px var(--space-3);
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 500;
+  background: var(--accent-soft);
+  color: var(--text-primary);
+}
+
+.success {
+  background: color-mix(in srgb, var(--success) 15%, var(--bg-surface));
+}
+
+.warning {
+  background: color-mix(in srgb, var(--warning) 18%, var(--bg-surface));
+}

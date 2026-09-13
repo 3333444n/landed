@@ -1,4 +1,4 @@
-import type { ComponentProps } from "react";
+import { useId, type ComponentProps } from "react";
 import styles from "./Field.module.css";
 
 type Shared = {
@@ -13,7 +13,7 @@ type TextareaProps = Shared & { multiline: true } & Omit<ComponentProps<"textare
 
 export function Field(props: InputProps | TextareaProps) {
   const { label, name, helper, errors, ...rest } = props;
-  const id = `field-${name}`;
+  const id = `${useId()}-${name}`;
   const errorId = `${id}-error`;
   const helperId = `${id}-helper`;
   const hasError = !!errors && errors.length > 0;
