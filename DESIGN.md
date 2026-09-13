@@ -48,7 +48,7 @@ Rules: never use pure black for text or backgrounds. Accent is for actions and f
 
 ### Typography
 
-Family: **Helvetica Neue** (grotesk, variable), loaded through `next/font`. Fallback stack: `Inter, "SF Pro Text", Arial, sans-serif`. Enable `font-feature-settings: "tnum"` on numeric columns.
+Family: **Helvetica Neue** (grotesk), used as a system font through a plain CSS stack, no web font download: `"Helvetica Neue", Helvetica, Inter, "SF Pro Text", Arial, sans-serif`. Enable `font-feature-settings: "tnum"` on numeric columns.
 
 | Style      | Size / line height | Weight | Use                                         |
 | ---------- | ------------------ | ------ | ------------------------------------------- |

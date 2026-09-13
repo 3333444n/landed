@@ -1,6 +1,6 @@
 # 01 — Product and phases
 
-Status: user scope recorded; subdivisions and acceptance details proposed. Updated 2026-09-13.
+Status: Phase 0 implemented except the packaged installation; later phases proposed. Updated 2026-09-13.
 
 Landed is a locally run job-search application that produces factual, tailored materials and helps people manage applications. It must be usable without editing source code. Code can be cloned/forked independently of personal data. The shortest useful outcome is a reviewed resume, cover letter, and recruiter message for a real job.
 
@@ -9,6 +9,8 @@ Landed is a locally run job-search application that produces factual, tailored m
 A user starts an empty installation, adds profile information, employment, education, projects, skills, and achievements through the browser, and finds the same records after restarting the app. No LLM account is required. Manual entry only; resume import is deferred.
 
 Completion requires clear validation, basic editing/deletion, explicit saved/error feedback, persistent PostgreSQL storage, fictional example data, and a tested backup/restore procedure. These are reliability requirements for retaining user data, not a separate enterprise platform. A polished onboarding wizard and portable application-level import/export can follow if they delay the first useful flow.
+
+Implemented on 2026-09-13: browser entry and in-place editing of the profile, jobs, education, projects, skills and achievements with skill links; field-level validation; stale-edit detection between tabs; restricted deletion of records that other facts depend on; backup and restore scripts; integration and browser tests against real PostgreSQL. Not yet implemented: the packaged one-command installation ([doc 07](07-quickstart-contract.md)) and a demo-data loader for `examples/demo-profile.json`.
 
 ## Phase 1 — Tailored application materials and tracking
 

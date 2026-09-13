@@ -1,12 +1,12 @@
 # 05 — Workflows and failures
 
-Status: proposed behavior before implementation. Updated 2026-09-13.
+Status: Phase 0 save behaviour implemented; Phase 1 proposed. Updated 2026-09-13.
 
 ## Phase 0 save
 
 Browser submits a profile-owned record → server validates input and owner context → module checks rules → transaction writes record and relationships → commit → UI displays the saved result. Refresh reads the committed record.
 
-Invalid input produces field errors with no write. Database unavailability preserves the form and offers retry. A lost response after a successful insert must not create a duplicate on retry: use a stable create-operation/record ID and reject conflicting reuse. Roll back failed relationship writes. Concurrent browser tabs should detect stale saves through an update token/timestamp; this does not require record-history tables. Exact conflict UX is a pre-implementation detail.
+Invalid input produces field errors with no write, and the form keeps what was typed. A lost response after a successful insert must not create a duplicate on retry: the form mints the record id before submitting, and a repeat with the same id returns the existing record. Relationship writes (achievement plus skill links) happen in one transaction and roll back together. Concurrent browser tabs detect stale saves through the record's `updated_at` sent back as a hidden field; a mismatch refuses the write and asks the user to reload. Database unavailability currently surfaces as a server error; a friendlier retry message is a known gap.
 
 ## Phase 1 generation
 
@@ -26,7 +26,7 @@ Job availability: active / expired / unknown. Generation run state is independen
 
 ## Minimum checks
 
-Phase 0: save/reload across restart; input and FK constraints; transactional failure; stale update behavior; private data separation; clean install; backup/restore. Use real PostgreSQL for integration tests and an isolated test database/volume.
+Phase 0 (implemented in `tests/`): save/reload across restart; input and FK constraints; transactional failure; stale update behavior; restricted deletes; private data separation through the isolated `landed_test` database; backup/restore scripts. Clean install is verified by CI on a fresh runner.
 
 Phase 1: factual-claim support, unknown evidence IDs, unsupported metrics, preserved document inputs after profile edits, partial provider failures, retries, and extractable/readable PDF output. Fixed synthetic cases exercise behavior without paid model calls; a small optional real-model evaluation set tracks quality. Record prompt/model identity and available usage without assuming every runtime reports cost/tokens.
 

@@ -1,10 +1,12 @@
 # 08 — Contributions and living documentation
 
-Status: proposed baseline; no CI or released application exists yet. Updated 2026-09-13.
+Status: CI, commit conventions and PR template in place; no released application yet. Updated 2026-09-13.
 
 ## Small public-repository baseline
 
-Before publishing runnable code: README with truthful feature status and a link to the tested quickstart; LICENSE (MIT); CONTRIBUTING with one-concern PR guidance and validation steps; SECURITY with a usable private reporting channel; environment example with no credentials; lockfile; synthetic examples; and CI that runs formatting, linting, type checks, targeted tests, a build, and PostgreSQL migration checks.
+In place: README with truthful feature status and a link to the tested quickstart; LICENSE (MIT); CONTRIBUTING with checks, commit and PR conventions; environment examples with no real credentials; lockfile; synthetic examples; and CI (`.github/workflows/ci.yml`) that runs formatting, linting, type checks, unit tests, integration and browser tests against a PostgreSQL 17 service, a build, and a migration drift check (`pnpm db:generate` must produce no changes). Still missing: SECURITY with a private reporting channel.
+
+Commits follow `<type>(<scope>): <description>` with the types listed in CONTRIBUTING; pull requests use the What/Why/How/Testing template in `.github/`.
 
 Bug reports specify version/environment, reproduction steps, expected/actual behavior, and sanitized evidence. Encourage documentation fixes and `good first issue` tasks. Require no paid credentials to run standard checks. A tiny fictional profile and a few fictional jobs are sufficient initial examples; the schema and importer must agree before seed data is declared runnable.
 
@@ -21,7 +23,7 @@ Examples do not include real names/contact details from the maintainer. Do not r
 7. Scope/decision changes update documents 01/09 and create or supersede an ADR when significant.
 8. Visual changes update DESIGN.md at the repository root; the UI and the file must never disagree.
 
-A pull-request checklist will ask which documents/diagrams are affected, or why none are. Link checking can later be automated; semantic correctness still requires review. No timer can infer that a design diagram remains correct after arbitrary code changes.
+The pull-request template asks what was tested; reviewers ask which documents/diagrams are affected, or why none are. Link checking can later be automated; semantic correctness still requires review. No timer can infer that a design diagram remains correct after arbitrary code changes.
 
 Diagrams are Mermaid blocks in the documents themselves: no external tool, no generated files, and GitHub renders them in place. Numbered filenames stay stable; updated dates and Git history record changes. Append a superseding ADR rather than rewriting the history of a significant accepted decision.
 

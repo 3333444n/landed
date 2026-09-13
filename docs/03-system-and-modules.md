@@ -1,6 +1,6 @@
 # 03 — System and modules
 
-Status: TypeScript, Next.js, Node.js, PostgreSQL accepted. Packaging and boundaries proposed. Updated 2026-09-13.
+Status: stack accepted and running; Profile module implemented; packaging proposed. Updated 2026-09-13.
 
 ## System boundary
 
@@ -59,22 +59,30 @@ PDF rendering is a small component within Documents initially, not a separately 
 
 Keep cross-module workflows at an application composition boundary; avoid circular imports. Documents can store an opaque application ID without importing Applications operations; an application-level use case coordinates creating the application and generating its materials. Database foreign keys do not mandate circular code dependencies.
 
-## Repository shape (planned, not scaffolded)
+## Repository shape
 
 ```text
 src/
-  app/                   Next.js routes, pages, composition
+  app/                   Next.js routes; each route folder holds its page, Server Actions and form
+    profile/ experience/ skills/ achievements/
+    form-state.ts        shared action result shape and form helpers
+    tokens.css           design tokens from DESIGN.md (the only place values live)
   modules/
-    profile/             Phase 0 rules, use cases, persistence
-  components/            shared presentation components
-  infrastructure/        database connection, configuration, file storage
-db/migrations/           versioned database schema changes
-tests/                   integration and browser journeys
+    profile/             schema.ts, contracts.ts, rules.ts, repository.ts, service.ts, index.ts
+  components/            shared presentation components (Card, Field, Select, NavBar, ...)
+  infrastructure/        database pool, configuration
+db/migrations/           generated SQL migrations and drizzle-kit journal
+db/init/                 creates the test database on first start
+scripts/                 backup and restore
+tests/integration/       Vitest against real PostgreSQL
+tests/e2e/               Playwright browser journeys
 examples/                synthetic data
 docs/                    numbered design and ADRs
 ```
 
-Add Jobs, Documents, and Applications when Phase 1 begins. A module can start with a few files (`contracts`, `service`, `repository`) rather than nested empty layers. Module entry points expose operations; callers do not import another module's repository or mutate its tables. Shared contracts must not import server-only database/SDK code into browser bundles.
+Inside a module: `schema.ts` declares tables, `contracts.ts` holds Zod input schemas and result types (browser-safe), `rules.ts` holds pure functions, `repository.ts` holds Drizzle queries over a database or transaction handle, `service.ts` holds use cases that open transactions and map database errors to typed results, and `index.ts` is the only import path for callers. Server Actions in `src/app` import from `index.ts`; a client component that needs a contract imports `contracts.ts` directly so no database code reaches the browser bundle.
+
+Add Jobs, Documents, and Applications when Phase 1 begins, with the same file shape.
 
 Framework handlers translate requests, validate transport input, invoke operations, and return useful errors. Domain rules live in modules. Database constraints back up critical rules. Persistence uses Drizzle: the schema is TypeScript, queries stay close to SQL, and migrations are generated as reviewable SQL files ([ADR 004](adr/004-drizzle-persistence.md)). Do not maintain multiple persistence implementations for hypothetical portability.
 

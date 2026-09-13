@@ -19,6 +19,9 @@ Updated 2026-09-13. Accepted decisions below reflect the user's explicit instruc
 - Browser mutations use Next.js Server Actions that call module use cases; route handlers are added when a non-browser client needs them.
 - Modules are written as plain functions over typed data; classes only where state and behavior belong together (see AGENTS.md).
 - Numbered architecture documentation with Mermaid diagrams before implementation; keep them synchronized with relevant changes.
+- Styling: own components with CSS Modules and design tokens in one stylesheet; no utility framework or component library (2026-09-13).
+- Conventional Commits with a scope, and a What/Why/How/Testing pull-request template (2026-09-13).
+- Stale-edit detection through `updated_at` as the version token; client-minted record ids for idempotent creates (2026-09-13, doc 05).
 
 ## Proposed defaults
 
@@ -29,11 +32,9 @@ Updated 2026-09-13. Accepted decisions below reflect the user's explicit instruc
 - One supported model integration initially; optional harness/local model paths when tested.
 - LangGraph as a later orchestration candidate after a small explicit implementation establishes requirements.
 
-## Before Phase 0 code
+## Phase 0 status
 
-Review the logical field/relationship choices in document 04, including optional achievement links and deletion behavior. Decide concrete launcher/configuration handling. Confirm the Phase 0 save/restart/backup and clean-install checks. These are bounded implementation choices, not a need to solve all later agents.
-
-The MIT license is chosen; repository initialization is pending. A public open-source release cannot be claimed yet. Draft the actual quickstart only alongside executable setup.
+Implemented and tested (2026-09-13): the Profile module, the first migration with the constraints from document 04, browser entry and editing of every Phase 0 record, integration and browser tests, backup/restore scripts, and CI. Remaining before Phase 0 is closed: the packaged Docker Compose installation and first-run launcher (ADR 003), a demo-data loader, a SECURITY policy, and a friendlier message when the database is unreachable.
 
 ## Before Phase 1 code
 
