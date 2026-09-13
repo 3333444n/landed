@@ -1,0 +1,35 @@
+# Secrets and personal inputs/outputs
+.env
+.env.*
+!.env.example
+/data/
+/private/
+/resumes/
+/uploads/
+/generated/
+/output/
+/tmp/
+*.pem
+*.key
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+.coverage
+htmlcov/
+# Frontend and tooling
+node_modules/
+.next/
+.vercel/
+.supabase/
+.DS_Store
+*.log
+# Diagram tooling outputs, if ever generated locally
+*.delivery.json
+*.visual-check.json
+.qodo/
