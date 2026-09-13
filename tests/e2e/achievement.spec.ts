@@ -19,6 +19,12 @@ test("a new installation creates a profile and saves an achievement that survive
   await page.getByRole("button", { name: "Create profile" }).click();
   await expect(page.getByRole("heading", { name: demo.displayName })).toBeVisible();
 
+  await page
+    .getByRole("navigation", { name: "Main" })
+    .getByRole("link", { name: "Achievements" })
+    .click();
+  await expect(page.getByRole("heading", { name: "Achievements", exact: true })).toBeVisible();
+
   // Validation: an empty statement is refused with a field error, nothing is saved, and the
   // other fields keep what was typed.
   await page.getByLabel("Metric").fill(demo.metric);
@@ -40,7 +46,7 @@ test("a new installation creates a profile and saves an achievement that survive
   await expect(page.getByLabel("Statement")).toHaveValue("");
 
   await page.reload();
-  await expect(page.getByRole("heading", { name: demo.displayName })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Achievements", exact: true })).toBeVisible();
   await expect(
     page.getByRole("list", { name: "Achievements" }).getByText(demo.statement),
   ).toBeVisible();
