@@ -1,0 +1,80 @@
+# Packaged user installation (ADR 003). Start it with `sh scripts/landed.sh start`
+# (or scripts/landed.ps1 on Windows), which creates .env.release on first run and then runs:
+#   docker compose --env-file .env.release -f compose.release.yml up -d --build
+# docker-compose.yml is the separate development database for contributors; the two never share
+# containers or volumes because this file uses its own project name.
+name: landed-release
+
+services:
+  db:
+    # Pinned minor tag: a PostgreSQL major upgrade needs an explicit data migration, never a
+    # floating tag. Bump the minor here when releasing.
+    image: postgres:17.11
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?set in .env.release}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set in .env.release}
+      POSTGRES_DB: ${POSTGRES_DB:?set in .env.release}
+    # No `ports` on purpose: the database is reachable only from the web and migrate
+    # containers on this Compose network, never from the host or the LAN.
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+
+  migrate:
+    # One-time task: applies db/migrations, then exits. `web` waits for it to succeed, so an
+    # upgrade that ships new migrations applies them before the new server accepts requests.
+    # This is the only service with `build`: web reuses the image, because two services building
+    # the same tag at once race each other in Compose.
+    build: .
+    image: landed:release
+    command: ["node", "db/migrate.mjs"]
+    restart: "no"
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    image: landed:release
+    # The image comes from the migrate build above, never from a registry.
+    pull_policy: never
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      # Inside the container the server listens on every container interface (0.0.0.0) so the
+      # port mapping below can reach it. That is unrelated to host exposure: the `ports` entry
+      # binds the host side to 127.0.0.1, so only this computer can open the app.
+      HOSTNAME: 0.0.0.0
+      PORT: "3000"
+    ports:
+      - "127.0.0.1:${LANDED_PORT:-3000}:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      # The home page reads the database, so "healthy" means the server answers and can query.
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/').then((r) => process.exit(r.ok ? 0 : 1), () => process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+
+volumes:
+  # Personal data lives here, outside the source checkout. `landed.sh stop` never removes it;
+  # a factory reset is the separate, deliberate `docker volume rm landed-release_pgdata`.
+  pgdata:

@@ -23,6 +23,7 @@
     "db:down": "docker compose down",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:migrate:prod": "node db/migrate.mjs",
     "db:backup": "sh scripts/db-backup.sh",
     "db:restore": "sh scripts/db-restore.sh"
   },

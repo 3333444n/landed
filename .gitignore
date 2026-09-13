@@ -3,6 +3,7 @@
 .env.*
 !.env.example
 !.env.test.example
+!.env.release.example
 /data/
 /private/
 /resumes/

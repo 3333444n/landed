@@ -1,0 +1,30 @@
+# Keep the build context to application sources. Personal data, secrets, build output and
+# test artefacts never enter the image (ADR 003, AGENTS.md "Local operation and data").
+node_modules
+.next
+.git
+.github
+private
+backups
+data
+resumes
+uploads
+generated
+output
+tmp
+test-results
+playwright-report
+coverage
+.env
+.env.*
+docs
+tests
+examples
+*.md
+*.log
+.DS_Store
+Dockerfile
+.dockerignore
+compose.release.yml
+docker-compose.yml
+scripts
