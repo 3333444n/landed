@@ -1,0 +1,24 @@
+# Development database only. The packaged user installation (ADR 003) is a later step.
+name: landed
+
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-landed}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-landed}
+      POSTGRES_DB: ${POSTGRES_DB:-landed}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - landed_pgdata:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-landed} -d ${POSTGRES_DB:-landed}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  landed_pgdata:
