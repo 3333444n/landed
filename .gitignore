@@ -33,3 +33,9 @@ node_modules/
 *.delivery.json
 *.visual-check.json
 .qodo/
+# Test output
+/playwright-report/
+/test-results/
+/coverage/
+*.tsbuildinfo
+next-env.d.ts

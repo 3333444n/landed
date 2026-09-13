@@ -1,0 +1,10 @@
+node_modules
+.next
+pnpm-lock.yaml
+db/migrations
+private
+playwright-report
+test-results
+docs
+examples
+*.md
