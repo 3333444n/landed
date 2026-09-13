@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Format, lint, typecheck, unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+
+  database:
+    name: Migrations, integration, build, browser tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: postgres://landed:landed@localhost:5432/landed_test
+      CI: "true"
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: landed
+          POSTGRES_PASSWORD: landed
+          POSTGRES_DB: landed_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U landed -d landed_test"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Apply migrations
+        run: pnpm db:migrate
+      - name: Integration tests
+        run: pnpm test:integration
+      - name: Migration drift check
+        run: |
+          pnpm db:generate
+          if [ -n "$(git status --porcelain db/migrations)" ]; then
+            echo "::error::db/migrations is out of date with the schema. Run 'pnpm db:generate' and commit the result."
+            git status --porcelain db/migrations
+            git diff -- db/migrations
+            git ls-files --others --exclude-standard db/migrations | xargs -r -I{} sh -c 'echo "--- {}"; cat "{}"'
+            exit 1
+          fi
+      - name: Build
+        run: pnpm build
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Browser tests
+        run: pnpm test:e2e
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          if-no-files-found: ignore
+          retention-days: 7
