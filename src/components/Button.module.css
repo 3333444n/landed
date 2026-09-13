@@ -1,0 +1,29 @@
+.button {
+  font: inherit;
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 500;
+  height: 40px;
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition:
+    opacity var(--duration-hover) var(--ease),
+    background-color var(--duration-hover) var(--ease);
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.primary {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.secondary {
+  background: var(--bg-surface-raised);
+  color: var(--text-primary);
+}

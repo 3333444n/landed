@@ -1,0 +1,25 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.status {
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.saved {
+  color: var(--success);
+}
+
+.failed {
+  color: var(--danger);
+}
