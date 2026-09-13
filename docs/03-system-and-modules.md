@@ -1,10 +1,10 @@
 # 03 — System and modules
 
-Status: stack accepted and running; Profile module implemented; packaging proposed. Updated 2026-09-13.
+Status: stack, Profile module and packaged runtime implemented; Phase 1 modules proposed. Updated 2026-09-13.
 
 ## System boundary
 
-The browser connects to a local Next.js server. Server-side application operations validate requests and use PostgreSQL. The packaged installation should run Next.js and PostgreSQL through Docker Compose, with persistent volumes and only the web port published on loopback. PostgreSQL is not exposed on the host in the default user installation. A development-only configuration may expose it locally.
+The browser connects to a local Next.js server. Server-side application operations validate requests and use PostgreSQL. The packaged installation (`compose.release.yml`, started by `scripts/landed.sh`) runs three Compose services: `db` (pinned PostgreSQL 17 image, named volume, no host port), `migrate` (a one-shot task that builds the application image and applies `db/migrations` through `db/migrate.mjs`, then exits) and `web` (the same image, started only after `migrate` succeeds and `db` is healthy, published on 127.0.0.1 only). Contributor mode is different: `docker-compose.yml` runs only PostgreSQL, published on 127.0.0.1:5432, and Next.js runs from the checkout with `pnpm dev`. The two Compose projects have separate names and volumes.
 
 This is a modular application plus its database, not a collection of microservices. Browser rendering and server execution remain separate even though Next.js supplies both. Next.js uses React; Vite is an alternative build/dev tool, not a React replacement.
 
@@ -15,12 +15,13 @@ flowchart LR
   subgraph local["Your computer: one local installation"]
     browser["Browser UI"] -->|"HTTP on 127.0.0.1"| app["Next.js server<br/>module-owned use cases"]
     app -->|"SQL transactions"| db[("PostgreSQL")]
-    app -->|"read / write"| files[("Local files<br/>PDFs and backups")]
+    app -->|"read / write"| files[("Local files<br/>backups now, PDFs in Phase 1")]
+    migrate["migrate task (one-shot)<br/>applies db/migrations, then exits"] -.->|"before web starts"| db
   end
   app -.->|"outbound HTTPS, Phase 1 onward"| providers["External providers<br/>models, job sources"]
 ```
 
-This is a logical runtime view: PostgreSQL is a process/container with its own volume. The diagram abstracts volumes and the one-time migration task rather than pretending they are extra product services.
+This is a logical runtime view: PostgreSQL is a process/container with its own volume, and the `migrate` task is a Compose service that runs once per `start` rather than a product component. The diagram abstracts volumes and networks.
 
 Phase 0 has no runtime network dependency beyond local processes. Installation/image downloads require internet. Later external models and job/search providers require outbound access; a locally launched harness can still use a cloud model. LAN/public access and remote MCP require a separate access/security design.
 
@@ -72,8 +73,12 @@ src/
   components/            shared presentation components (Card, Field, Select, NavBar, ...)
   infrastructure/        database pool, configuration
 db/migrations/           generated SQL migrations and drizzle-kit journal
-db/init/                 creates the test database on first start
-scripts/                 backup and restore
+db/migrate.mjs           migration runner used inside the release image (production dependencies only)
+db/init/                 creates the test database on first start of the development database
+docker-compose.yml       development database only
+Dockerfile               multi-stage release image (Next.js standalone output, non-root user)
+compose.release.yml      packaged installation: db, migrate, web
+scripts/                 landed.sh / landed.ps1 launcher; db-backup.sh / db-restore.sh for contributors
 tests/integration/       Vitest against real PostgreSQL
 tests/e2e/               Playwright browser journeys
 examples/                synthetic data

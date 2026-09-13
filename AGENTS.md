@@ -3,7 +3,7 @@
 ## Start here
 
 - Read [docs/00-index.md](docs/00-index.md) and [docs/09-decisions-and-readiness.md](docs/09-decisions-and-readiness.md), then the documents relevant to the task.
-- Distinguish accepted decisions, proposals, and implemented behavior. This repository is currently in design; do not claim a runnable app, working quickstart, or passing code tests that do not exist.
+- Distinguish accepted decisions, proposals, and implemented behavior. Phase 0 (career data entry) is implemented, tested and packaged as a Docker Compose installation; Phases 1 to 4 are design only. [docs/09](docs/09-decisions-and-readiness.md) holds the current status and known gaps; do not describe a Phase 1+ feature as existing.
 - Follow [CONTRIBUTING.md](CONTRIBUTING.md). Keep changes focused on the requested scope and preserve unrelated work.
 
 ## Stack and boundaries
@@ -16,6 +16,15 @@
 - Each module owns writes to its data. Call public module operations rather than another module's persistence internals. Avoid circular dependencies.
 - Treat PostgreSQL as the source of truth. Embeddings are optional derived indexes, not a replacement for relational records.
 - Add modules, agent frameworks, workers, or external services when an implemented feature requires them; do not scaffold speculative infrastructure.
+
+## Working in the code
+
+- A module (`src/modules/<name>/`) is six files: `schema.ts` (Drizzle tables), `contracts.ts` (Zod input schemas and result types, browser-safe), `rules.ts` (pure functions), `repository.ts` (queries over a database or transaction handle), `service.ts` (use cases that open transactions and map database errors to typed results), `index.ts` (the only import path for callers).
+- Each route folder under `src/app` holds its own page, Server Actions (`actions.ts`) and form components; shared presentation lives in `src/components`.
+- Design tokens live only in `src/app/tokens.css`; components reference the variables.
+- Integration and browser tests run against the isolated `landed_test` database (`.env.test`) and truncate it; they never touch `landed`. Playwright starts its own server on port 3417 with a single worker.
+- Schema changes are made in `schema.ts`, then `pnpm db:generate` writes the SQL migration under `db/migrations`; review and commit it with the change. CI fails when the schema and migrations drift.
+- The `nextjs-agent-rules` block at the end of this file is written by `next dev`; leave it in place and commit it as is.
 
 ## Product rules
 
@@ -38,7 +47,7 @@
 
 - Update affected numbered documents with behavior, schema, dependency, and setup changes. Record significant architecture decisions in ADRs and update the decision register.
 - Diagrams are Mermaid blocks inside the numbered documents. Do not add diagram tooling, generated diagram files, or verification receipts to the public repository.
-- Follow the documented checks once implementation introduces them. Do not invent package scripts or setup commands.
+- Run the checks listed in [CONTRIBUTING.md](CONTRIBUTING.md) before proposing a change: `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:integration`, `pnpm test:e2e`, `pnpm build`, and `pnpm db:generate` (must produce no new migration). Do not invent package scripts or setup commands; they live in `package.json` and [docs/07](docs/07-quickstart-contract.md).
 - Test meaningful rules, persistence, failures, and the relevant user journey. Standard checks should not require paid model access; use real PostgreSQL for database integration checks when available.
 - Report what changed, what was verified, and any remaining limitations.
 

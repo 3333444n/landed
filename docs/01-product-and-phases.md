@@ -1,6 +1,6 @@
 # 01 — Product and phases
 
-Status: Phase 0 implemented except the packaged installation; later phases proposed. Updated 2026-09-13.
+Status: Phase 0 complete (2026-09-13); Phases 1 to 4 proposed. Updated 2026-09-13.
 
 Landed is a locally run job-search application that produces factual, tailored materials and helps people manage applications. It must be usable without editing source code. Code can be cloned/forked independently of personal data. The shortest useful outcome is a reviewed resume, cover letter, and recruiter message for a real job.
 
@@ -10,7 +10,7 @@ A user starts an empty installation, adds profile information, employment, educa
 
 Completion requires clear validation, basic editing/deletion, explicit saved/error feedback, persistent PostgreSQL storage, fictional example data, and a tested backup/restore procedure. These are reliability requirements for retaining user data, not a separate enterprise platform. A polished onboarding wizard and portable application-level import/export can follow if they delay the first useful flow.
 
-Implemented on 2026-09-13: browser entry and in-place editing of the profile, jobs, education, projects, skills and achievements with skill links; field-level validation; stale-edit detection between tabs; restricted deletion of records that other facts depend on; backup and restore scripts; integration and browser tests against real PostgreSQL. Not yet implemented: the packaged one-command installation ([doc 07](07-quickstart-contract.md)) and a demo-data loader for `examples/demo-profile.json`.
+Completed on 2026-09-13: browser entry and in-place editing of the profile, jobs, education, projects, skills and achievements with skill links; field-level validation; stale-edit detection between tabs; restricted deletion of records that other facts depend on; backup and restore scripts; integration and browser tests against real PostgreSQL; and the packaged Docker Compose installation with its launcher, tested on macOS ([doc 07](07-quickstart-contract.md)). Known gaps carried into Phase 1: no loader for `examples/demo-profile.json` (the tests use its values directly); after a validation error, checkbox groups (work arrangement, skill links) show the stored selection rather than what was just ticked; an unreachable database surfaces as a generic server error rather than a friendly message; profile deletion exists in the schema but is not exposed in the interface; Windows and Linux installs are untested.
 
 ## Phase 1 — Tailored application materials and tracking
 

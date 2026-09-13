@@ -1,4 +1,4 @@
-# Development database only. The packaged user installation (ADR 003) is a later step.
+# Development database only. The packaged user installation lives in compose.release.yml (ADR 003).
 name: landed
 
 services:

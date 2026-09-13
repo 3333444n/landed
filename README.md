@@ -2,13 +2,14 @@
 
 Get the interview. Landed is a locally run job-search application that turns your real career evidence into tailored resumes, cover letters, and recruiter messages, and tracks every application. It rewrites and reorganizes your facts; it never invents them.
 
-**Status: Phase 0 in progress. You can enter and keep your career data locally; no generated materials yet, and no packaged one-command installation.** What works today: profile, jobs, education, projects, skills and achievements, entered in the browser and stored in PostgreSQL on your machine. No AI account is needed.
+**Status: Phase 0 complete and installable with Docker (2026-09-13). You can enter and keep your career data locally; no generated materials yet.** What works today: profile, jobs, education, projects, skills and achievements, entered in the browser and stored in PostgreSQL on your machine, with backup and restore. No AI account is needed.
 
 The stack is TypeScript, Next.js on Node.js, and PostgreSQL. Later milestones add tailored resumes, cover letters, recruiter messages, PDFs, matching, research, discovery, and interview tracking.
 
-## Run it
+## Install
 
-Follow the [contributor quickstart](docs/07-quickstart-contract.md#contributor-path-tested). It needs Node 22, pnpm and Docker. A packaged installation for people who do not want a development setup is designed but not built yet.
+To use it: with Docker installed, clone the repository and run `sh scripts/landed.sh start` (Windows: `scripts\landed.ps1 start`), then open http://127.0.0.1:3000. Details, backup and troubleshooting are in the [user quickstart](docs/07-quickstart-contract.md#ordinary-user-path-tested-on-macos-with-docker-desktop-2026-09-13); tested on macOS so far.
+To work on it: the [contributor quickstart](docs/07-quickstart-contract.md#contributor-path-tested) needs Node 22, pnpm and Docker.
 
 ## Explore the design
 

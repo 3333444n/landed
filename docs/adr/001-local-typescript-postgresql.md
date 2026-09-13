@@ -1,6 +1,6 @@
 # ADR 001 — Local TypeScript application with PostgreSQL
 
-Date: 2026-09-13. Status: accepted for language/framework/database/local execution; detailed packaging proposed separately.
+Date: 2026-09-13. Status: accepted and implemented; packaging is decided in [ADR 003](003-local-packaging.md).
 
 ## Context
 

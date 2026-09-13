@@ -22,23 +22,23 @@ Updated 2026-09-13. Accepted decisions below reflect the user's explicit instruc
 - Styling: own components with CSS Modules and design tokens in one stylesheet; no utility framework or component library (2026-09-13).
 - Conventional Commits with a scope, and a What/Why/How/Testing pull-request template (2026-09-13).
 - Stale-edit detection through `updated_at` as the version token; client-minted record ids for idempotent creates (2026-09-13, doc 05).
+- Docker Compose user packaging with a one-shot migrate service and a shell/PowerShell launcher; Node plus a Compose database for development ([ADR 003](adr/003-local-packaging.md), implemented 2026-09-13).
 
 ## Proposed defaults
 
-- Docker Compose user packaging; Node + Compose database for development.
 - A modular monolith with Profile first; Jobs/Documents/Applications in Phase 1.
 - Input snapshots attached to generated materials, with saved document revisions but no achievement revisions.
 - Structured document content in PostgreSQL; PDFs in a persistent local volume with database metadata.
 - One supported model integration initially; optional harness/local model paths when tested.
 - LangGraph as a later orchestration candidate after a small explicit implementation establishes requirements.
 
-## Phase 0 status
+## Phase 0 complete (2026-09-13)
 
-Implemented and tested (2026-09-13): the Profile module, the first migration with the constraints from document 04, browser entry and editing of every Phase 0 record, integration and browser tests, backup/restore scripts, and CI. Remaining before Phase 0 is closed: the packaged Docker Compose installation and first-run launcher (ADR 003), a demo-data loader, a SECURITY policy, and a friendlier message when the database is unreachable.
+Implemented and tested: the Profile module, the first migration with the constraints from document 04, browser entry and editing of every Phase 0 record, integration and browser tests, backup/restore scripts, CI, a SECURITY policy, and the packaged Docker Compose installation with its launcher (ADR 003), tested on macOS. Known gaps, carried rather than blocking: no demo-data loader for `examples/demo-profile.json`; checkbox groups show the stored selection instead of the typed one after a validation error; an unreachable database gives a generic server error; profile deletion is in the schema but not in the interface; Windows, Linux and x86-64 installs are untested; a version-to-version upgrade with new migrations has not yet been exercised.
 
 ## Before Phase 1 code
 
-Select the initial model access path, document JSON schema, one resume/cover-letter template, PDF renderer, generation execution/recovery mechanism, review/submission transitions, and a small grounding evaluation set. Validate the desired harness integration if selected. No need to choose these before Phase 0 begins.
+Select the initial model access path, document JSON schema, one resume/cover-letter template, PDF renderer, generation execution/recovery mechanism, review/submission transitions, and a small grounding evaluation set. Validate the desired harness integration if selected. Phase 0 did not need any of these; also decide the execution model for generation runs (doc 05) before the first Phase 1 module.
 
 ## Deliberately deferred
 

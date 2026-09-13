@@ -1,14 +1,14 @@
 # 08 — Contributions and living documentation
 
-Status: CI, commit conventions and PR template in place; no released application yet. Updated 2026-09-13.
+Status: CI, commit conventions, PR template and SECURITY in place; the packaged installation is built from the checkout, no tagged release yet. Updated 2026-09-13.
 
 ## Small public-repository baseline
 
-In place: README with truthful feature status and a link to the tested quickstart; LICENSE (MIT); CONTRIBUTING with checks, commit and PR conventions; environment examples with no real credentials; lockfile; synthetic examples; and CI (`.github/workflows/ci.yml`) that runs formatting, linting, type checks, unit tests, integration and browser tests against a PostgreSQL 17 service, a build, and a migration drift check (`pnpm db:generate` must produce no changes). Still missing: SECURITY with a private reporting channel.
+In place: README with truthful feature status and a link to the tested quickstart; LICENSE (MIT); CONTRIBUTING with checks, commit and PR conventions; environment examples with no real credentials; lockfile; synthetic examples; and CI (`.github/workflows/ci.yml`) that runs formatting, linting, type checks, unit tests, integration and browser tests against a PostgreSQL 17 service, a build, and a migration drift check (`pnpm db:generate` must produce no changes); and [SECURITY](../SECURITY.md) with a private reporting channel. CI does not build the release image; packaging changes are verified by hand against the checklist in document 07.
 
 Commits follow `<type>(<scope>): <description>` with the types listed in CONTRIBUTING; pull requests use the What/Why/How/Testing template in `.github/`.
 
-Bug reports specify version/environment, reproduction steps, expected/actual behavior, and sanitized evidence. Encourage documentation fixes and `good first issue` tasks. Require no paid credentials to run standard checks. A tiny fictional profile and a few fictional jobs are sufficient initial examples; the schema and importer must agree before seed data is declared runnable.
+Bug reports specify version/environment, reproduction steps, expected/actual behavior, and sanitized evidence. Encourage documentation fixes and `good first issue` tasks. Require no paid credentials to run standard checks. A tiny fictional profile is the current example (`examples/demo-profile.json`, used as values by the tests); a loader for it does not exist, and the schema and loader must agree before seed data is declared runnable.
 
 Examples do not include real names/contact details from the maintainer. Do not require a contributor to complete their real profile to run tests. Design easy seams for adding a template or a source adapter later, but do not build a plugin marketplace now.
 

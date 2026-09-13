@@ -23,6 +23,8 @@ pnpm db:generate       # must report no schema changes; otherwise commit the new
 
 Paid model credentials are never required for standard checks.
 
+The packaged installation is `Dockerfile`, `compose.release.yml`, `db/migrate.mjs`, `scripts/landed.sh`, `scripts/landed.ps1` and `.env.release.example`. CI does not build the image; a change to any of these files must re-run the checks listed under "Required verification" in [doc 07](docs/07-quickstart-contract.md) (fresh `start`, restart, backup and restore, factory reset) and state the results in the pull request.
+
 ## Commits and pull requests
 
 Commit messages follow `<type>(<scope>): <short imperative description>`, for example `feat(profile): add education records` or `fix(achievements): keep typed values after a validation error`. Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `perf`, `ci`. Scope is the module or area touched.
