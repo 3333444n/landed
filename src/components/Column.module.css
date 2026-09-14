@@ -71,6 +71,10 @@
     border-radius: var(--radius-xl);
     height: auto;
   }
+  /* With no list column before it (the overview), the panel keeps its inset on the left too. */
+  .detail:first-child {
+    margin-left: var(--space-4);
+  }
   .detail .inner {
     max-width: var(--width-detail-max);
   }
