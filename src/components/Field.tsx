@@ -28,11 +28,11 @@ export function Field(props: InputProps | TextareaProps) {
       </label>
       {rest.multiline ? (
         <textarea
+          rows={3}
           {...omitMultiline(rest)}
           id={id}
           name={name}
           className={styles.control}
-          rows={3}
           aria-invalid={hasError || undefined}
           aria-describedby={describedBy || undefined}
         />
