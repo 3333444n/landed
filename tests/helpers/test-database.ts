@@ -28,7 +28,9 @@ export async function openTestDatabase(): Promise<DatabaseConnection> {
   return connection;
 }
 
-const phase0Tables = [
+const allTables = [
+  "applications",
+  "jobs",
   "achievement_skills",
   "achievements",
   "projects",
@@ -40,6 +42,6 @@ const phase0Tables = [
 
 export async function truncateAll(connection: DatabaseConnection): Promise<void> {
   await connection.db.execute(
-    sql.raw(`TRUNCATE TABLE ${phase0Tables.map((t) => `"${t}"`).join(", ")} CASCADE`),
+    sql.raw(`TRUNCATE TABLE ${allTables.map((t) => `"${t}"`).join(", ")} CASCADE`),
   );
 }

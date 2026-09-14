@@ -2,7 +2,7 @@
 
 Get the interview. Landed is a locally run job-search application that turns your real career evidence into tailored resumes, cover letters, and recruiter messages, and tracks every application. It rewrites and reorganizes your facts; it never invents them.
 
-**Status: Phase 0 complete and installable with Docker (2026-09-13). You can enter and keep your career data locally; no generated materials yet.** What works today: profile, work history, education, projects, skills and achievements, entered in the browser and stored in PostgreSQL on your machine, with backup and restore. No AI account is needed.
+**Status: Phase 1a complete (2026-09-14) and installable with Docker. You can enter and keep your career data locally, paste job postings and track each application's status; no generated materials yet.** What works today: profile, work history, education, projects, skills and achievements, plus jobs and their applications with a status list you can filter and sort, entered in the browser and stored in PostgreSQL on your machine, with backup and restore. No AI account is needed.
 
 The stack is TypeScript, Next.js on Node.js, and PostgreSQL. Later milestones add tailored resumes, cover letters, recruiter messages, PDFs, matching, research, discovery, and interview tracking.
 

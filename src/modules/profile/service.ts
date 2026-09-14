@@ -2,8 +2,19 @@
  * Use cases. Each one validates input, applies rules, and writes inside a transaction.
  * Dependencies arrive as a parameter; nothing here is a singleton.
  */
-import { DatabaseError } from "pg";
-import type { Database } from "@/infrastructure/database";
+import {
+  expected,
+  fail,
+  mapDatabaseError,
+  newId,
+  notFound,
+  now,
+  plural,
+  stale,
+  stamps,
+  validation,
+  type BaseDeps,
+} from "@/modules/shared/service";
 import {
   achievementInput,
   createProfileInput,
@@ -14,33 +25,17 @@ import {
   skillInput,
   updateProfileInput,
   type FieldErrors,
-  type ProfileError,
   type Result,
 } from "./contracts";
 import * as repo from "./repository";
 import { contextLinkErrors, monthDateErrors, normalizeSkillName, reviewedAfterEdit } from "./rules";
 import type { ProfilePreferences } from "./schema";
 
-export interface ProfileDeps {
-  db: Database;
-  now?: () => Date;
-  newId?: () => string;
-}
+export type ProfileDeps = BaseDeps;
 
 export interface AchievementWithSkills extends repo.AchievementRecord {
   skillIds: string[];
 }
-
-const fail = (error: ProfileError): Result<never> => ({ ok: false, error });
-const validation = (fieldErrors: FieldErrors): Result<never> =>
-  fail({ kind: "validation", fieldErrors });
-const notFound = (what: string): Result<never> =>
-  fail({ kind: "not_found", message: `${what} not found` });
-const stale = (): Result<never> =>
-  fail({
-    kind: "stale",
-    message: "This record changed since you opened it. Reload to see the latest version.",
-  });
 
 // Profile
 
@@ -543,70 +538,9 @@ async function deleteOwned(
   }
 }
 
-function newId(deps: ProfileDeps): string {
-  return deps.newId ? deps.newId() : crypto.randomUUID();
-}
-
-function now(deps: ProfileDeps): Date {
-  return deps.now ? deps.now() : new Date();
-}
-
-function stamps(deps: ProfileDeps) {
-  const at = now(deps);
-  return { createdAt: at, updatedAt: at };
-}
-
-function expected(iso: string | undefined): Date | undefined {
-  return iso ? new Date(iso) : undefined;
-}
-
-function plural(count: number, noun: string): string {
-  return `${count} ${noun}${count === 1 ? "" : "s"}`;
-}
-
 function describeDependents(d: { projects: number; achievements: number }): string {
   const parts: string[] = [];
   if (d.projects > 0) parts.push(plural(d.projects, "project"));
   if (d.achievements > 0) parts.push(plural(d.achievements, "achievement"));
   return parts.join(" and ");
-}
-
-/** Drizzle wraps driver errors; the PostgreSQL error sits in `cause`. */
-function postgresError(error: unknown): DatabaseError | null {
-  if (error instanceof DatabaseError) return error;
-  if (error instanceof Error && error.cause instanceof DatabaseError) return error.cause;
-  return null;
-}
-
-/** PostgreSQL error codes: 23505 unique, 23503 foreign key, 23514 check. */
-async function mapDatabaseError<T>(
-  thrown: unknown,
-  onDuplicatePrimaryKey: () => Promise<Result<T> | null>,
-  uniqueMessage?: FieldErrors,
-): Promise<Result<T>> {
-  const error = postgresError(thrown);
-  if (error) {
-    if (error.code === "23505" && error.constraint?.endsWith("_pkey")) {
-      const replay = await onDuplicatePrimaryKey();
-      if (replay) return replay;
-      return fail({
-        kind: "conflict",
-        message: "This record id is already used by another record",
-      });
-    }
-    if (error.code === "23505") {
-      if (uniqueMessage) return validation(uniqueMessage);
-      return fail({ kind: "conflict", message: "A record with the same value already exists" });
-    }
-    if (error.code === "23503") {
-      return fail({
-        kind: "conflict",
-        message: "Other records still reference this one; detach them first",
-      });
-    }
-    if (error.code === "23514") {
-      return validation({ form: ["The record violates a data rule and was not saved"] });
-    }
-  }
-  throw thrown;
 }

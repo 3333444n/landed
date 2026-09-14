@@ -8,7 +8,7 @@ Users need easy editing of their career facts. Maintaining revision history for 
 
 ## Decision
 
-Edit achievements in place. Do not create AchievementRevision records or a history UI. Proposed Phase 1 compromise: capture the selected facts and job description once per generation run and retain saved document revisions, especially submitted versions.
+Edit achievements in place. Do not create AchievementRevision records or a history UI. Proposed Phase 1b compromise: capture the selected facts and job description once per generation run and retain saved document revisions, especially submitted versions.
 
 ## Alternatives
 

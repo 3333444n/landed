@@ -63,7 +63,7 @@ test("a new installation creates a profile and saves an achievement that survive
     1,
   );
 
-  // The Jobs section exists as an empty state until Phase 1.
+  // The Jobs section starts empty on a fresh installation.
   await page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Jobs" }).click();
   await expect(page.getByRole("heading", { name: /^Jobs/ })).toBeVisible();
   await expect(page.getByText("No jobs yet")).toBeVisible();

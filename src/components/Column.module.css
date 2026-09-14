@@ -1,8 +1,10 @@
 /*
- * The detail column is a surface panel (DESIGN.md "Layout"); cards inside it drop one tonal
- * step so the ladder still holds. The list column stays on canvas.
+ * The last column is a surface panel (DESIGN.md "Layout"); cards inside it drop one tonal step so
+ * the ladder still holds. A detail column that has a child column open beside it (a job next to
+ * its description) sits on canvas like a list, so two panels never sit side by side.
  */
-.detail {
+.detail:last-child,
+.detail:has(+ .placeholder:last-child) {
   background: var(--bg-surface);
   --card-bg: var(--bg-surface-raised);
 }
@@ -26,7 +28,8 @@
   display: flex;
 }
 
-.placeholder {
+/* Doubled class: it must outrank `.column:last-child`, since the placeholder is the last column. */
+.column.placeholder {
   display: none;
 }
 
@@ -67,6 +70,9 @@
   .detail {
     flex: 1 1 var(--width-detail-min);
     min-width: 0;
+  }
+  .detail:last-child,
+  .detail:has(+ .placeholder:last-child) {
     margin: var(--space-4) var(--space-4) var(--space-4) 0;
     border-radius: var(--radius-xl);
     height: auto;

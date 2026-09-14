@@ -25,5 +25,11 @@
   "achievement_skills": [
     {"profile_id": "10000000-0000-4000-8000-000000000001", "achievement_id": "50000000-0000-4000-8000-000000000001", "skill_id": "60000000-0000-4000-8000-000000000001"},
     {"profile_id": "10000000-0000-4000-8000-000000000001", "achievement_id": "50000000-0000-4000-8000-000000000002", "skill_id": "60000000-0000-4000-8000-000000000002"}
+  ],
+  "jobs": [
+    {"id": "70000000-0000-4000-8000-000000000001", "profile_id": "10000000-0000-4000-8000-000000000001", "title": "Full-stack developer", "company_name": "Example Analytics", "location": "Remote", "source": "pasted", "source_url": null, "raw_description": "Example Analytics is looking for a full-stack developer to build internal reporting tools.\n\nYou will work with PostgreSQL and TypeScript.", "availability": "active"}
+  ],
+  "applications": [
+    {"id": "80000000-0000-4000-8000-000000000001", "profile_id": "10000000-0000-4000-8000-000000000001", "job_id": "70000000-0000-4000-8000-000000000001", "status": "preparing", "notes": null, "submitted_at": null}
   ]
 }

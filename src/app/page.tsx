@@ -12,6 +12,7 @@ import {
   listProjects,
   listSkills,
 } from "@/modules/profile";
+import { listJobs } from "@/modules/jobs";
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
@@ -36,14 +37,16 @@ export default async function HomePage() {
     );
   }
 
-  const [achievements, employment, education, projects, skills] = await Promise.all([
+  const [achievements, employment, education, projects, skills, jobs] = await Promise.all([
     listAchievements(deps, profile.id),
     listEmployment(deps, profile.id),
     listEducation(deps, profile.id),
     listProjects(deps, profile.id),
     listSkills(deps, profile.id),
+    listJobs(deps, profile.id),
   ]);
   const lines = [
+    { href: "/jobs", text: count(jobs.length, "job") },
     { href: "/about/achievements", text: count(achievements.length, "achievement") },
     { href: "/about/work-history", text: count(employment.length, "role") },
     { href: "/about/education", text: count(education.length, "education record") },

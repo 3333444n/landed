@@ -17,7 +17,7 @@ pnpm db:migrate                 # applies db/migrations to the landed database
 pnpm dev                        # http://localhost:3000
 ```
 
-The first visit asks for your name and creates the single profile of this installation. Career facts live under About me in the sidebar; Jobs stays empty until Phase 1. Data lives in the Docker volume `landed_pgdata`, outside the source checkout. `pnpm db:down` stops the database and keeps the volume.
+The first visit asks for your name and creates the single profile of this installation. Career facts live under About me in the sidebar; pasted postings and their applications live under Jobs. Data lives in the Docker volume `landed_pgdata`, outside the source checkout. `pnpm db:down` stops the database and keeps the volume.
 
 Tests use a second database, `landed_test`, created automatically when the volume is first initialised. Apply migrations to it once, then run the checks listed in [CONTRIBUTING](../CONTRIBUTING.md):
 
@@ -95,7 +95,7 @@ Verified on macOS (Apple Silicon, Docker Desktop, 2026-09-13) unless marked othe
 - Fresh install without pre-existing local dependencies beyond stated prerequisites: verified (clean state, no `.env.release`, only Docker used).
 - App readiness reflects both service health and successful migrations: verified (`web` waits for `migrate` to complete successfully and `db` to be healthy; its own health check loads a database-backed page).
 - Data survives process/container restart, image recreation, and supported application upgrade: verified for restart, `stop`/`start` and image rebuild; a real version-to-version upgrade with new migrations is not yet exercised because there is one migration.
-- Backup/restore works on a new installation: verified; artifact files come with Phase 1.
+- Backup/restore works on a new installation: verified; artifact files come with Phase 1b.
 - Restart/stop never silently deletes volumes. Factory reset is separate and explicit: verified (`stop` runs `down` without `-v`; the reset is documented above and manual).
 - Helpful troubleshooting for Docker not running, occupied port, failed download, permission failure, database unavailable, migration failure, and low disk space: written above; the Docker-not-running, port-in-use and migration-failure cases were exercised, the others are documented from Docker's own messages.
 - Pin supported versions and explain upgrade steps: images pinned (`node:22.23-bookworm-slim`, `postgres:17.11`); the PostgreSQL major-version procedure is still to be written when a major bump is planned.

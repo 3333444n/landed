@@ -22,7 +22,7 @@ When agentic research arrives, a small bounded tool loop is a useful baseline: g
 
 Claude Code supports programmatic invocation and structured output. A harness adapter is plausible for people already using it. It is not automatically the easiest default for new users: installing/authenticating a CLI, runtime permissions, supported billing/auth paths, subprocess lifecycle, and host/container connectivity all need a supported recipe.
 
-Recommended choices for Phase 1 evaluation:
+Recommended choices for the Phase 1b evaluation:
 1. App calls one model provider directly: simplest app-owned generation path; users supply supported credentials.
 2. Optional host-side harness bridge: reuses an installed runtime through documented mechanisms; explicit connection setup and permission boundaries.
 3. Optional local-model endpoint: local inference but model downloads, memory/hardware needs, and quality expectations add setup cost.

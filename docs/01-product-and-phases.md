@@ -1,6 +1,6 @@
 # 01 — Product and phases
 
-Status: Phase 0 complete (2026-09-13); Phases 1 to 4 proposed. Updated 2026-09-14.
+Status: Phase 0 complete (2026-09-13); Phase 1a complete (2026-09-14); Phase 1b and Phases 2 to 4 proposed. Updated 2026-09-14.
 
 Landed is a locally run job-search application that produces factual, tailored materials and helps people manage applications. It must be usable without editing source code. Code can be cloned/forked independently of personal data. The shortest useful outcome is a reviewed resume, cover letter, and recruiter message for a real job.
 
@@ -12,7 +12,7 @@ Completion requires clear validation, basic editing/deletion, explicit saved/err
 
 Completed on 2026-09-13: browser entry and in-place editing of the profile, work history, education, projects, skills and achievements with skill links; field-level validation; stale-edit detection between tabs; restricted deletion of records that other facts depend on; backup and restore scripts; integration and browser tests against real PostgreSQL; and the packaged Docker Compose installation with its launcher, tested on macOS ([doc 07](07-quickstart-contract.md)). Known gaps carried into Phase 1: no loader for `examples/demo-profile.json` (the tests use its values directly); after a validation error, checkbox groups (work arrangement, skill links) show the stored selection rather than what was just ticked; an unreachable database surfaces as a generic server error rather than a friendly message; profile deletion exists in the schema but is not exposed in the interface; Windows and Linux installs are untested.
 
-On 2026-09-14 the interface was rebuilt as URL-driven columns ([ADR 005](adr/005-url-driven-columns.md)): a sidebar with About me and Jobs, an About me hub with one card per record type (Profile, Work history, Education, Projects, Skills, Achievements), lists whose add control opens a blank form in the next column, and a Jobs section that is an empty state until Phase 1. Behaviour and data are unchanged.
+On 2026-09-14 the interface was rebuilt as URL-driven columns ([ADR 005](adr/005-url-driven-columns.md)): a sidebar with About me and Jobs, an About me hub with one card per record type (Profile, Work history, Education, Projects, Skills, Achievements), lists whose add control opens a blank form in the next column, and a Jobs section that stayed an empty state until Phase 1a filled it. Behaviour and data were unchanged by the rebuild.
 
 ## Phase 1 — Tailored application materials and tracking
 
@@ -25,6 +25,8 @@ Phase 1 is delivered in two parts (decided 2026-09-14). Phase 1a is the tracking
 The user pastes a job description with its title and company, and the application record exists from that moment. The user changes the application status by hand (`preparing`, `ready`, `applied`, `interviewing`, `offer`, `rejected`, `withdrawn`, `accepted`), keeps freeform notes, and marks a job's availability. The Jobs list shows the derived status chip from document 05 with its filters (Needs attention, Active, Closed, All) and sort (updated, added). Any status can be selected at any time; the submission time is recorded the first time an application enters `applied` and is kept afterwards. This is milestone 1 below.
 
 In the interface, the Jobs section lists postings; each pasted posting gets its application immediately, so in Phase 1 the list is the list of applications. Each job opens to its blocks: the job itself with the company name as its subtitle, a Job description block, a Company block, and one block per document. Company is text on the job until Phase 2 research gives it content of its own. In Phase 1a the Resume, Cover letter and Recruiter message blocks are inert placeholders marked "Not started"; they open nothing until Phase 1b.
+
+Completed on 2026-09-14: a paste form (title, company, optional location and posting URL, the description as pasted) that writes the job and its application in one transaction; a status select with notes on the job column, recording the submission time the first time the status becomes `applied`; availability (active, expired, unknown) edited on the job and never touching the application; the Jobs list with the derived chip and its modifier, the filters Needs attention, Active, Closed and All, and the sort Updated and Added, both held in the address as search parameters; a Job description column for editing the posting and a Company column that is an empty state; the three inert document blocks; and deletion of a job, which removes its application. Known gaps carried into Phase 1b: the Company block has no content of its own; no run or draft facts exist yet, so the Crafting documents, Needs review, Evaluating, Assessed and Generation failed rows of the chip cannot appear; and the filter and sort are applied in the browser over rows the server derives, since a layout cannot read search parameters.
 
 ### Phase 1b — Generated materials and PDFs
 

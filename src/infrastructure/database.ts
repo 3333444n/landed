@@ -1,8 +1,10 @@
 import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
+import * as applicationsSchema from "@/modules/applications/schema";
+import * as jobsSchema from "@/modules/jobs/schema";
 import * as profileSchema from "@/modules/profile/schema";
 
-export const schema = { ...profileSchema };
+export const schema = { ...profileSchema, ...jobsSchema, ...applicationsSchema };
 
 export type Database = NodePgDatabase<typeof schema>;
 export type Transaction = Parameters<Parameters<Database["transaction"]>[0]>[0];
