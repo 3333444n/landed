@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { createProfileAction } from "@/app/actions";
-import buttonStyles from "@/components/Button.module.css";
 import { Card } from "@/components/Card";
-import { Page, Section, pageStyles } from "@/components/Page";
+import { Column } from "@/components/Column";
 import { ProfileNameForm } from "@/components/ProfileNameForm";
 import { getDatabase } from "@/infrastructure/server";
 import {
@@ -27,15 +26,15 @@ export default async function HomePage() {
 
   if (!profile) {
     return (
-      <main className={styles.main}>
-        <div className={styles.section}>
-          <h1 className="title-xl">Welcome to Landed</h1>
-          <p className="text-secondary">Start with your name. Everything else can follow.</p>
-        </div>
+      <Column
+        title="Welcome to Landed"
+        subtitle="Start with your name. Everything else can follow."
+        width="detail"
+      >
         <Card>
           <ProfileNameForm action={createProfileAction} />
         </Card>
-      </main>
+      </Column>
     );
   }
 
@@ -47,36 +46,28 @@ export default async function HomePage() {
     listSkills(deps, profile.id),
   ]);
   const lines = [
-    { href: "/achievements", text: count(achievements.length, "achievement") },
-    { href: "/experience", text: count(employment.length, "job") },
-    { href: "/experience", text: count(education.length, "education record") },
-    { href: "/experience", text: count(projects.length, "project") },
-    { href: "/skills", text: count(skills.length, "skill") },
+    { href: "/about/achievements", text: count(achievements.length, "achievement") },
+    { href: "/about/work-history", text: count(employment.length, "role") },
+    { href: "/about/education", text: count(education.length, "education record") },
+    { href: "/about/projects", text: count(projects.length, "project") },
+    { href: "/about/skills", text: count(skills.length, "skill") },
   ];
 
   return (
-    <Page title={profile.displayName} subtitle="Your career facts, in your own words.">
-      <Section title="What you have so far">
-        <Card>
-          <div className={pageStyles.stack}>
-            <ul className={styles.list}>
-              {lines.map((line) => (
-                <li key={line.text}>
-                  <Link href={line.href}>{line.text}</Link>
-                </li>
-              ))}
-            </ul>
-            <div>
-              <Link
-                href="/achievements"
-                className={`${buttonStyles.button} ${buttonStyles.primary} ${styles.action}`}
-              >
-                Add an achievement
-              </Link>
-            </div>
-          </div>
-        </Card>
-      </Section>
-    </Page>
+    <Column
+      title={profile.displayName}
+      subtitle="Your career facts, in your own words."
+      width="detail"
+    >
+      <Card title="What you have so far">
+        <ul className={styles.list}>
+          {lines.map((line) => (
+            <li key={line.text}>
+              <Link href={line.href}>{line.text}</Link>
+            </li>
+          ))}
+        </ul>
+      </Card>
+    </Column>
   );
 }

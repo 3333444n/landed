@@ -1,29 +1,8 @@
-.main {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: var(--space-12) var(--space-4) var(--space-16);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-12);
-}
-
-.section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
 .list {
   list-style: none;
-  margin: 0;
+  margin: var(--space-3) 0 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-}
-
-/* A link styled as the primary button needs a box to honour the 40px control height. */
-.action {
-  display: inline-flex;
-  align-items: center;
+  gap: var(--space-2);
 }

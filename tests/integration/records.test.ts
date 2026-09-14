@@ -164,7 +164,7 @@ describe("employment", () => {
       ok: false,
       error: {
         kind: "conflict",
-        message: "Detach the 1 achievement that reference this job before deleting it",
+        message: "Detach the 1 achievement that reference this role before deleting it",
       },
     });
     expect(await listEmployment(deps(), demo.profileId)).toHaveLength(1);
@@ -236,7 +236,7 @@ describe("projects", () => {
       ok: false,
       error: {
         kind: "validation",
-        fieldErrors: { employmentId: ["That job is not in your profile"] },
+        fieldErrors: { employmentId: ["That role is not in your profile"] },
       },
     });
   });

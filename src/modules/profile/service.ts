@@ -170,7 +170,7 @@ export async function deleteEmployment(
   if (dependents.projects > 0 || dependents.achievements > 0) {
     return fail({
       kind: "conflict",
-      message: `Detach the ${describeDependents(dependents)} that reference this job before deleting it`,
+      message: `Detach the ${describeDependents(dependents)} that reference this role before deleting it`,
     });
   }
   return deleteOwned(deps, repo.ownedTables.employment, "Employment", profileId, id);
@@ -251,7 +251,7 @@ export async function saveProject(
     input.employmentId &&
     !(await repo.employmentBelongsToProfile(deps.db, profileId, input.employmentId))
   ) {
-    return validation({ employmentId: ["That job is not in your profile"] });
+    return validation({ employmentId: ["That role is not in your profile"] });
   }
   const values = {
     name: input.name,
@@ -401,7 +401,7 @@ async function saveAchievement(
         input.employmentId &&
         !(await repo.employmentBelongsToProfile(tx, profileId, input.employmentId))
       ) {
-        return validation({ employmentId: ["That job is not in your profile"] });
+        return validation({ employmentId: ["That role is not in your profile"] });
       }
       if (
         input.projectId &&
