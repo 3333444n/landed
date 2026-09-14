@@ -1,4 +1,3 @@
-import { Card } from "@/components/Card";
 import { Column } from "@/components/Column";
 import { saveEducationAction } from "../actions";
 import { EducationForm } from "../EducationForm";
@@ -11,12 +10,10 @@ export default function NewEducationPage() {
       parentTitle="Education"
       width="detail"
     >
-      <Card>
-        <EducationForm
-          action={saveEducationAction.bind(null, undefined)}
-          submitLabel="Save education"
-        />
-      </Card>
+      <EducationForm
+        action={saveEducationAction.bind(null, undefined)}
+        submitLabel="Save education"
+      />
     </Column>
   );
 }

@@ -1,5 +1,4 @@
 import { deps, requireProfile } from "@/app/current-profile";
-import { Card } from "@/components/Card";
 import { Column } from "@/components/Column";
 import { listEmployment } from "@/modules/profile";
 import { saveProjectAction } from "../actions";
@@ -13,16 +12,14 @@ export default async function NewProjectPage() {
 
   return (
     <Column title="New project" parentHref="/about/projects" parentTitle="Projects" width="detail">
-      <Card>
-        <ProjectForm
-          action={saveProjectAction.bind(null, undefined)}
-          submitLabel="Save project"
-          jobs={roles.map((role) => ({
-            value: role.id,
-            label: `${role.role} at ${role.employerName}`,
-          }))}
-        />
-      </Card>
+      <ProjectForm
+        action={saveProjectAction.bind(null, undefined)}
+        submitLabel="Save project"
+        jobs={roles.map((role) => ({
+          value: role.id,
+          label: `${role.role} at ${role.employerName}`,
+        }))}
+      />
     </Column>
   );
 }

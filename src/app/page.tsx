@@ -31,9 +31,7 @@ export default async function HomePage() {
         subtitle="Start with your name. Everything else can follow."
         width="detail"
       >
-        <Card>
-          <ProfileNameForm action={createProfileAction} />
-        </Card>
+        <ProfileNameForm action={createProfileAction} />
       </Column>
     );
   }

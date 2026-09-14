@@ -1,4 +1,13 @@
 /*
+ * The detail column is a surface panel (DESIGN.md "Layout"); cards inside it drop one tonal
+ * step so the ladder still holds. The list column stays on canvas.
+ */
+.detail {
+  background: var(--bg-surface);
+  --card-bg: var(--bg-surface-raised);
+}
+
+/*
  * Column visibility (DESIGN.md "Layout"): below 768px only the last column, from 768px the last
  * two. A placeholder column never shows on its own, so on a phone the column before it is the
  * visible one. Columns are siblings inside the Columns shell.
@@ -58,6 +67,9 @@
   .detail {
     flex: 1 1 var(--width-detail-min);
     min-width: 0;
+    margin: var(--space-4) var(--space-4) var(--space-4) 0;
+    border-radius: var(--radius-xl);
+    height: auto;
   }
   .detail .inner {
     max-width: var(--width-detail-max);

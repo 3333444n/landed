@@ -1,5 +1,4 @@
 import { requireProfile } from "@/app/current-profile";
-import { Card } from "@/components/Card";
 import { Column } from "@/components/Column";
 import { updateProfileAction } from "./actions";
 import { ProfileForm } from "./ProfileForm";
@@ -18,24 +17,22 @@ export default async function ProfilePage() {
       parentTitle="About me"
       width="detail"
     >
-      <Card>
-        <ProfileForm
-          action={updateProfileAction}
-          record={{
-            displayName: profile.displayName,
-            headline: profile.headline ?? "",
-            summary: profile.summary ?? "",
-            email: profile.email ?? "",
-            phone: profile.phone ?? "",
-            location: profile.location ?? "",
-            desiredRoles: (preferences.desiredRoles ?? []).join(", "),
-            locations: (preferences.locations ?? []).join(", "),
-            workArrangement: (preferences.workArrangement ?? []).join(","),
-            constraints: preferences.constraints ?? "",
-            expectedUpdatedAt: profile.updatedAt.toISOString(),
-          }}
-        />
-      </Card>
+      <ProfileForm
+        action={updateProfileAction}
+        record={{
+          displayName: profile.displayName,
+          headline: profile.headline ?? "",
+          summary: profile.summary ?? "",
+          email: profile.email ?? "",
+          phone: profile.phone ?? "",
+          location: profile.location ?? "",
+          desiredRoles: (preferences.desiredRoles ?? []).join(", "),
+          locations: (preferences.locations ?? []).join(", "),
+          workArrangement: (preferences.workArrangement ?? []).join(","),
+          constraints: preferences.constraints ?? "",
+          expectedUpdatedAt: profile.updatedAt.toISOString(),
+        }}
+      />
     </Column>
   );
 }

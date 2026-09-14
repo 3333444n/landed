@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import { deps, requireProfile } from "@/app/current-profile";
-import { Card } from "@/components/Card";
 import { Column } from "@/components/Column";
 import { ConfirmDelete } from "@/components/ConfirmDelete";
 import { getSkill } from "@/modules/profile";
@@ -23,17 +22,15 @@ export default async function EditSkillPage({ params }: { params: Promise<{ id: 
       parentTitle="Skills"
       width="detail"
     >
-      <Card>
-        <SkillForm
-          action={saveSkillAction.bind(null, skill.id)}
-          submitLabel="Save changes"
-          record={{
-            displayName: skill.displayName,
-            category: skill.category ?? "",
-            expectedUpdatedAt: skill.updatedAt.toISOString(),
-          }}
-        />
-      </Card>
+      <SkillForm
+        action={saveSkillAction.bind(null, skill.id)}
+        submitLabel="Save changes"
+        record={{
+          displayName: skill.displayName,
+          category: skill.category ?? "",
+          expectedUpdatedAt: skill.updatedAt.toISOString(),
+        }}
+      />
       <ConfirmDelete action={deleteSkillAction.bind(null, skill.id)} what="skill" />
     </Column>
   );

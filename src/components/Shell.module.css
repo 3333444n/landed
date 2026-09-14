@@ -24,5 +24,8 @@
   }
   .sidebar {
     display: block;
+    margin: var(--space-4) 0 var(--space-4) var(--space-4);
+    background: var(--bg-surface);
+    border-radius: var(--radius-xl);
   }
 }

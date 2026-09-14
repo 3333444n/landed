@@ -1,5 +1,4 @@
 import { deps, requireProfile } from "@/app/current-profile";
-import { Card } from "@/components/Card";
 import { Column } from "@/components/Column";
 import { listEmployment, listProjects, listSkills } from "@/modules/profile";
 import { saveAchievementAction } from "../actions";
@@ -22,15 +21,13 @@ export default async function NewAchievementPage() {
       parentTitle="Achievements"
       width="detail"
     >
-      <Card>
-        <AchievementForm
-          action={saveAchievementAction.bind(null, undefined)}
-          submitLabel="Save achievement"
-          jobs={roles.map((r) => ({ value: r.id, label: `${r.role} at ${r.employerName}` }))}
-          projects={projects.map((p) => ({ value: p.id, label: p.name }))}
-          skills={skills.map((s) => ({ value: s.id, label: s.displayName }))}
-        />
-      </Card>
+      <AchievementForm
+        action={saveAchievementAction.bind(null, undefined)}
+        submitLabel="Save achievement"
+        jobs={roles.map((r) => ({ value: r.id, label: `${r.role} at ${r.employerName}` }))}
+        projects={projects.map((p) => ({ value: p.id, label: p.name }))}
+        skills={skills.map((s) => ({ value: s.id, label: s.displayName }))}
+      />
     </Column>
   );
 }

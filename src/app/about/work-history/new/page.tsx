@@ -1,4 +1,3 @@
-import { Card } from "@/components/Card";
 import { Column } from "@/components/Column";
 import { saveEmploymentAction } from "../actions";
 import { EmploymentForm } from "../EmploymentForm";
@@ -11,12 +10,7 @@ export default function NewRolePage() {
       parentTitle="Work history"
       width="detail"
     >
-      <Card>
-        <EmploymentForm
-          action={saveEmploymentAction.bind(null, undefined)}
-          submitLabel="Save role"
-        />
-      </Card>
+      <EmploymentForm action={saveEmploymentAction.bind(null, undefined)} submitLabel="Save role" />
     </Column>
   );
 }
