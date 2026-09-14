@@ -18,13 +18,23 @@ On 2026-09-14 the interface was rebuilt as URL-driven columns ([ADR 005](adr/005
 
 User scope: create custom resumes, cover letters, and recruiter messages from career facts plus a pasted job description; retain them in the database; create PDFs; track application status.
 
+Phase 1 is delivered in two parts (decided 2026-09-14). Phase 1a is the tracking half and needs no model, no PDF library and no new dependency. Phase 1b is the generation half.
+
+### Phase 1a — Manual jobs and application tracking
+
+The user pastes a job description with its title and company, and the application record exists from that moment. The user changes the application status by hand (`preparing`, `ready`, `applied`, `interviewing`, `offer`, `rejected`, `withdrawn`, `accepted`), keeps freeform notes, and marks a job's availability. The Jobs list shows the derived status chip from document 05 with its filters (Needs attention, Active, Closed, All) and sort (updated, added). Any status can be selected at any time; the submission time is recorded the first time an application enters `applied` and is kept afterwards. This is milestone 1 below.
+
+In the interface, the Jobs section lists postings; each pasted posting gets its application immediately, so in Phase 1 the list is the list of applications. Each job opens to its blocks: the job itself with the company name as its subtitle, a Job description block, a Company block, and one block per document. Company is text on the job until Phase 2 research gives it content of its own. In Phase 1a the Resume, Cover letter and Recruiter message blocks are inert placeholders marked "Not started"; they open nothing until Phase 1b.
+
+### Phase 1b — Generated materials and PDFs
+
+Milestones 2 to 4 below, plus the decisions listed in document 09 under "Before Phase 1b code": the model access path, the document JSON schema, one resume template and one cover-letter layout, the PDF renderer (`@react-pdf/renderer`, added with the first PDF feature), the generation execution and recovery mechanism, review and submission transitions, and a small synthetic grounding set.
+
 Recommended implementation milestones:
-1. Save the pasted job, create an application record, and support manual status changes.
+1. Save the pasted job, create an application record, and support manual status changes (Phase 1a).
 2. Generate and edit structured resume content with supporting input snapshots.
 3. Generate cover letter and recruiter-message content; preserve completed work if another artifact fails.
 4. Export resume and cover letter PDFs from saved content; support copyable recruiter text.
-
-In the interface, the Jobs section lists postings; each pasted posting gets its application immediately, so in Phase 1 the list is the list of applications. Each job opens to its blocks: the job itself with the company name as its subtitle, and one block per document. Company is text on the job until Phase 2 research gives it content of its own.
 
 One resume template and one cover-letter layout initially. PDF rendering does not call an LLM. The user explicitly marks an application submitted; generating or downloading materials does not submit anything. Phase 1 completion includes a tested end-to-end application bundle, not just model text in a console.
 

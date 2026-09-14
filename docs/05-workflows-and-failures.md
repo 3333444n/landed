@@ -39,7 +39,7 @@ The Jobs list shows one status chip per job so the user can watch a posting move
 | No application, match assessment exists (Phase 2) | Assessed | neutral |
 | No application, no run | New | accent |
 
-At most one modifier chip follows: "Posting expired" (warning) when availability is expired while the application is active, or "Generation failed" (warning) when the latest run failed. An expired job with no application is hidden by the default filter, never deleted. List filters: Needs attention (default: New, Needs review, Generation failed, Posting expired), Active (every non-terminal status), Closed, All. Changing a filter changes nothing in the database.
+At most one modifier chip follows: "Posting expired" (warning) when availability is expired while the application is active, or "Generation failed" (warning) when the latest run failed. An expired job with no application is hidden by the default filter, never deleted. List filters: Needs attention (default: New, Preparing, Needs review, Generation failed, Posting expired), Active (every non-terminal status), Closed (rejected, withdrawn, accepted, and expired postings without an application), All. Preparing belongs to the default filter because a freshly pasted job has nothing but a preparing application, and the default view must show it (decided 2026-09-14). Sort: updated (default), added, and next interview date once Phase 4 exists. Filters and sort live in the address as search parameters (ADR 005); changing either changes nothing in the database.
 
 Phase 1 implements the rows that involve an application; Phase 2 and 3 add the run and assessment rows without changing the function's shape.
 
