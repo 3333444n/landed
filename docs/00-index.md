@@ -1,6 +1,6 @@
 # 00 — Documentation index
 
-Status: Phase 0 complete (career data entry, packaged Docker installation); Phases 1 to 4 are design. Updated 2026-09-13.
+Status: Phase 0 complete (career data entry, packaged Docker installation, column interface since 2026-09-14); Phases 1 to 4 are design. Updated 2026-09-14.
 
 Numbers establish reading order, not software release versions. Accepted choices are distinguished from proposals, and each document says which parts are implemented; a diagram describes the intended structure, and its labels say which phase each part belongs to.
 
@@ -8,7 +8,7 @@ Numbers establish reading order, not software release versions. Accepted choices
 |---|---|---|
 | [01 — Product and phases](01-product-and-phases.md) | What can users accomplish, and when? | Phase 0 complete; Phases 1 to 4 proposed |
 | [02 — Domain model](02-domain-model.md) | What do the product's concepts mean? | Proposed vocabulary and rules |
-| [03 — System and modules](03-system-and-modules.md) | Where does code run, and who owns behavior? | Profile module and packaged runtime implemented; Phase 1 modules proposed |
+| [03 — System and modules](03-system-and-modules.md) | Where does code run, and who owns behavior? | Profile module, column interface and packaged runtime implemented; Phase 1 modules proposed |
 | [04 — Data model](04-data-model.md) | How does PostgreSQL represent those concepts? | Phase 0 schema migrated; Phase 1 sketch |
 | [05 — Workflows and failures](05-workflows-and-failures.md) | What happens on success, failure, and retry? | Phase 0 implemented; Phase 1 design |
 | [06 — AI and integrations](06-ai-and-integrations.md) | How do models, harnesses, RAG, and agents fit? | Future integration policy proposed |
@@ -24,6 +24,7 @@ Numbers establish reading order, not software release versions. Accepted choices
 | [002 — Simple achievements and generation snapshots](adr/002-achievements-and-snapshots.md) | Achievements edited in place; Phase 1 input snapshots | Achievements accepted and implemented; snapshots proposed |
 | [003 — Local packaging and quickstart](adr/003-local-packaging.md) | Docker Compose release and launcher | Accepted, implemented |
 | [004 — Drizzle for persistence](adr/004-drizzle-persistence.md) | Schema, queries and SQL migrations | Accepted, implemented |
+| [005 — Interface as URL-driven columns](adr/005-url-driven-columns.md) | Path as navigation state, sidebar and shifting columns, derived job status | Accepted, implemented |
 
 ## Architecture diagrams
 
