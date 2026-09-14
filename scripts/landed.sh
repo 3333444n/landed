@@ -106,6 +106,14 @@ case "$cmd" in
     file="backups/landed-release-$(date -u +%Y%m%dT%H%M%SZ).dump"
     $compose exec -T db pg_dump -U "$user" -d "$db" --format=custom > "$file"
     echo "Backup written to $file"
+    # Generated PDFs live on the artifacts volume; the archive sits next to the dump.
+    artifacts="${file%.dump}-artifacts.tar"
+    if $compose exec -T web tar -C /app -cf - artifacts > "$artifacts" 2>/dev/null; then
+      echo "PDF archive written to $artifacts"
+    else
+      rm -f "$artifacts"
+      echo "No PDF archive written (web service not running or no artifacts yet)."
+    fi
     ;;
   restore)
     require_docker
@@ -119,6 +127,11 @@ case "$cmd" in
     db="$(env_value POSTGRES_DB)"
     $compose exec -T db pg_restore -U "$user" -d "$db" --clean --if-exists --no-owner --exit-on-error < "$file"
     echo "Restored $file into $db"
+    artifacts="${file%.dump}-artifacts.tar"
+    if [ -f "$artifacts" ]; then
+      $compose exec -T web tar -C /app -xf - < "$artifacts"
+      echo "Restored PDFs from $artifacts"
+    fi
     ;;
   *)
     usage

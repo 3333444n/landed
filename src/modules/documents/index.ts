@@ -17,6 +17,7 @@ export {
   recruiterMessageContent,
   resumeBudgets,
   resumeContent,
+  resumeTotals,
   runModes,
   runStates,
   snapshot,
@@ -64,4 +65,11 @@ export {
   type DocumentView,
   type RunIdentity,
 } from "./service";
-export type { DocumentRecord, DocumentRevisionRecord, GenerationRunRecord } from "./repository";
+export { getOrRenderPdf, type RenderedArtifact } from "./artifacts";
+export { pdfPageCount, templateVersion } from "./pdf";
+export type {
+  DocumentArtifactRecord,
+  DocumentRecord,
+  DocumentRevisionRecord,
+  GenerationRunRecord,
+} from "./repository";

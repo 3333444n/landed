@@ -6,7 +6,7 @@ The documents are conservative on purpose. A recruiter spends seconds on a resum
 
 ## Hard rules
 
-1. **One page.** The resume is exactly one US Letter page. The cover letter fits one page. The content schema carries the budgets that make this possible (bullet counts and lengths); the renderer does not shrink text to fit, and a render test proves the page count.
+1. **One page.** The resume is exactly one US Letter page. The cover letter fits one page. The content schema carries the budgets that make this possible: per section, up to 4 work entries with 4 bullets, 3 projects with 2, 2 education entries with 1, 3 skills lines; across the resume, at most 6 entries and 8 bullets, each bullet at most 180 characters (measured: 6 entries with 9 bullets of 180 characters still fit; 10 do not). The renderer does not shrink text to fit, and a render test proves the page count at the full budget.
 2. **One typeface, built into PDF.** Helvetica, in regular, bold and oblique, as embedded standard fonts. No font download, no fallback stack, no second family.
 3. **Monochrome.** Near-black text on white. No colour, no tints, no icons, no photos, no charts, no rating bars for skills.
 4. **Sentence case everywhere.** Section headings, role titles and labels are sentence case ("Work experience", not "WORK EXPERIENCE"). No letter-spacing tricks.

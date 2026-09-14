@@ -26,12 +26,13 @@
     "db:migrate:prod": "node db/migrate.mjs",
     "db:backup": "sh scripts/db-backup.sh",
     "db:restore": "sh scripts/db-restore.sh",
-    "eval": "tsx --tsconfig tsconfig.json scripts/eval-generation.ts"
+    "eval": "vitest run --project eval"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "4.0.53",
     "@ai-sdk/openai": "4.0.66",
     "@ai-sdk/openai-compatible": "3.0.48",
+    "@react-pdf/renderer": "4.9.0",
     "ai": "7.0.100",
     "drizzle-orm": "0.45.2",
     "next": "16.3.5",
@@ -50,7 +51,6 @@
     "eslint": "^9.39.5",
     "eslint-config-next": "16.3.5",
     "prettier": "3.9.6",
-    "tsx": "4.21.0",
     "typescript": "5.9.3",
     "vitest": "^5.0.0"
   }

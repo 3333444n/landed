@@ -51,6 +51,11 @@ export async function DocumentColumn({ jobId, type }: { jobId: string; type: Doc
               <Link href={`${href}/paste`} className={styles.toolbarLink}>
                 Paste back
               </Link>
+              {revision && type !== "recruiter_message" ? (
+                <a href={`${href}/pdf`} className={styles.toolbarLink}>
+                  Download PDF
+                </a>
+              ) : null}
               {revision ? (
                 <ActionButton
                   action={markReviewedAction.bind(null, revision.id, !revision.reviewedAt)}

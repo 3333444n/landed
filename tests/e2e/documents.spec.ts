@@ -73,6 +73,12 @@ test("a document is generated, reviewed in place, and another is pasted back", a
   await expect(runs.getByRole("row")).toHaveCount(2);
   await expect(runs.getByRole("cell", { name: /fake/ })).toBeVisible();
 
+  // The resume downloads as a one-page PDF rendered from the saved revision
+  const pdf = await page.request.get(`${jobUrl}/resume/pdf`);
+  expect(pdf.status()).toBe(200);
+  expect(pdf.headers()["content-type"]).toContain("application/pdf");
+  expect((await pdf.body()).subarray(0, 5).toString()).toBe("%PDF-");
+
   // Paste back needs no provider at all
   await page.goto(`${jobUrl}/cover-letter/paste`);
   await expect(page.getByLabel("The prompt")).toContainText("BEGIN JOB POSTING");

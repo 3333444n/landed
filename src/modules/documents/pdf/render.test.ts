@@ -1,0 +1,116 @@
+import { readFileSync } from "node:fs";
+import { describe, expect, it } from "vitest";
+import { demoSnapshot } from "../../../../tests/helpers/demo-snapshot";
+import { coverLetterContent, resumeContent, resumeTotals } from "../contracts";
+import { letterHeaderFrom, pdfPageCount, renderCoverLetterPdf, renderResumePdf } from "./render";
+
+const fixture = (name: string) =>
+  JSON.parse(readFileSync(`examples/generation/fixtures/${name}.json`, "utf8"));
+
+const evidenceIds = ["50000000-0000-4000-8000-000000000001"];
+const bullet = (n: number) => ({ text: `Bullet ${n} ${"x".repeat(170)}`, evidenceIds });
+
+describe("PDF rendering (DESIGN-DOCS.md)", () => {
+  it("renders the resume fixture to exactly one Letter page", async () => {
+    const pdf = await renderResumePdf(resumeContent.parse(fixture("resume")));
+    expect(pdf.subarray(0, 5).toString()).toBe("%PDF-");
+    expect(pdfPageCount(pdf)).toBe(1);
+    expect(pdf.toString("latin1")).toContain("/MediaBox [0 0 612 792]");
+    expect(pdf.toString("latin1")).toContain("Helvetica");
+  });
+
+  it("renders a resume at the full budget on one page", async () => {
+    // resumeTotals: 6 entries and 8 bullets, every bullet at its 180-character maximum.
+    const full = resumeContent.parse({
+      header: {
+        name: "Alex Rivera",
+        headline: "Software developer",
+        contact: ["a@example.com", "+1 555 0100", "City", "linkedin.com/in/x", "github.com/x"],
+      },
+      summary: { text: "s".repeat(300), evidenceIds },
+      sections: [
+        {
+          kind: "experience",
+          title: "Work experience",
+          entries: [0, 1].map((i) => ({
+            heading: `Employer ${i}`,
+            subheading: "Role title here",
+            dateRange: "Jan 2020 – Dec 2021",
+            bullets: [bullet(1), bullet(2), bullet(3), bullet(4)],
+          })),
+        },
+        {
+          kind: "projects",
+          title: "Projects",
+          entries: [0, 1].map((i) => ({
+            heading: `Project ${i}`,
+            subheading: "Technologies",
+            dateRange: null,
+            bullets: [],
+          })),
+        },
+        {
+          kind: "education",
+          title: "Education",
+          entries: [0, 1].map((i) => ({
+            heading: `School ${i}`,
+            subheading: "Degree",
+            dateRange: "2015 – 2019",
+            bullets: [],
+          })),
+        },
+        {
+          kind: "skills",
+          title: "Skills",
+          entries: [0, 1, 2].map((i) => ({
+            heading: `Group ${i}`,
+            subheading: "a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x",
+            dateRange: null,
+            bullets: [],
+          })),
+        },
+      ],
+    });
+    const entries = full.sections
+      .filter((s) => s.kind !== "skills")
+      .reduce((n, s) => n + s.entries.length, 0);
+    const bullets = full.sections.reduce(
+      (n, s) => n + s.entries.reduce((m, e) => m + e.bullets.length, 0),
+      0,
+    );
+    expect(entries).toBe(resumeTotals.entries);
+    expect(bullets).toBe(resumeTotals.bullets);
+    expect(pdfPageCount(await renderResumePdf(full))).toBe(1);
+  });
+
+  it("rejects a resume over the totals before it can reach the renderer", () => {
+    const over = resumeContent.safeParse({
+      header: { name: "Alex Rivera", headline: null, contact: [] },
+      summary: null,
+      sections: [
+        {
+          kind: "experience",
+          title: "Work experience",
+          entries: [0, 1, 2].map((i) => ({
+            heading: `Employer ${i}`,
+            subheading: null,
+            dateRange: null,
+            bullets: [bullet(1), bullet(2), bullet(3), bullet(4)],
+          })),
+        },
+      ],
+    });
+    expect(over.success).toBe(false);
+  });
+
+  it("renders the cover letter fixture on one page with the snapshot header", async () => {
+    const header = letterHeaderFrom(demoSnapshot(), new Date("2026-09-14T00:00:00Z"));
+    expect(header.name).toBe("Alex Rivera");
+    expect(header.contact).toContain("alex@example.com");
+    const pdf = await renderCoverLetterPdf(
+      coverLetterContent.parse(fixture("cover-letter")),
+      header,
+    );
+    expect(pdfPageCount(pdf)).toBe(1);
+  });
+});

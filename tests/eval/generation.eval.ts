@@ -1,24 +1,25 @@
 /*
- * Runs the synthetic evaluation cases in examples/generation/cases against the provider
- * configured in .env (ADR 006). Never part of CI: it spends real money. Prints one line per case
- * and document with the grounding warnings by kind, tokens, latency and cost when reported, and
- * exits non-zero only when an answer failed schema validation.
- *
- * Usage: pnpm eval [case ...]   (cases default to every folder under examples/generation/cases)
+ * The synthetic evaluation set (ADR 006, docs/05): runs examples/generation/cases against the
+ * provider configured in .env and reports grounding warnings, tokens, latency and cost. It runs
+ * through vitest because that is the one runner here that handles TypeScript, path aliases and
+ * ESM-only dependencies alike, but it is not a unit test: it spends real money and is excluded
+ * from `pnpm test` and CI. `pnpm eval [case ...]` runs it; a case fails only when the answer
+ * failed schema validation. Optional filter: EVAL_CASES=fit,mismatch.
  */
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import type { z } from "zod";
 import { loadConfig, modelConfig } from "@/infrastructure/config";
-import { createModelAdapter } from "@/infrastructure/model";
+import { createModelAdapter, type ModelAdapter } from "@/infrastructure/model";
 import {
   contentSchemas,
-  groundingCheck,
   documentTypes,
+  groundingCheck,
   prompts,
   type DocumentContent,
   type Snapshot,
 } from "@/modules/documents";
-import type { z } from "zod";
 
 const casesDir = path.join("examples", "generation", "cases");
 
@@ -116,31 +117,47 @@ function snapshotFromCase(
   };
 }
 
-async function main() {
+const rows: Row[] = [];
+let adapter: ModelAdapter | null = null;
+let totalCost = 0;
+let costKnown = true;
+
+beforeAll(async () => {
   await loadEnvFile();
   const config = modelConfig(loadConfig());
-  const adapter = createModelAdapter(config);
+  adapter = createModelAdapter(config);
   if (!adapter || config.kind === "fake") {
-    console.error(
+    throw new Error(
       "Configure LANDED_MODEL_PROVIDER, LANDED_MODEL and LANDED_MODEL_API_KEY in .env with a real provider first.",
     );
-    process.exit(2);
   }
-  const wanted = process.argv.slice(2);
-  const names = (await readdir(casesDir, { withFileTypes: true }))
-    .filter((d) => d.isDirectory() && (wanted.length === 0 || wanted.includes(d.name)))
-    .map((d) => d.name);
-  const rows: Row[] = [];
-  let schemaFailures = 0;
-  let totalCost = 0;
-  let costKnown = true;
-  for (const name of names) {
-    const profile = JSON.parse(await readFile(path.join(casesDir, name, "profile.json"), "utf8"));
-    const job = JSON.parse(await readFile(path.join(casesDir, name, "job.json"), "utf8"));
-    const snapshot = snapshotFromCase(profile, job);
-    for (const type of documentTypes) {
+});
+
+afterAll(() => {
+  if (!adapter) return;
+  console.log(`Provider ${adapter.provider}, model ${adapter.model}`);
+  console.table(rows);
+  console.log(
+    costKnown
+      ? `Total cost reported: $${totalCost.toFixed(4)}`
+      : "Cost not reported by this provider",
+  );
+});
+
+const wanted = (process.env.EVAL_CASES ?? "").split(",").filter(Boolean);
+const caseNames = (await readdir(casesDir, { withFileTypes: true }))
+  .filter((d) => d.isDirectory() && (wanted.length === 0 || wanted.includes(d.name)))
+  .map((d) => d.name);
+
+describe.each(caseNames)("case %s", (name) => {
+  it.each(documentTypes)(
+    "%s answers the schema",
+    async (type) => {
+      const profile = JSON.parse(await readFile(path.join(casesDir, name, "profile.json"), "utf8"));
+      const job = JSON.parse(await readFile(path.join(casesDir, name, "job.json"), "utf8"));
+      const snapshot = snapshotFromCase(profile, job);
       const prompt = prompts[type];
-      const outcome = await adapter.generate({
+      const outcome = await adapter!.generate({
         promptName: prompt.name,
         promptVersion: prompt.version,
         instructions: prompt.instructions,
@@ -148,9 +165,9 @@ async function main() {
         schema: contentSchemas[type] as z.ZodType<DocumentContent>,
       });
       if (!outcome.ok) {
-        if (outcome.kind === "validation") schemaFailures += 1;
         rows.push({ case: name, document: type, outcome: `${outcome.kind}: ${outcome.message}` });
-        continue;
+        expect(outcome.kind, `${name}/${type}: ${outcome.message}`).not.toBe("validation");
+        return;
       }
       const warnings = groundingCheck(type, outcome.value, snapshot);
       const byKind: Record<string, number> = {};
@@ -170,19 +187,7 @@ async function main() {
         latencyMs: outcome.usage.latencyMs,
         costUsd: outcome.usage.costUsd,
       });
-    }
-  }
-  console.log(`Provider ${adapter.provider}, model ${adapter.model}`);
-  console.table(rows);
-  console.log(
-    costKnown
-      ? `Total cost reported: $${totalCost.toFixed(4)}`
-      : "Cost not reported by this provider",
+    },
+    180_000,
   );
-  process.exit(schemaFailures > 0 ? 1 : 0);
-}
-
-main().catch((error) => {
-  console.error(error instanceof Error ? `${error.name}: ${error.message}` : String(error));
-  process.exit(1);
 });

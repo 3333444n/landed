@@ -568,3 +568,59 @@ describe("profile links", () => {
     expect(snapshot.profile.links).toEqual(saved.links);
   });
 });
+
+describe("PDF artifacts", () => {
+  it("renders once, stores the file before the row, and reuses it afterwards", async () => {
+    const { mkdtemp, readdir, rm, stat } = await import("node:fs/promises");
+    const os = await import("node:os");
+    const path = await import("node:path");
+    const { getOrRenderPdf, pdfPageCount } = await import("@/modules/documents");
+    const { documentArtifacts } = await import("@/modules/documents/schema");
+    const dir = await mkdtemp(path.join(os.tmpdir(), "landed-artifacts-"));
+    try {
+      const { application } = await pasteJob();
+      unwrap(await generateDocument(deps(), fake, demo.profileId, demo.jobId, "resume"));
+      const view = await getDocumentView(deps(), demo.profileId, application.id, "resume");
+      const first = unwrap(
+        await getOrRenderPdf(deps(), demo.profileId, view.revision!.id, dir, "Example Analytics"),
+      );
+      expect(first.reused).toBe(false);
+      expect(first.filename).toBe("alex-rivera-example-analytics-resume.pdf");
+      expect(pdfPageCount(first.bytes)).toBe(1);
+      const rows = await connection.db.select().from(documentArtifacts);
+      expect(rows).toHaveLength(1);
+      const file = path.join(dir, rows[0]!.storageKey);
+      expect((await stat(file)).size).toBe(rows[0]!.byteSize);
+      expect(await readdir(path.dirname(file))).toHaveLength(1); // no leftover temporary file
+
+      const second = unwrap(
+        await getOrRenderPdf(deps(), demo.profileId, view.revision!.id, dir, "Example Analytics"),
+      );
+      expect(second.reused).toBe(true);
+      expect(second.bytes.equals(first.bytes)).toBe(true);
+      expect(await connection.db.select().from(documentArtifacts)).toHaveLength(1);
+
+      // A missing file is rendered again into the same key without a second row.
+      await rm(file);
+      const third = unwrap(
+        await getOrRenderPdf(deps(), demo.profileId, view.revision!.id, dir, "Example Analytics"),
+      );
+      expect(third.reused).toBe(false);
+      expect((await stat(file)).size).toBeGreaterThan(0);
+      expect(await connection.db.select().from(documentArtifacts)).toHaveLength(1);
+
+      // The recruiter message has no PDF.
+      unwrap(await generateDocument(deps(), fake, demo.profileId, demo.jobId, "recruiter_message"));
+      const message = await getDocumentView(
+        deps(),
+        demo.profileId,
+        application.id,
+        "recruiter_message",
+      );
+      const none = await getOrRenderPdf(deps(), demo.profileId, message.revision!.id, dir, "x");
+      expect(none.ok).toBe(false);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+});
