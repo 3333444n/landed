@@ -24,10 +24,11 @@ Updated 2026-09-14. Accepted decisions below reflect the user's explicit instruc
 - Stale-edit detection through `updated_at` as the version token; client-minted record ids for idempotent creates (2026-09-13, doc 05).
 - Docker Compose user packaging with a one-shot migrate service and a shell/PowerShell launcher; Node plus a Compose database for development ([ADR 003](adr/003-local-packaging.md), implemented 2026-09-13).
 - Interface layout: a persistent sidebar (drawer below 1200px), shifting columns driven by the URL path, no borders, three tonal steps, and a derived (never stored) job status chip ([ADR 005](adr/005-url-driven-columns.md), DESIGN.md, doc 05; implemented 2026-09-14).
+- Phase 1 is delivered as 1a (manual jobs, applications, status tracking, filters and sort; no new dependency) and 1b (generation, PDFs, model access). Decided 2026-09-14 with: `@react-pdf/renderer` added in 1b with the first PDF feature; Preparing included in the Needs attention filter; document blocks shown as inert "Not started" placeholders until 1b; any application status selectable at any time, with the submission time recorded on the first entry to `applied`; sort by updated (default) and added (doc 01, doc 05).
 
 ## Proposed defaults
 
-- A modular monolith with Profile first; Jobs/Documents/Applications in Phase 1.
+- A modular monolith with Profile first; Jobs and Applications in Phase 1a, Documents in Phase 1b.
 - Input snapshots attached to generated materials, with saved document revisions but no achievement revisions.
 - Structured document content in PostgreSQL; PDFs in a persistent local volume with database metadata.
 - One supported model integration initially; optional harness/local model paths when tested.
@@ -37,9 +38,9 @@ Updated 2026-09-14. Accepted decisions below reflect the user's explicit instruc
 
 Implemented and tested: the Profile module, the first migration with the constraints from document 04, browser entry and editing of every Phase 0 record, integration and browser tests, backup/restore scripts, CI, a SECURITY policy, and the packaged Docker Compose installation with its launcher (ADR 003), tested on macOS. Known gaps, carried rather than blocking: no demo-data loader for `examples/demo-profile.json`; checkbox groups show the stored selection instead of the typed one after a validation error; an unreachable database gives a generic server error; profile deletion is in the schema but not in the interface; Windows, Linux and x86-64 installs are untested; a version-to-version upgrade with new migrations has not yet been exercised. The interface was rebuilt on 2026-09-14 (ADR 005) with the same data and tests; the toolbar's filter and sort slots stay empty until the Jobs list exists.
 
-## Before Phase 1 code
+## Before Phase 1b code
 
-Select the initial model access path, document JSON schema, one resume/cover-letter template, PDF renderer, generation execution/recovery mechanism, review/submission transitions, and a small grounding evaluation set. Validate the desired harness integration if selected. Phase 0 did not need any of these; also decide the execution model for generation runs (doc 05) before the first Phase 1 module.
+Select the initial model access path, document JSON schema, one resume/cover-letter template, generation execution/recovery mechanism, review/submission transitions, and a small grounding evaluation set. Validate the desired harness integration if selected. Phase 1a needs none of these; also decide the execution model for generation runs (doc 05) before the first Documents module code. The PDF renderer is decided (`@react-pdf/renderer`) and is added with the first PDF feature.
 
 ## Deliberately deferred
 
