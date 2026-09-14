@@ -33,7 +33,7 @@ An achievement may be standalone, associated with one employment record, or asso
 
 A factual statement is required; a numerical metric is not. Sources may be a user assertion or an external reference. A user assertion is not independently verified evidence. The system must not require fictitious numbers to complete a form. A skill may link to multiple achievements and vice versa.
 
-Achievements are edited in place; no achievement revision/history feature. Phase 1 saves the exact selected facts and original job text as a generation-input snapshot. This preserves the context for an old document without recreating historical versions of every profile record. Snapshot identifiers and source record IDs are provenance aids, not proof that a generated claim is entailed.
+Achievements are edited in place; no achievement revision/history feature. Phase 1b saves the exact selected facts and original job text as a generation-input snapshot. This preserves the context for an old document without recreating historical versions of every profile record. Snapshot identifiers and source record IDs are provenance aids, not proof that a generated claim is entailed.
 
 ## Boundary terminology
 

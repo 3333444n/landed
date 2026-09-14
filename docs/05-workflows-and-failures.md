@@ -18,7 +18,7 @@ Save original pasted posting and application → collect career facts → freeze
 
 Pasted text can be used directly before full job extraction/matching exists. A minimal Job record belongs in Phase 1; URL import and scoring do not. Do not hold an SQL transaction open across model calls or PDF rendering. Persist outcomes between expensive operations. If one artifact fails, show which artifact failed and retain completed siblings.
 
-Run states: queued, running, succeeded, partially_succeeded, failed, cancelled. Start with the simplest execution model that survives the actual runtime behavior. Before Phase 1 implementation, decide between a bounded application-owned runner with interrupted-run detection and a PostgreSQL-backed worker. Next.js request lifetime or an unawaited promise is not a durability guarantee. Phase 0 needs neither runner.
+Run states: queued, running, succeeded, partially_succeeded, failed, cancelled. Start with the simplest execution model that survives the actual runtime behavior. Before Phase 1b implementation, decide between a bounded application-owned runner with interrupted-run detection and a PostgreSQL-backed worker. Next.js request lifetime or an unawaited promise is not a durability guarantee. Phases 0 and 1a need neither runner.
 
 On restart, unfinished work is visibly interrupted/recoverable, never reported as successful. Retry bounded transient failures; validation failures require correction rather than unlimited retries. An exact replay must not duplicate artifacts. Persist PDF metadata only after an atomic file write; reconcile orphaned files and pending artifact rows after crashes.
 
