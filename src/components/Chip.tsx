@@ -5,7 +5,7 @@ export function Chip({
   tone = "accent",
   children,
 }: {
-  tone?: "accent" | "success" | "warning";
+  tone?: "accent" | "neutral" | "success" | "warning";
   children: string;
 }) {
   return (

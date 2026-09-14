@@ -1,0 +1,28 @@
+.shell {
+  display: grid;
+  grid-template-columns: 1fr;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.sidebar {
+  display: none;
+  padding: var(--space-6);
+  overflow-y: auto;
+}
+
+.columns {
+  display: flex;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+@media (min-width: 1200px) {
+  .shell {
+    grid-template-columns: var(--width-sidebar) 1fr;
+  }
+  .sidebar {
+    display: block;
+  }
+}

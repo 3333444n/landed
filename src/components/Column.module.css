@@ -1,0 +1,103 @@
+/*
+ * Column visibility (DESIGN.md "Layout"): below 768px only the last column, from 768px the last
+ * two. A placeholder column never shows on its own, so on a phone the column before it is the
+ * visible one. Columns are siblings inside the Columns shell.
+ */
+.column {
+  display: none;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.column:last-child,
+.column:has(+ .placeholder:last-child) {
+  display: flex;
+}
+
+.placeholder {
+  display: none;
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  padding-top: var(--space-16);
+  width: 100%;
+}
+
+.list,
+.detail {
+  flex: 1 1 auto;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .column:nth-last-child(-n + 2) {
+    display: flex;
+  }
+  .placeholder:last-child {
+    display: flex;
+  }
+  /* The last column's parent is visible beside it, so it needs no back link. */
+  .column:last-child .back {
+    display: none;
+  }
+  .inner {
+    padding: var(--space-6);
+    padding-top: var(--space-16);
+  }
+  .list {
+    flex: 0 0 var(--width-list);
+    width: var(--width-list);
+  }
+  .detail {
+    flex: 1 1 var(--width-detail-min);
+    min-width: 0;
+  }
+  .detail .inner {
+    max-width: var(--width-detail-max);
+  }
+}
+
+@media (min-width: 1200px) {
+  .inner {
+    padding-top: var(--space-6);
+  }
+}
+
+.back {
+  align-self: flex-start;
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 500;
+  color: var(--accent);
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.title {
+  overflow-wrap: anywhere;
+}
+
+.count {
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+.subtitle {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-secondary);
+}

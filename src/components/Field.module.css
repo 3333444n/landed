@@ -10,16 +10,17 @@
   font-weight: 500;
 }
 
+/* DESIGN.md inputs: fill only, no border; the focus ring is an outline. */
 .control {
   font: inherit;
   color: var(--text-primary);
-  background: var(--bg-surface-raised);
-  border: 1px solid var(--input-border);
+  background: var(--bg-input);
+  border: 0;
   border-radius: var(--radius-md);
   min-height: 40px;
   padding: 0 var(--space-3);
   width: 100%;
-  transition: border-color var(--duration-hover) var(--ease);
+  transition: background-color var(--duration-hover) var(--ease);
 }
 
 textarea.control {
@@ -33,7 +34,7 @@ textarea.control {
 
 .control:focus-visible {
   outline: 2px solid var(--accent);
-  outline-offset: 1px;
+  outline-offset: 2px;
 }
 
 .helper {
