@@ -1,7 +1,7 @@
 /*
  * Shared shapes and helpers for Server Actions driven by useActionState. Browser-safe.
  */
-import type { FieldErrors, ProfileError } from "@/modules/profile";
+import type { FieldErrors, ModuleError } from "@/modules/shared/contracts";
 
 export type { FieldErrors };
 
@@ -40,7 +40,7 @@ export function stringValues(formData: FormData): FormValues {
 export function errorState(
   previous: ActionState,
   formData: FormData,
-  error: ProfileError,
+  error: ModuleError,
 ): ActionState {
   const attempt = previous.status === "error" ? previous.attempt + 1 : 1;
   const fieldErrors = error.kind === "validation" ? error.fieldErrors : { form: [error.message] };
