@@ -28,3 +28,6 @@ Dockerfile
 compose.release.yml
 docker-compose.yml
 scripts
+# Test files live in src next to the code they test; they are never part of the image.
+**/*.test.ts
+**/*.spec.ts
