@@ -1,6 +1,6 @@
 # 01 — Product and phases
 
-Status: Phase 0 complete (2026-09-13); Phases 1 to 4 proposed. Updated 2026-09-13.
+Status: Phase 0 complete (2026-09-13); Phases 1 to 4 proposed. Updated 2026-09-14.
 
 Landed is a locally run job-search application that produces factual, tailored materials and helps people manage applications. It must be usable without editing source code. Code can be cloned/forked independently of personal data. The shortest useful outcome is a reviewed resume, cover letter, and recruiter message for a real job.
 
@@ -22,6 +22,8 @@ Recommended implementation milestones:
 3. Generate cover letter and recruiter-message content; preserve completed work if another artifact fails.
 4. Export resume and cover letter PDFs from saved content; support copyable recruiter text.
 
+In the interface, the Jobs section lists postings; each pasted posting gets its application immediately, so in Phase 1 the list is the list of applications. Each job opens to its blocks: the job itself with the company name as its subtitle, and one block per document. Company is text on the job until Phase 2 research gives it content of its own.
+
 One resume template and one cover-letter layout initially. PDF rendering does not call an LLM. The user explicitly marks an application submitted; generating or downloading materials does not submit anything. Phase 1 completion includes a tested end-to-end application bundle, not just model text in a console.
 
 ## Phase 2 — Assisted import, matching, and research
@@ -39,6 +41,8 @@ This is the largest manually initiated phase: importing web content, ranking, an
 3B: automatically generate resume/cover-letter drafts only for qualifying new jobs, within user-set per-run job count and cost/time limits. Do not replace reviewed/submitted materials. Repeated execution must not create duplicate jobs or duplicate draft bundles. Nothing is automatically sent or submitted.
 
 This phase needs durable work records, recovery after restart, retry limits, and bounded concurrency. A PostgreSQL-backed task mechanism is a candidate; no broker is mandated. Sleep/offline means paused discovery; define bounded catch-up behavior rather than generating an unlimited backlog on wake.
+
+Discovered jobs appear in the same Jobs list as pursued ones, distinguished by the derived status chip (doc 05), not by a separate screen. Two decisions belong to this phase: automatic drafting needs an application record to attach documents to, so it creates one the user never chose, which must read "Needs review" rather than "Preparing"; and "not interested" on a discovered job needs a dismissed flag on the job, because the `withdrawn` application status implies a pursuit that never existed.
 
 ## Phase 4 — Detailed interview tracking
 
