@@ -1,0 +1,192 @@
+/* Review view (DESIGN.md): generated text in body.lg, evidence revealed per unit, no borders. */
+.preview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.name {
+  font-size: 24px;
+  line-height: 30px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.contact,
+.dateRange,
+.subheading {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-secondary);
+}
+
+.sectionTitle {
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+  margin-top: var(--space-2);
+}
+
+.entry {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.entryHead {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  align-items: baseline;
+}
+
+.heading {
+  font-weight: 600;
+}
+
+.bullets {
+  margin: 0;
+  padding-left: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.unit {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  border-radius: var(--radius-md);
+  padding: var(--space-1) var(--space-2);
+  margin: 0 calc(-1 * var(--space-2));
+  transition: background-color var(--duration-hover) var(--ease);
+}
+
+.unit:hover,
+.unit:focus-within {
+  background: var(--bg-surface-raised);
+}
+
+.unitText {
+  font: inherit;
+  font-size: 17px;
+  line-height: 26px;
+  text-align: left;
+  color: var(--text-primary);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: text;
+  white-space: pre-wrap;
+}
+
+.evidence {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-secondary);
+  display: none;
+}
+
+.unit:hover .evidence,
+.unit:focus-within .evidence {
+  display: block;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.editorActions {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: flex-end;
+}
+
+.toolbarLink {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface-raised);
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 500;
+  transition: background-color var(--duration-hover) var(--ease);
+}
+
+.toolbarLink:hover {
+  background: var(--accent-soft);
+}
+
+.status {
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.failed {
+  color: var(--danger);
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: var(--space-2) var(--space-2);
+  vertical-align: top;
+}
+
+.table th {
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 500;
+}
+
+.table tbody tr {
+  box-shadow: inset 0 1px 0 var(--line);
+}
+
+.table .num {
+  text-align: right;
+}
+
+.evidenceList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.lines {
+  margin: 0;
+  padding-left: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}

@@ -1,0 +1,24 @@
+{
+  "header": { "name": "Alex Rivera", "headline": "Software developer", "contact": ["alex@example.com"] },
+  "summary": {
+    "text": "Led a team of 12 engineers and cut costs by 35% across three product lines.",
+    "evidenceIds": ["50000000-0000-4000-8000-000000000001"]
+  },
+  "sections": [
+    {
+      "kind": "experience",
+      "title": "Work experience",
+      "entries": [
+        {
+          "heading": "Globex Corporation",
+          "subheading": "Principal engineer",
+          "dateRange": "2019 – 2025",
+          "bullets": [
+            { "text": "Shipped a reporting platform used by 4,000 analysts.", "evidenceIds": ["99999999-0000-4000-8000-000000000009"] },
+            { "text": "Mentored junior developers.", "evidenceIds": [] }
+          ]
+        }
+      ]
+    }
+  ]
+}

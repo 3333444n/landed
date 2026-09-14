@@ -121,6 +121,31 @@ function Fields({
         errors={errors.location}
       />
       <Field
+        label="LinkedIn"
+        name="linkedinUrl"
+        type="url"
+        inputMode="url"
+        helper="Shown in the resume header. Optional."
+        defaultValue={values.linkedinUrl}
+        errors={errors.linkedinUrl}
+      />
+      <Field
+        label="GitHub"
+        name="githubUrl"
+        type="url"
+        inputMode="url"
+        defaultValue={values.githubUrl}
+        errors={errors.githubUrl}
+      />
+      <Field
+        label="Website"
+        name="websiteUrl"
+        type="url"
+        inputMode="url"
+        defaultValue={values.websiteUrl}
+        errors={errors.websiteUrl}
+      />
+      <Field
         label="Desired roles"
         name="desiredRoles"
         helper="Separate several with commas"

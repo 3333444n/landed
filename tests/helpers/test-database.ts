@@ -29,6 +29,10 @@ export async function openTestDatabase(): Promise<DatabaseConnection> {
 }
 
 const allTables = [
+  "document_artifacts",
+  "document_revisions",
+  "documents",
+  "generation_runs",
   "applications",
   "jobs",
   "achievement_skills",

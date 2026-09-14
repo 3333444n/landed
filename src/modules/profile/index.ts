@@ -9,6 +9,7 @@ export {
   educationStatuses,
   employmentInput,
   fieldErrorsFromZod,
+  profileLinkLabels,
   projectInput,
   skillInput,
   updateProfileInput,
@@ -62,4 +63,4 @@ export type {
   ProjectRecord,
   SkillRecord,
 } from "./repository";
-export type { ProfilePreferences } from "./schema";
+export type { ProfileLinkRecord, ProfilePreferences } from "./schema";

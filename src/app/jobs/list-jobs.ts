@@ -8,6 +8,7 @@ import {
   type DerivedJobStatus,
   type JobStatusFacts,
 } from "@/modules/applications";
+import { documentFactsForApplications, sweepInterruptedRuns } from "@/modules/documents";
 import { jobSummary, listJobs } from "@/modules/jobs";
 import type { BaseDeps } from "@/modules/shared/service";
 
@@ -24,18 +25,27 @@ export interface JobRow {
 }
 
 export async function listJobRows(deps: BaseDeps, profileId: string): Promise<JobRow[]> {
+  // Runs abandoned by a restart become visible failures before the chip is derived (docs/05).
+  await sweepInterruptedRuns(deps, profileId);
   const [jobs, applications] = await Promise.all([
     listJobs(deps, profileId),
     listApplications(deps, profileId),
   ]);
   const byJob = new Map(applications.map((a) => [a.jobId, a]));
+  const documentFacts = await documentFactsForApplications(
+    deps,
+    profileId,
+    applications.map((a) => a.id),
+  );
   return jobs.map((job) => {
+    const application = byJob.get(job.id);
+    const documents = application ? documentFacts.get(application.id) : undefined;
     const facts: JobStatusFacts = {
       availability: job.availability,
-      applicationStatus: byJob.get(job.id)?.status ?? null,
-      // No generation or matching runs exist in Phase 1a; Phase 1b and 2 fill these in.
-      latestRunState: null,
-      hasUnreviewedDrafts: false,
+      applicationStatus: application?.status ?? null,
+      latestRunState: documents?.latestRunState ?? null,
+      hasUnreviewedDrafts: documents?.hasUnreviewedDrafts ?? false,
+      // Matching runs arrive in Phase 2.
       hasMatchAssessment: false,
     };
     return {

@@ -29,7 +29,7 @@ import {
 } from "./contracts";
 import * as repo from "./repository";
 import { contextLinkErrors, monthDateErrors, normalizeSkillName, reviewedAfterEdit } from "./rules";
-import type { ProfilePreferences } from "./schema";
+import type { ProfileLinkRecord, ProfilePreferences } from "./schema";
 
 export type ProfileDeps = BaseDeps;
 
@@ -90,6 +90,10 @@ export async function updateProfile(
     workArrangement: input.workArrangement,
     ...(input.constraints ? { constraints: input.constraints } : {}),
   };
+  const links: ProfileLinkRecord[] = [];
+  if (input.linkedinUrl) links.push({ label: "LinkedIn", url: input.linkedinUrl });
+  if (input.githubUrl) links.push({ label: "GitHub", url: input.githubUrl });
+  if (input.websiteUrl) links.push({ label: "Website", url: input.websiteUrl });
   try {
     return await deps.db.transaction(async (tx) => {
       const current = await repo.findProfileById(tx, profileId);
@@ -105,6 +109,7 @@ export async function updateProfile(
           phone: input.phone ?? null,
           location: input.location ?? null,
           preferences,
+          links,
           updatedAt: now(deps),
         },
         expected(input.expectedUpdatedAt),

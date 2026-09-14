@@ -62,8 +62,18 @@ export const updateProfileInput = z.object({
     z.array(z.enum(workArrangements)).default([]),
   ),
   constraints: optionalText,
+  /** Resume header links (Phase 1b). Each is optional; a filled one must be a web address. */
+  linkedinUrl: optionalUrl,
+  githubUrl: optionalUrl,
+  websiteUrl: optionalUrl,
 });
 export type UpdateProfileInput = z.infer<typeof updateProfileInput>;
+
+export const profileLinkLabels = {
+  linkedinUrl: "LinkedIn",
+  githubUrl: "GitHub",
+  websiteUrl: "Website",
+} as const;
 
 export const employmentInput = z.object({
   id: optionalUuid,

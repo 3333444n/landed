@@ -15,6 +15,13 @@
       "when": 1789410466830,
       "tag": "0001_phase1a_jobs_and_applications",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789423888801,
+      "tag": "0002_phase1b_documents_and_profile_links",
+      "breakpoints": true
     }
   ]
 }
