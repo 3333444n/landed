@@ -23,7 +23,7 @@ Updated 2026-09-14. Accepted decisions below reflect the user's explicit instruc
 - Conventional Commits with a scope, and a What/Why/How/Testing pull-request template (2026-09-13).
 - Stale-edit detection through `updated_at` as the version token; client-minted record ids for idempotent creates (2026-09-13, doc 05).
 - Docker Compose user packaging with a one-shot migrate service and a shell/PowerShell launcher; Node plus a Compose database for development ([ADR 003](adr/003-local-packaging.md), implemented 2026-09-13).
-- Interface layout: a persistent sidebar (drawer below 1200px), shifting columns driven by the URL path, no borders, three tonal steps, and a derived (never stored) job status chip (DESIGN.md, doc 05; 2026-09-14).
+- Interface layout: a persistent sidebar (drawer below 1200px), shifting columns driven by the URL path, no borders, three tonal steps, and a derived (never stored) job status chip ([ADR 005](adr/005-url-driven-columns.md), DESIGN.md, doc 05; implemented 2026-09-14).
 
 ## Proposed defaults
 
@@ -35,7 +35,7 @@ Updated 2026-09-14. Accepted decisions below reflect the user's explicit instruc
 
 ## Phase 0 complete (2026-09-13)
 
-Implemented and tested: the Profile module, the first migration with the constraints from document 04, browser entry and editing of every Phase 0 record, integration and browser tests, backup/restore scripts, CI, a SECURITY policy, and the packaged Docker Compose installation with its launcher (ADR 003), tested on macOS. Known gaps, carried rather than blocking: no demo-data loader for `examples/demo-profile.json`; checkbox groups show the stored selection instead of the typed one after a validation error; an unreachable database gives a generic server error; profile deletion is in the schema but not in the interface; Windows, Linux and x86-64 installs are untested; a version-to-version upgrade with new migrations has not yet been exercised.
+Implemented and tested: the Profile module, the first migration with the constraints from document 04, browser entry and editing of every Phase 0 record, integration and browser tests, backup/restore scripts, CI, a SECURITY policy, and the packaged Docker Compose installation with its launcher (ADR 003), tested on macOS. Known gaps, carried rather than blocking: no demo-data loader for `examples/demo-profile.json`; checkbox groups show the stored selection instead of the typed one after a validation error; an unreachable database gives a generic server error; profile deletion is in the schema but not in the interface; Windows, Linux and x86-64 installs are untested; a version-to-version upgrade with new migrations has not yet been exercised. The interface was rebuilt on 2026-09-14 (ADR 005) with the same data and tests; the toolbar's filter and sort slots stay empty until the Jobs list exists.
 
 ## Before Phase 1 code
 
@@ -51,3 +51,4 @@ Vector embeddings/indexes; separate vector storage; generalized agent framework;
 - [ADR 002 — Simple achievements and generation snapshots](adr/002-achievements-and-snapshots.md)
 - [ADR 003 — Packaging and quickstart](adr/003-local-packaging.md)
 - [ADR 004 — Drizzle for persistence](adr/004-drizzle-persistence.md)
+- [ADR 005 — Interface as URL-driven columns](adr/005-url-driven-columns.md)
