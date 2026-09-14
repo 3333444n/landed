@@ -15,6 +15,6 @@ export async function createProfileAction(
 ): Promise<ActionState> {
   const result = await createProfile(deps(), formDataToObject(formData));
   if (!result.ok) return errorState(previous, formData, result.error);
-  revalidatePath("/");
+  revalidatePath("/", "layout");
   return { status: "saved", recordId: result.value.id };
 }

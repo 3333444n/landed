@@ -21,7 +21,7 @@ Minimalism here means fewer elements, not smaller ones. Remove before you decora
 7. **Glass is reserved for the floating layer:** the navigation drawer, sheets, and popovers. Columns, cards, forms, tables, and text blocks are opaque. The persistent sidebar is opaque, since nothing scrolls beneath it.
 8. **Respect `prefers-reduced-transparency` and `prefers-reduced-motion`.** With reduced transparency, glass surfaces become opaque solids of the same hue. With reduced motion, remove blur transitions and springs.
 9. **Text on glass must meet WCAG AA (4.5:1) over the worst-case backdrop.** The drawer adds a solid tint layer behind its text so contrast never depends on what sits underneath.
-10. **Three tonal steps, used in order.** Canvas is the page and the columns. Surface is a card. Raised is a block inside a card and the fill of an input. Nothing nests deeper; if a design needs a fourth box, it needs a new column instead.
+10. **Three tonal steps, used in order.** Canvas is the page and the list columns. Surface is a card in a list column, the sidebar, and the detail column. Raised is a card or block inside the detail column and the fill of an input. Nothing nests deeper; if a design needs a fourth box, it needs a new column instead.
 
 ## Tokens
 
@@ -31,9 +31,9 @@ Neutral first. One accent. Semantic colours only for meaning, as chip tints and 
 
 | Token               | Light                    | Dark                     | Use                                              |
 | ------------------- | ------------------------ | ------------------------ | ------------------------------------------------ |
-| `bg.canvas`         | `#F5F5F7`                | `#0B0B0D`                | Page, columns, sidebar                           |
-| `bg.surface`        | `#FFFFFF`                | `#161618`                | Cards (opaque)                                   |
-| `bg.surface.raised` | `#EFEFF2`                | `#242428`                | Blocks inside a card, secondary buttons          |
+| `bg.canvas`         | `#F5F5F7`                | `#0B0B0D`                | Page and list columns                            |
+| `bg.surface`        | `#FFFFFF`                | `#161618`                | Cards in a list column, sidebar, detail column   |
+| `bg.surface.raised` | `#EFEFF2`                | `#242428`                | Cards and blocks inside the detail column, blocks inside a card, secondary buttons |
 | `bg.input`          | `#EFEFF2`                | `#242428`                | Input fill on a card; on canvas use `bg.surface` |
 | `bg.glass`          | `rgba(245,245,247,0.70)` | `rgba(22,22,24,0.70)`    | Drawer material, with `backdrop-filter`          |
 | `bg.glass.tint`     | `rgba(245,245,247,0.40)` | `rgba(22,22,24,0.40)`    | Solid tint behind text on glass                  |
@@ -119,7 +119,7 @@ Durations: 150ms for hover and focus, 250ms for reveal and dismiss, 400ms for th
 
 ## Layout
 
-**Columns.** The page is a row of columns on canvas. The path decides how many columns exist; the viewport decides how many are visible. Below 768px only the last column is visible. From 768px the last two columns are visible. From 1200px the sidebar is a third, persistent track on the left. A column is not a box: it has no fill, no border and no shadow; it is a titled region of canvas. Widths: sidebar 220px, list column 360px, detail column flexible with a 480px minimum and a 720px maximum for forms. Each column scrolls on its own.
+**Columns.** The page is a row of columns on canvas. The path decides how many columns exist; the viewport decides how many are visible. Below 768px only the last column is visible. From 768px the last two columns are visible. From 1200px the sidebar is a third, persistent track on the left. A list column is a titled region of canvas with no fill, border or shadow. The detail column (the last one) and the sidebar are surface panels: `bg.surface` fill, `radius.xl`, inset 16px from the viewport edge, no border or shadow; on a phone the detail column fills the screen edge to edge. Widths: sidebar 220px, list column 360px, detail column flexible with a 480px minimum and a 720px maximum for forms. Each column scrolls on its own.
 
 **Back link.** A column whose parent column is not visible shows a text link at the top with the parent's title, in `label` style and `accent`. The link goes to the parent path. Nothing else is a back control.
 
@@ -129,7 +129,7 @@ Durations: 150ms for hover and focus, 250ms for reveal and dismiss, 400ms for th
 
 **Placeholder column.** When a list or hub is open and nothing in it is selected, the next column shows one sentence in `text.secondary` ("Select something on the left") from 768px, and does not exist below it.
 
-**Sidebar.** Canvas fill, 220px, padding 24px. The brand at the top links to the overview. Items are 40px tall pills in `label` style; the active item uses `accent.soft` fill and `accent` text. At most five items.
+**Sidebar.** Surface panel, 220px, padding 24px. The brand at the top links to the overview. Items are 40px tall pills in `label` style; the active item uses `accent.soft` fill and `accent` text. At most five items.
 
 **Drawer.** Below 1200px the sidebar is hidden and a hamburger button sits at the top left of the first visible column, 40px, icon only, accessible name "Menu". It opens the same items as a glass drawer from the left with `radius.xl` on the right corners, a solid tint layer behind its text, and a scrim over the page. Escape and the scrim close it.
 
@@ -149,7 +149,7 @@ Durations: 150ms for hover and focus, 250ms for reveal and dismiss, 400ms for th
 
 **Empty states.** One sentence in `text.secondary` and, where an action exists, the toolbar's add control. No illustrations, no separate button.
 
-**Forms.** A form is the content of a detail column: fields stacked with 16px gaps, then an actions row aligned right with the save status text on its left. A form for a new record opens from the add control at a `new` route; a form for an existing record opens from its card. Delete lives at the bottom of the edit form as the destructive button with its inline confirmation.
+**Forms.** A form sits directly on the detail column's surface, never inside a card: fields stacked with 16px gaps, then an actions row aligned right with the save status text on its left. A form for a new record opens from the add control at a `new` route; a form for an existing record opens from its card. Delete lives at the bottom of the edit form as the destructive button with its inline confirmation.
 
 ## Accessibility
 
@@ -157,4 +157,4 @@ Contrast AA everywhere, including on glass over worst-case content. Focus visibl
 
 ## Don'ts
 
-Eyebrow labels. Monospace anything. Uppercase labels. Borders on anything tonally separated. Glass on glass. Glass on content. Gradients for decoration. Illustrations in empty states. More than one accent color. Square corners. Shadows on text. Collapsible cards. A fourth tonal step. Column boxes with fills or shadows. Stacked or overlapping cards.
+Eyebrow labels. Monospace anything. Uppercase labels. Borders on anything tonally separated. Glass on glass. Glass on content. Gradients for decoration. Illustrations in empty states. More than one accent color. Square corners. Shadows on text. Collapsible cards. A fourth tonal step. Fills or shadows on list columns. Forms inside cards. Stacked or overlapping cards.

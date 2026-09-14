@@ -9,6 +9,10 @@
   color: var(--text-primary);
 }
 
+.neutral {
+  background: var(--bg-surface-raised);
+}
+
 .success {
   background: color-mix(in srgb, var(--success) 15%, var(--bg-surface));
 }

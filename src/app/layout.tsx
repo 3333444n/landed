@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { NavBar } from "@/components/NavBar";
+import { Shell } from "@/components/Shell";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -11,8 +11,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <NavBar />
-        {children}
+        <Shell>{children}</Shell>
       </body>
     </html>
   );

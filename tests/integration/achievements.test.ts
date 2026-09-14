@@ -103,7 +103,7 @@ describe("createAchievement", () => {
     expect(result.error.kind).toBe("validation");
     if (result.error.kind !== "validation") return;
     expect(result.error.fieldErrors.projectId).toEqual([
-      "Link the achievement to a job or a project, not both",
+      "Link the achievement to a role or a project, not both",
     ]);
   });
 
@@ -117,7 +117,7 @@ describe("createAchievement", () => {
       ok: false,
       error: {
         kind: "validation",
-        fieldErrors: { employmentId: ["That job is not in your profile"] },
+        fieldErrors: { employmentId: ["That role is not in your profile"] },
       },
     });
   });
