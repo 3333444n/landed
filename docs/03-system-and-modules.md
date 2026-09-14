@@ -1,6 +1,6 @@
 # 03 — System and modules
 
-Status: stack, Profile module and packaged runtime implemented; Phase 1 modules proposed. Updated 2026-09-13.
+Status: stack, Profile module and packaged runtime implemented; Phase 1 modules proposed. Updated 2026-09-14.
 
 ## System boundary
 
@@ -64,13 +64,20 @@ Keep cross-module workflows at an application composition boundary; avoid circul
 
 ```text
 src/
-  app/                   Next.js routes; each route folder holds its page, Server Actions and form
-    profile/ experience/ skills/ achievements/
+  app/                   Next.js routes; the path is the navigation stack (DESIGN.md "Layout")
+    layout.tsx           the Shell: sidebar or drawer plus the row of columns
+    about/               hub column (layout.tsx) with one card per record type
+      profile/           the profile form column
+      work-history/ education/ projects/ skills/ achievements/
+                         each: layout.tsx (list column + add control), page.tsx (placeholder),
+                         new/page.tsx (blank form column), [id]/page.tsx (edit column with delete),
+                         actions.ts (Server Actions) and the form component
+    jobs/                empty state until Phase 1
     form-state.ts        shared action result shape and form helpers
     tokens.css           design tokens from DESIGN.md (the only place values live)
   modules/
     profile/             schema.ts, contracts.ts, rules.ts, repository.ts, service.ts, index.ts
-  components/            shared presentation components (Card, Field, Select, NavBar, ...)
+  components/            shared presentation components (Shell, Column, Toolbar, Card, Field, ...)
   infrastructure/        database pool, configuration
 db/migrations/           generated SQL migrations and drizzle-kit journal
 db/migrate.mjs           migration runner used inside the release image (production dependencies only)
@@ -85,7 +92,7 @@ examples/                synthetic data
 docs/                    numbered design and ADRs
 ```
 
-Inside a module: `schema.ts` declares tables, `contracts.ts` holds Zod input schemas and result types (browser-safe), `rules.ts` holds pure functions, `repository.ts` holds Drizzle queries over a database or transaction handle, `service.ts` holds use cases that open transactions and map database errors to typed results, and `index.ts` is the only import path for callers. Server Actions in `src/app` import from `index.ts`; a client component that needs a contract imports `contracts.ts` directly so no database code reaches the browser bundle.
+Inside a module: `schema.ts` declares tables, `contracts.ts` holds Zod input schemas and result types (browser-safe), `rules.ts` holds pure functions, `repository.ts` holds Drizzle queries over a database or transaction handle, `service.ts` holds use cases that open transactions and map database errors to typed results, and `index.ts` is the only import path for callers. Layouts render their own column followed by `children`, so a route like `/about/achievements/[id]` produces the hub, the list and the edit form as sibling columns and CSS shows the last two (one on a phone); the old Phase 0 addresses redirect to their new columns from `next.config.ts`. Server Actions in `src/app` import from `index.ts`; a client component that needs a contract imports `contracts.ts` directly so no database code reaches the browser bundle.
 
 Add Jobs, Documents, and Applications when Phase 1 begins, with the same file shape.
 

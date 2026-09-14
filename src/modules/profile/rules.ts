@@ -11,7 +11,7 @@ export function contextLinkErrors(input: {
   projectId?: string | undefined;
 }): FieldErrors {
   if (input.employmentId && input.projectId) {
-    return { projectId: ["Link the achievement to a job or a project, not both"] };
+    return { projectId: ["Link the achievement to a role or a project, not both"] };
   }
   return {};
 }

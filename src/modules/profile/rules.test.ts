@@ -20,7 +20,7 @@ describe("contextLinkErrors", () => {
   });
   it("rejects both contexts with a field error", () => {
     expect(contextLinkErrors({ employmentId, projectId })).toEqual({
-      projectId: ["Link the achievement to a job or a project, not both"],
+      projectId: ["Link the achievement to a role or a project, not both"],
     });
   });
 });

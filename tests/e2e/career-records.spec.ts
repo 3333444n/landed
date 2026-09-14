@@ -10,7 +10,9 @@ const demo = {
   statement: "Implemented keyboard-accessible forms for recording tool loans.",
 };
 
-test("profile, job, project, skill and a linked achievement survive a reload", async ({ page }) => {
+test("profile, role, project, skill and a linked achievement survive a reload", async ({
+  page,
+}) => {
   await page.goto("/");
   if (await page.getByLabel("Your name").isVisible()) {
     await page.getByLabel("Your name").fill(demo.displayName);
@@ -19,7 +21,7 @@ test("profile, job, project, skill and a linked achievement survive a reload", a
   await expect(page.getByRole("heading", { name: demo.displayName })).toBeVisible();
 
   // Profile details
-  await page.goto("/profile");
+  await page.goto("/about/profile");
   await page.getByLabel("Headline").fill("Software developer");
   await page.getByLabel("Email").fill("alex@example.com");
   await page.getByLabel("Remote").check();
@@ -29,56 +31,67 @@ test("profile, job, project, skill and a linked achievement survive a reload", a
   await expect(page.getByLabel("Headline")).toHaveValue("Software developer");
   await expect(page.getByLabel("Remote")).toBeChecked();
 
-  // A job with month-only dates
-  await page.goto("/experience");
-  const jobs = page
-    .getByRole("region", { name: "Jobs" })
-    .or(page.locator("section").filter({ hasText: "Jobs" }).first());
-  await jobs.getByLabel("Employer").fill(demo.employer);
-  await jobs.getByLabel("Role").fill(demo.role);
-  await jobs.getByLabel("Start year").fill("2023");
-  await jobs.getByLabel("Month", { exact: true }).first().fill("4");
-  await jobs.getByRole("button", { name: "Save job" }).click();
-  await expect(page.getByRole("list", { name: "Jobs" }).getByText(demo.employer)).toBeVisible();
+  // A role with month-only dates, created from the add control in the list column
+  await page.goto("/about/work-history");
+  await page.getByRole("link", { name: "Add role" }).click();
+  await page.getByLabel("Employer").fill(demo.employer);
+  await page.getByLabel("Role", { exact: true }).fill(demo.role);
+  await page.getByLabel("Start year").fill("2023");
+  await page.getByLabel("Month", { exact: true }).first().fill("4");
+  await page.getByRole("button", { name: "Save role" }).click();
+  await expect(
+    page.getByRole("list", { name: "Work history" }).getByText(demo.employer),
+  ).toBeVisible();
+  await expect(page).toHaveURL(/\/about\/work-history\/[0-9a-f-]+$/);
+  const roleUrl = page.url();
 
-  // A project linked to that job
-  const projects = page.getByRole("region", { name: "Projects" });
-  await projects.getByLabel("Name").fill(demo.project);
-  await projects
-    .getByLabel("Part of a job")
+  // A project linked to that role
+  await page.goto("/about/projects/new");
+  await page.getByLabel("Name").fill(demo.project);
+  await page
+    .getByLabel("Part of a role")
     .selectOption({ label: `${demo.role} at ${demo.employer}` });
-  await projects.getByRole("button", { name: "Save project" }).click();
+  await page.getByRole("button", { name: "Save project" }).click();
   await expect(page.getByRole("list", { name: "Projects" }).getByText(demo.project)).toBeVisible();
 
-  // Deleting the job is refused while the project references it
-  const jobCard = page.getByRole("list", { name: "Jobs" }).getByRole("listitem").first();
-  await jobCard.getByRole("button", { name: "Delete" }).click();
-  await jobCard.getByRole("button", { name: "Delete", exact: true }).last().click();
-  await expect(jobCard.getByText("Detach the 1 project that reference this job")).toBeVisible();
+  // Deleting the role is refused while the project references it
+  await page.goto(roleUrl);
+  await page.getByRole("button", { name: "Delete" }).click();
+  await page.getByRole("button", { name: "Delete", exact: true }).last().click();
+  await expect(page.getByText("Detach the 1 project that reference this role")).toBeVisible();
 
   // A skill
-  await page.goto("/skills");
+  await page.goto("/about/skills/new");
   await page.getByLabel("Skill", { exact: true }).fill(demo.skill);
   await page.getByRole("button", { name: "Save skill" }).click();
   await expect(page.getByRole("list", { name: "Skills" }).getByText(demo.skill)).toBeVisible();
 
   // An achievement linked to the project and the skill
-  await page.goto("/achievements");
+  await page.goto("/about/achievements/new");
   await page.getByLabel("Statement").fill(demo.statement);
   await page.getByLabel("Project").selectOption({ label: demo.project });
   await page.getByLabel(demo.skill).check();
   await page.getByRole("button", { name: "Save achievement" }).click();
-  await expect(page.getByRole("status")).toHaveText("Saved");
+  await expect(page.getByRole("heading", { name: "Edit achievement" })).toBeVisible();
   const list = page.getByRole("list", { name: "Achievements" });
   await expect(list.getByText(demo.statement)).toBeVisible();
   await expect(list.getByText(demo.project)).toBeVisible();
   await expect(list.getByText(demo.skill, { exact: true })).toBeVisible();
 
+  // Editing in place stays on the record and confirms the save
+  await page.getByLabel("Metric").fill("2 forms");
+  await page.getByRole("button", { name: "Save changes" }).click();
+  await expect(page.getByRole("status")).toHaveText("Saved");
+
   await page.reload();
   await expect(list.getByText(demo.statement)).toBeVisible();
+
+  // The old Phase 0 addresses still land on the new columns
+  await page.goto("/achievements");
+  await expect(page).toHaveURL(/\/about\/achievements$/);
 
   // The home overview links to each record type with a count
   await page.goto("/");
   await expect(page.getByRole("link", { name: /^\d+ achievements?$/ })).toBeVisible();
-  await expect(page.getByRole("link", { name: /^\d+ jobs?$/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /^\d+ roles?$/ })).toBeVisible();
 });

@@ -7,9 +7,11 @@
 
   --bg-canvas: #f5f5f7;
   --bg-surface: #ffffff;
-  --bg-surface-raised: #fafafc;
-  --bg-glass: rgba(255, 255, 255, 0.55);
-  --bg-glass-tint: rgba(255, 255, 255, 0.35);
+  --bg-surface-raised: #efeff2;
+  --bg-input: #efeff2;
+  --bg-glass: rgba(245, 245, 247, 0.7);
+  --bg-glass-tint: rgba(245, 245, 247, 0.4);
+  --line: rgba(0, 0, 0, 0.08);
   --text-primary: #111114;
   --text-secondary: #5f5f66;
   --text-tertiary: #8e8e96;
@@ -18,7 +20,9 @@
   --success: #1f8a4c;
   --warning: #b7791f;
   --danger: #c5372c;
-  --input-border: rgba(0, 0, 0, 0.08);
+  --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.06);
+  --shadow-float: 0 12px 40px rgba(0, 0, 0, 0.1);
+  --glass-highlight: rgba(255, 255, 255, 0.35);
 
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -35,20 +39,28 @@
   --space-12: 48px;
   --space-16: 64px;
 
+  --width-sidebar: 220px;
+  --width-list: 360px;
+  --width-detail-min: 480px;
+  --width-detail-max: 720px;
+
   --font-sans: "Helvetica Neue", Helvetica, Inter, "SF Pro Text", Arial, sans-serif;
 
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --duration-hover: 150ms;
   --duration-reveal: 250ms;
+  --duration-drawer: 400ms;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --bg-canvas: #0b0b0d;
     --bg-surface: #161618;
-    --bg-surface-raised: #1d1d20;
-    --bg-glass: rgba(22, 22, 24, 0.55);
-    --bg-glass-tint: rgba(22, 22, 24, 0.35);
+    --bg-surface-raised: #242428;
+    --bg-input: #242428;
+    --bg-glass: rgba(22, 22, 24, 0.7);
+    --bg-glass-tint: rgba(22, 22, 24, 0.4);
+    --line: rgba(255, 255, 255, 0.1);
     --text-primary: #f5f5f7;
     --text-secondary: #a1a1aa;
     --text-tertiary: #6e6e76;
@@ -57,7 +69,9 @@
     --success: #4cc47e;
     --warning: #e3b04b;
     --danger: #f0655a;
-    --input-border: rgba(255, 255, 255, 0.1);
+    --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.4);
+    --shadow-float: 0 12px 40px rgba(0, 0, 0, 0.5);
+    --glass-highlight: rgba(255, 255, 255, 0.08);
   }
 }
 
@@ -65,5 +79,6 @@
   :root {
     --duration-hover: 0ms;
     --duration-reveal: 0ms;
+    --duration-drawer: 0ms;
   }
 }

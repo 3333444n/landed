@@ -1,0 +1,88 @@
+.menu {
+  position: fixed;
+  top: var(--space-4);
+  left: var(--space-4);
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--bg-surface-raised);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-drawer) var(--ease);
+}
+
+.scrim.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 25;
+  width: min(var(--width-sidebar), 80vw);
+  border-radius: 0 var(--radius-xl) var(--radius-xl) 0;
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px) saturate(1.6);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--shadow-float);
+  transform: translateX(-100%);
+  transition: transform var(--duration-drawer) var(--ease);
+  overflow: hidden;
+}
+
+.drawer.open {
+  transform: translateX(0);
+}
+
+/* Solid tint behind the text so contrast never depends on what sits underneath (DESIGN.md 9). */
+.tint {
+  height: 100%;
+  padding: var(--space-6);
+  padding-top: var(--space-16);
+  background: var(--bg-glass-tint);
+  overflow-y: auto;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .drawer {
+    background: var(--bg-surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .tint {
+    background: transparent;
+  }
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .drawer {
+    background: var(--bg-surface);
+  }
+}
+
+@media (min-width: 1200px) {
+  .menu,
+  .scrim,
+  .drawer {
+    display: none;
+  }
+}
