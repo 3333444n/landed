@@ -1,6 +1,6 @@
 # 09 — Decisions and implementation readiness
 
-Updated 2026-09-13. Accepted decisions below reflect the user's explicit instructions. Recommendations remain proposals.
+Updated 2026-09-14. Accepted decisions below reflect the user's explicit instructions. Recommendations remain proposals.
 
 ## Accepted
 
@@ -23,6 +23,7 @@ Updated 2026-09-13. Accepted decisions below reflect the user's explicit instruc
 - Conventional Commits with a scope, and a What/Why/How/Testing pull-request template (2026-09-13).
 - Stale-edit detection through `updated_at` as the version token; client-minted record ids for idempotent creates (2026-09-13, doc 05).
 - Docker Compose user packaging with a one-shot migrate service and a shell/PowerShell launcher; Node plus a Compose database for development ([ADR 003](adr/003-local-packaging.md), implemented 2026-09-13).
+- Interface layout: a persistent sidebar (drawer below 1200px), shifting columns driven by the URL path, no borders, three tonal steps, and a derived (never stored) job status chip (DESIGN.md, doc 05; 2026-09-14).
 
 ## Proposed defaults
 

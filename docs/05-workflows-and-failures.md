@@ -1,6 +1,6 @@
 # 05 — Workflows and failures
 
-Status: Phase 0 save behaviour implemented; Phase 1 proposed. Updated 2026-09-13.
+Status: Phase 0 save behaviour implemented; Phase 1 proposed. Updated 2026-09-14.
 
 ## Phase 0 save
 
@@ -23,6 +23,25 @@ On restart, unfinished work is visibly interrupted/recoverable, never reported a
 Applications: proposed statuses `preparing`, `ready`, `applied`, `interviewing`, `offer`, `rejected`, `withdrawn`, `accepted`. Ready means user-reviewed materials; a successful model call alone does not make it ready. Users may import an already-applied pursuit without generating materials. Define normal transitions plus an explicit correction action rather than preventing legitimate data entry. Detailed interview rounds wait until Phase 4.
 
 Job availability: active / expired / unknown. Generation run state is independent. A job expiring must not move an application out of interviewing. Later matching/research records do not overwrite pursuit status.
+
+## Derived job status in the interface
+
+The Jobs list shows one status chip per job so the user can watch a posting move from discovered to applied in a single list. That chip is never stored. It is a pure function of the independent facts above (job availability, application status if an application exists, the latest run state for the job, and whether unreviewed document revisions exist), evaluated when the list renders. First matching row wins:
+
+| Facts | Chip | Tone |
+|---|---|---|
+| Application in `ready`, `applied`, `interviewing`, `offer` or `accepted` | that status word | success |
+| Application in `rejected` or `withdrawn` | that status word | neutral |
+| Application `preparing`, generation run queued or running | Crafting documents | accent |
+| Application `preparing`, unreviewed drafts exist | Needs review | warning |
+| Application `preparing`, otherwise | Preparing | neutral |
+| No application, matching run queued or running (Phase 2) | Evaluating | accent |
+| No application, match assessment exists (Phase 2) | Assessed | neutral |
+| No application, no run | New | accent |
+
+At most one modifier chip follows: "Posting expired" (warning) when availability is expired while the application is active, or "Generation failed" (warning) when the latest run failed. An expired job with no application is hidden by the default filter, never deleted. List filters: Needs attention (default: New, Needs review, Generation failed, Posting expired), Active (every non-terminal status), Closed, All. Changing a filter changes nothing in the database.
+
+Phase 1 implements the rows that involve an application; Phase 2 and 3 add the run and assessment rows without changing the function's shape.
 
 ## Minimum checks
 
