@@ -46,10 +46,11 @@ ensure_env() {
     return
   fi
   password="$(random_password)"
-  # Copy the example, replacing only the password placeholder; the other values keep their
-  # documented defaults and stay editable by hand afterwards.
+  # Copy the example, replacing only the password placeholder; the other values (port, the
+  # optional LANDED_MODEL_* lines) keep their documented defaults and stay editable by hand.
   sed "s/^POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=$password/" .env.release.example > "$env_file"
   echo "Created $env_file with a generated database password."
+  echo "To let the app call a model provider, fill in the LANDED_MODEL_* lines in $env_file and run start again; paste-back mode works without them."
 }
 
 env_value() {

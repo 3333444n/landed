@@ -2,7 +2,7 @@
 
 Get the interview. Landed is a locally run job-search application that turns your real career evidence into tailored resumes, cover letters, and recruiter messages, and tracks every application. It rewrites and reorganizes your facts; it never invents them.
 
-**Status: Phase 1a complete (2026-09-14) and installable with Docker. You can enter and keep your career data locally, paste job postings and track each application's status; no generated materials yet.** What works today: profile, work history, education, projects, skills and achievements, plus jobs and their applications with a status list you can filter and sort, entered in the browser and stored in PostgreSQL on your machine, with backup and restore. No AI account is needed.
+**Status: Phase 1a complete (2026-09-14) and installable with Docker. You can enter and keep your career data locally, paste job postings and track each application's status; generated materials (Phase 1b) are decided and in progress, not yet shipped.** What works today: profile, work history, education, projects, skills and achievements, plus jobs and their applications with a status list you can filter and sort, entered in the browser and stored in PostgreSQL on your machine, with backup and restore. No AI account is needed, and Phase 1b keeps it optional: bring a provider key or use paste-back mode ([ADR 006](docs/adr/006-model-access-path.md)).
 
 The stack is TypeScript, Next.js on Node.js, and PostgreSQL. Later milestones add tailored resumes, cover letters, recruiter messages, PDFs, matching, research, discovery, and interview tracking.
 
@@ -19,7 +19,7 @@ To work on it: the [contributor quickstart](docs/07-quickstart-contract.md#contr
 - [Domain model](docs/02-domain-model.md) and [data model](docs/04-data-model.md)
 - [Quickstart](docs/07-quickstart-contract.md)
 - [Fictional examples](examples/README.md)
-- [Design system](DESIGN.md) for anyone touching the interface
+- [Design system](DESIGN.md) for anyone touching the interface, and [document design](DESIGN-DOCS.md) for the produced PDFs
 
 ## Contribute
 

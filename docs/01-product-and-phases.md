@@ -1,6 +1,6 @@
 # 01 — Product and phases
 
-Status: Phase 0 complete (2026-09-13); Phase 1a complete (2026-09-14); Phase 1b and Phases 2 to 4 proposed. Updated 2026-09-14.
+Status: Phase 0 complete (2026-09-13); Phase 1a complete (2026-09-14); Phase 1b decided and in progress (2026-09-14); Phases 2 to 4 proposed. Updated 2026-09-14.
 
 Landed is a locally run job-search application that produces factual, tailored materials and helps people manage applications. It must be usable without editing source code. Code can be cloned/forked independently of personal data. The shortest useful outcome is a reviewed resume, cover letter, and recruiter message for a real job.
 
@@ -30,12 +30,14 @@ Completed on 2026-09-14: a paste form (title, company, optional location and pos
 
 ### Phase 1b — Generated materials and PDFs
 
-Milestones 2 to 4 below, plus the decisions listed in document 09 under "Before Phase 1b code": the model access path, the document JSON schema, one resume template and one cover-letter layout, the PDF renderer (`@react-pdf/renderer`, added with the first PDF feature), the generation execution and recovery mechanism, review and submission transitions, and a small synthetic grounding set.
+Milestones 2 to 4 below. The decisions document 09 required before code were taken on 2026-09-14 ([ADR 006](adr/006-model-access-path.md), documents 04, 05 and 06, [DESIGN-DOCS.md](../DESIGN-DOCS.md)). In the interface, each document block on a job opens a review column. Its actions are Generate, which asks the configured model provider; Paste back, which shows the same prompt for the user to run in any assistant and paste the JSON answer into, so no provider setup is required; Mark reviewed; and, once PDFs exist, Download. Text is edited in place on the preview, each bullet or paragraph individually, and every edit is a new saved revision. Beside the text, an Evidence column lists the career records each bullet cites, and a Runs column shows every model call with its model, prompt version, tokens, latency and cost. A document card that has no configured provider offers "Set up a model", which opens a column explaining what to put in the environment file.
+
+Generated content is checked by the application, not trusted: every bullet must cite records in the frozen input snapshot, and numbers that do not appear in the cited evidence are flagged with a warning chip for the user to fix or accept. The resume is strictly one page; the content schema carries the bullet and length budgets that make that possible, and the PDF uses the conservative single-column layout in DESIGN-DOCS.md. Reordering sections and bullets by drag and drop is a later refinement, not part of 1b.
 
 Recommended implementation milestones:
-1. Save the pasted job, create an application record, and support manual status changes (Phase 1a).
-2. Generate and edit structured resume content with supporting input snapshots.
-3. Generate cover letter and recruiter-message content; preserve completed work if another artifact fails.
+1. Save the pasted job, create an application record, and support manual status changes (Phase 1a, done).
+2. Generate, review and edit structured resume content with a frozen input snapshot per run, through the configured provider or paste-back.
+3. Generate cover letter and recruiter-message content the same way; preserve completed work if another artifact fails.
 4. Export resume and cover letter PDFs from saved content; support copyable recruiter text.
 
 One resume template and one cover-letter layout initially. PDF rendering does not call an LLM. The user explicitly marks an application submitted; generating or downloading materials does not submit anything. Phase 1 completion includes a tested end-to-end application bundle, not just model text in a console.

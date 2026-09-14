@@ -1,6 +1,6 @@
 # 05 — Workflows and failures
 
-Status: Phase 0 save and Phase 1a paste-and-track implemented; Phase 1b proposed. Updated 2026-09-14.
+Status: Phase 0 save and Phase 1a paste-and-track implemented; Phase 1b generation designed and in progress. Updated 2026-09-14.
 
 ## Phase 0 save
 
@@ -14,13 +14,15 @@ Browser submits a pasted posting with a client-minted job id → server validate
 
 ## Phase 1b generation
 
-Save original pasted posting and application → collect career facts → freeze the selected inputs → generate structured drafts → validate shape and evidence references → save each completed document revision → review/edit → render requested PDFs → explicitly mark application submitted with exact material references.
+One document at a time, from the document's review column: read the job, its application and every career record → build the input snapshot (a pure function over that data; the same data always yields the same snapshot and the same prompt) → write a `generation_runs` row in state `running` with the snapshot, prompt name and version, provider and model, and commit → call the model adapter outside any transaction → validate the answer against the document's Zod schema → run the grounding check → save a `document_revisions` row with the content and its warnings → finish the run with tokens, latency, cost when reported, and the outcome. The review column then shows the revision; the user edits text in place (each save is a new revision), and Mark reviewed sets the revision's reviewed time. PDFs are rendered later from a saved revision and never call a model. Marking the application submitted stays a manual status change.
 
-Pasted text can be used directly before full job extraction/matching exists. A minimal Job record belongs in Phase 1; URL import and scoring do not. Do not hold an SQL transaction open across model calls or PDF rendering. Persist outcomes between expensive operations. If one artifact fails, show which artifact failed and retain completed siblings.
+Paste-back follows the same path with two differences: the run is created in state `queued` when the prompt is shown, and the model call is the user pasting JSON. The pasted text passes the same schema validation and grounding check and is saved as a revision whose source is `pasted`; the run finishes with mode `pasted` and no token usage.
 
-Run states: queued, running, succeeded, partially_succeeded, failed, cancelled. Start with the simplest execution model that survives the actual runtime behavior. Before Phase 1b implementation, decide between a bounded application-owned runner with interrupted-run detection and a PostgreSQL-backed worker. Next.js request lifetime or an unawaited promise is not a durability guarantee. Phases 0 and 1a need neither runner.
+Failures are classified, and the classification is stored on the run: `provider` (the call failed or timed out; retry later), `validation` (the answer did not match the schema; the raw text is kept on the run for inspection, no revision is written), `pasted_invalid` (paste-back JSON rejected, shown as a field error), `interrupted` (see below). A failed run never touches the previous revision, and a failure on one document never touches its siblings: the cover letter keeps its reviewed revision when the resume run fails. Retries are manual (Generate again); each is a new run.
 
-On restart, unfinished work is visibly interrupted/recoverable, never reported as successful. Retry bounded transient failures; validation failures require correction rather than unlimited retries. An exact replay must not duplicate artifacts. Persist PDF metadata only after an atomic file write; reconcile orphaned files and pending artifact rows after crashes.
+Execution model (decided 2026-09-14): a bounded application-owned runner. The Server Action awaits the model call inside the request; the packaged installation is a long-lived Node server started with `next start`, which imposes no request timeout, and the browser waits on one action at a time. Durability comes from the run row, not from the request: because the row is committed as `running` before the call, a server that dies mid-call leaves visible evidence. A sweep, run when the Jobs list or a job column renders, marks any `running` row older than ten minutes as `failed` with kind `interrupted`, and the chip shows "Generation failed". Nothing is ever reported as succeeded without a saved revision. A PostgreSQL-backed worker with retries and concurrency limits waits for Phase 3, where runs are not started by a person watching.
+
+Run states: `queued`, `running`, `succeeded`, `failed`, `cancelled`; `partially_succeeded` is unnecessary because a run produces exactly one document. Do not hold an SQL transaction open across model calls or PDF rendering. Persist PDF metadata only after an atomic file write (write to a temporary name, then rename); an artifact row without a file, or a file without a row, is reconciled by regenerating on the next download.
 
 ## Separate lifecycles
 
@@ -53,6 +55,6 @@ Phase 0 (implemented in `tests/`): save/reload across restart; input and FK cons
 
 Phase 1a (implemented in `tests/`): the paste writes job and application together and replays the same id; blank fields write nothing; status changes record `submitted_at` once; stale tokens are refused; availability never moves the application; deleting a job removes its application; one unit test per row of the chip table and per filter; one browser journey from paste to delete.
 
-Phase 1b: factual-claim support, unknown evidence IDs, unsupported metrics, preserved document inputs after profile edits, partial provider failures, retries, and extractable/readable PDF output. Fixed synthetic cases exercise behavior without paid model calls; a small optional real-model evaluation set tracks quality. Record prompt/model identity and available usage without assuming every runtime reports cost/tokens.
+Phase 1b: the grounding check for each warning kind (unknown evidence id, uncited unit, number absent from the cited evidence); budgets rejected by the content schema; the run lifecycle with the fake adapter (running to succeeded with a revision; validation and provider failures leave no revision; a sibling document keeps its revision); the interrupted-run sweep; edited revisions as new rows with the old one intact; stale edits refused; paste-back with valid and invalid JSON; job deletion cascading to documents, revisions and runs; the resume PDF rendering to exactly one page; and one browser journey from paste to reviewed document. Every check uses fixed synthetic cases and the fake adapter, never a paid call. `pnpm eval` runs the synthetic cases against the configured real provider and reports warnings, tokens and cost for whoever holds a key. Runs record prompt and model identity and whatever usage the provider reports; cost is null when not reported, never estimated.
 
 Logs identify operation/run and error category without copying career content or secrets by default. Add diagnostic detail as needed; no external observability account is a quickstart prerequisite.

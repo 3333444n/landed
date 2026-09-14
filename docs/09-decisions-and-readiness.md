@@ -25,13 +25,22 @@ Updated 2026-09-14. Accepted decisions below reflect the user's explicit instruc
 - Docker Compose user packaging with a one-shot migrate service and a shell/PowerShell launcher; Node plus a Compose database for development ([ADR 003](adr/003-local-packaging.md), implemented 2026-09-13).
 - Interface layout: a persistent sidebar (drawer below 1200px), shifting columns driven by the URL path, no borders, three tonal steps, and a derived (never stored) job status chip ([ADR 005](adr/005-url-driven-columns.md), DESIGN.md, doc 05; implemented 2026-09-14).
 - Phase 1 is delivered as 1a (manual jobs, applications, status tracking, filters and sort; no new dependency) and 1b (generation, PDFs, model access). Decided 2026-09-14 with: `@react-pdf/renderer` added in 1b with the first PDF feature; Preparing included in the Needs attention filter; document blocks shown as inert "Not started" placeholders until 1b; any application status selectable at any time, with the submission time recorded on the first entry to `applied`; sort by updated (default) and added (doc 01, doc 05).
+- Phase 1b decisions (2026-09-14, [ADR 006](adr/006-model-access-path.md), docs 04, 05, 06, [DESIGN-DOCS.md](../DESIGN-DOCS.md)):
+  - Model access: the app calls a provider through one adapter interface over the Vercel AI SDK; providers `anthropic`, `openai`, `gateway` and `openai_compatible` (OpenRouter, Ollama and similar by base URL), selected in the environment file only; a `fake` adapter for every automated check; paste-back mode as the zero-setup path. No key in the database or the browser.
+  - Document content: Zod schemas for resume, cover letter and recruiter message, every unit carrying evidence ids that reference records in the run's frozen snapshot; budgets in the resume schema keep it to one page.
+  - One resume template and one cover-letter layout: single column, Letter, Helvetica built in, monochrome, sentence-case headings (DESIGN-DOCS.md).
+  - Execution and recovery: a bounded application-owned runner (the action awaits the call; the run row is committed first) with a sweep that marks runs older than ten minutes as interrupted. No worker before Phase 3.
+  - Review: text edited in place on the preview, each save a new immutable revision; Mark reviewed records the time; Ready stays a manual application status; submission stays manual.
+  - Grounding: a deterministic check after every generation (evidence ids exist, numbers appear in cited evidence) shown as warning chips; a synthetic evaluation set in `examples/generation` run by `pnpm eval` against a real provider, and by the fake adapter in CI.
+  - Observability: every model call writes a run record with provider, model, prompt name and version, tokens, latency, cost when reported and outcome, visible in a Runs column.
+  - Profile gains a `links` list (LinkedIn, GitHub, website) with a migration, for the resume header.
 
 ## Proposed defaults
 
 - A modular monolith with Profile first; Jobs and Applications in Phase 1a, Documents in Phase 1b.
 - Input snapshots attached to generated materials, with saved document revisions but no achievement revisions.
 - Structured document content in PostgreSQL; PDFs in a persistent local volume with database metadata.
-- One supported model integration initially; optional harness/local model paths when tested.
+- Provider support claims follow the evaluation set: a provider is listed as verified only after `pnpm eval` has been run against it; harness integration and phone or claude.ai access wait for their own designs.
 - LangGraph as a later orchestration candidate after a small explicit implementation establishes requirements.
 
 ## Phase 0 complete (2026-09-13)
@@ -42,9 +51,9 @@ Implemented and tested: the Profile module, the first migration with the constra
 
 Implemented and tested: the Jobs and Applications modules with the shared result and error helpers in `src/modules/shared`; the second migration (jobs, applications); pasting a posting that creates its application in one transaction; manual status changes with notes and the recorded submission time; availability on the job; the Jobs list with the derived chip, its modifier, the four filters and the two sorts as search parameters; the Job description and Company columns; the inert document blocks; and job deletion cascading to the application. Verified with 37 unit tests, 28 integration tests against PostgreSQL and 3 browser journeys. Known gaps, carried rather than blocking: the Company block has no content of its own; no run or draft facts exist, so five rows of the chip table cannot yet appear; the filter and sort are applied in the browser over server-derived rows; the Phase 0 gaps above remain.
 
-## Before Phase 1b code
+## Phase 1b in progress (decided 2026-09-14)
 
-Select the initial model access path, document JSON schema, one resume/cover-letter template, generation execution/recovery mechanism, review/submission transitions, and a small grounding evaluation set. Validate the desired harness integration if selected. Phase 1a needs none of these; also decide the execution model for generation runs (doc 05) before the first Documents module code. The PDF renderer is decided (`@react-pdf/renderer`) and is added with the first PDF feature.
+The six decisions document 09 required before Phase 1b code (model access path, document schema, one template each, execution and recovery, review and submission transitions, grounding evaluation set) are taken and listed under Accepted. Delivery order: the Documents module with generation, review, paste-back and the run record; then PDFs with `@react-pdf/renderer` and the artifact directory; then the documentation sweep. Link import and scoring stay in Phase 2A; drag-and-drop reordering, automatic generation and remote access are later.
 
 ## Deliberately deferred
 
@@ -57,3 +66,4 @@ Vector embeddings/indexes; separate vector storage; generalized agent framework;
 - [ADR 003 — Packaging and quickstart](adr/003-local-packaging.md)
 - [ADR 004 — Drizzle for persistence](adr/004-drizzle-persistence.md)
 - [ADR 005 — Interface as URL-driven columns](adr/005-url-driven-columns.md)
+- [ADR 006 — Model access path](adr/006-model-access-path.md)

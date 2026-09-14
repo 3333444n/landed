@@ -1,6 +1,6 @@
 # 04 — PostgreSQL data model
 
-Status: Phase 0 tables implemented in `db/migrations/0000_phase0_profile_tables.sql`; Phase 1a tables in `db/migrations/0001_phase1a_jobs_and_applications.sql`; Phase 1b sketch. Updated 2026-09-14.
+Status: Phase 0 tables implemented in `db/migrations/0000_phase0_profile_tables.sql`; Phase 1a tables in `db/migrations/0001_phase1a_jobs_and_applications.sql`; Phase 1b tables designed (migration 0002 arrives with the Documents module). Updated 2026-09-14.
 
 An Entity–Relationship (ER) diagram describes entities and their relationships. A logical relational ER model adds keys, attributes, and cardinality; a physical schema adds database-specific types, constraints, and indexes. The domain model explains what a Loan means; the ER model shows how `loans.copy_id` references `copies.id`.
 
@@ -30,7 +30,7 @@ Primary keys are UUIDs minted by the application (the form generates the id befo
 
 | Table | Key fields / content |
 |---|---|
-| profiles | id; display_name (required), headline, summary, email, phone, location, preferences JSONB |
+| profiles | id; display_name (required), headline, summary, email, phone, location, preferences JSONB; links JSONB (Phase 1b: up to five `{label, url}` entries such as LinkedIn and GitHub, for the resume header) |
 | employment | id, profile_id; employer_name, role (both required), start_year/start_month, end_year/end_month, is_current, description |
 | education | id, profile_id; institution (required), qualification, subject, start/end year and month, status (`in_progress`, `completed`, `incomplete`), description |
 | projects | id, profile_id, employment_id nullable; name (required), description, url, start/end year and month |
@@ -67,7 +67,7 @@ Preferences JSONB contains a small validated structure (`desiredRoles`, `locatio
 - Save an achievement and its selected skill links in one transaction. Index commonly queried ownership/FK columns and avoid indexes already covered by suitable leading composite keys.
 - Deleting employment/projects with dependent facts is restricted (`ON DELETE RESTRICT`) until the user explicitly detaches or reassigns them; the UI explains which records block the deletion. Deleting an achievement or a skill removes only its join rows (`ON DELETE CASCADE` on `achievement_skills`). Deleting a profile cascades to everything it owns and is not exposed in the UI yet.
 - Historical generated input snapshots are not live cascading references to achievements. Deleting current data does not silently alter an old document; a full personal-data purge must also remove snapshots and PDFs.
-- Backup and restore use `pg_dump`/`pg_restore` through `pnpm db:backup` and `pnpm db:restore` (doc 07); the document artifact volume joins the procedure in Phase 1b.
+- Backup and restore use `pg_dump`/`pg_restore` through `pnpm db:backup` and `pnpm db:restore` (doc 07); the packaged launcher's backup also archives the artifact volume once PDFs exist (Phase 1b).
 - Owner-aware links require `UNIQUE (profile_id, id)` on each parent table; that index also serves per-profile lookups, so no separate `profile_id` index is added there.
 
 ## Phase 1a tables
@@ -94,16 +94,27 @@ Rules the database backs up: `UNIQUE (profile_id, id)` on jobs so applications l
 | profiles | applications.profile_id | 1 | 0..N |
 | jobs | applications.(profile_id, job_id) | 1 | 0..1 |
 
-## Phase 1b storage sketch (not migrated)
+## Phase 1b tables (designed 2026-09-14, migration 0002)
 
-| Record | Purpose |
+```mermaid
+erDiagram
+  applications ||--o{ documents : "one per type"
+  applications ||--o{ generation_runs : "attempts"
+  documents ||--o{ document_revisions : "immutable history"
+  generation_runs |o--o{ document_revisions : "produced"
+  document_revisions ||--o{ document_artifacts : "rendered files"
+```
+
+| Table | Key fields / content |
 |---|---|
-| generation_runs | state, selected input snapshot, template/prompt/model identifiers, timing/errors and usage when supplied |
-| documents | application_id, type: resume / cover_letter / recruiter_message |
-| document_revisions | document_id, structured content JSONB, optional generation_run_id, reviewed state; immutable saved revisions |
-| document_artifacts | document_revision_id, format, template version, relative storage key, checksum, render status |
+| generation_runs | id, profile_id, application_id; document_type (`resume`, `cover_letter`, `recruiter_message`); state (`queued`, `running`, `succeeded`, `failed`, `cancelled`); failure_kind nullable (`provider`, `validation`, `pasted_invalid`, `interrupted`); mode (`adapter`, `pasted`); provider, model, prompt_name, prompt_version; snapshot JSONB (the frozen input: every career record with its id, the posting, the capture time); input_tokens, output_tokens, cost_usd (numeric, null when the provider reports none), latency_ms; error_message (a category or provider error class, never career content or the key); raw_output (kept only for validation failures, for inspection); started_at, finished_at |
+| documents | id, profile_id, application_id, type; `UNIQUE (profile_id, application_id, type)` |
+| document_revisions | id, profile_id, document_id, generation_run_id nullable; content JSONB (validated against the type's Zod schema); warnings JSONB (grounding results); source (`generated`, `pasted`, `edited`); reviewed_at nullable; created_at. Rows are never updated except to set reviewed_at |
+| document_artifacts | id, profile_id, document_revision_id; format (`pdf`), template_version, storage_key (relative path under the artifact directory), checksum, byte_size; created_at. Inserted only after the file is fully written |
 
-The database stores editable structured content and input snapshots. PDFs live in a persistent local artifact volume, with metadata in PostgreSQL. A renderer failure leaves saved text intact. Editing creates a new saved document revision, not a new achievement revision. Applications pin exact revisions used for submission. Provenance IDs inside document content refer to the run's frozen input snapshot, optionally carrying original record IDs for navigation.
+Rules the database backs up: owner-aware composite foreign keys from `generation_runs` and `documents` to `applications (profile_id, id)` with `ON DELETE CASCADE`, so deleting a job removes its application, documents, revisions, runs and artifact rows in one statement (files are reconciled separately); `document_revisions` and `document_artifacts` link owner-aware to their parents the same way; check constraints on every enumerated column; an index on `generation_runs (profile_id, application_id, created_at)` for the Runs column and the chip facts, and on `document_revisions (profile_id, document_id, created_at)` for the latest revision.
+
+The database stores editable structured content and input snapshots. PDFs live in a persistent local artifact volume, with metadata in PostgreSQL. A renderer failure leaves saved text intact. Editing creates a new saved document revision, not a new achievement revision. Evidence ids inside document content are the ids of records in the run's snapshot, which are the original record ids, so a bullet can be traced to the live record while it exists and to the frozen copy forever. Pinning the exact revisions used for a submission on the application is deferred (document 09 gaps) until the submission flow needs it.
 
 PostgreSQL remains the source of truth. Later pgvector stores derived embeddings alongside it; a separate vector database is not required. Model choice, vector dimensions, retrieval strategy, and index tuning wait for a measured retrieval need.
 

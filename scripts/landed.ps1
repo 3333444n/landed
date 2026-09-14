@@ -43,6 +43,7 @@ function Ensure-Env {
   $content = (Get-Content ".env.release.example") -replace "^POSTGRES_PASSWORD=.*", "POSTGRES_PASSWORD=$password"
   [System.IO.File]::WriteAllLines((Join-Path (Get-Location) $envFile), $content, (New-Object System.Text.UTF8Encoding $false))
   Write-Host "Created $envFile with a generated database password."
+  Write-Host "To let the app call a model provider, fill in the LANDED_MODEL_* lines in $envFile and run start again; paste-back mode works without them."
 }
 
 function Get-EnvValue { param([string] $Key)

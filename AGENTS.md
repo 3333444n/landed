@@ -3,18 +3,19 @@
 ## Start here
 
 - Read [docs/00-index.md](docs/00-index.md) and [docs/09-decisions-and-readiness.md](docs/09-decisions-and-readiness.md), then the documents relevant to the task.
-- Distinguish accepted decisions, proposals, and implemented behavior. Phase 0 (career data entry) is implemented, tested and packaged as a Docker Compose installation, and its interface was rebuilt on 2026-09-14 as URL-driven columns ([ADR 005](docs/adr/005-url-driven-columns.md)). Phase 1a (manual jobs, one application per job, the derived status list with filters and sort) is implemented as of 2026-09-14; Phase 1b (generated materials, PDFs, model access) and Phases 2 to 4 are design only. [docs/09](docs/09-decisions-and-readiness.md) holds the current status and known gaps; do not describe a Phase 1b+ feature as existing.
+- Distinguish accepted decisions, proposals, and implemented behavior. Phase 0 (career data entry) is implemented, tested and packaged as a Docker Compose installation, and its interface was rebuilt on 2026-09-14 as URL-driven columns ([ADR 005](docs/adr/005-url-driven-columns.md)). Phase 1a (manual jobs, one application per job, the derived status list with filters and sort) is implemented as of 2026-09-14. Phase 1b (generated materials, review, PDFs, model access) is decided ([ADR 006](docs/adr/006-model-access-path.md), docs 04 to 06, [DESIGN-DOCS.md](DESIGN-DOCS.md)) and in progress; Phases 2 to 4 are design only. [docs/09](docs/09-decisions-and-readiness.md) holds the current status and known gaps; do not describe a feature as existing before its pull request is merged.
 - Follow [CONTRIBUTING.md](CONTRIBUTING.md). Keep changes focused on the requested scope and preserve unrelated work.
 
 ## Stack and boundaries
 
 - Current stack: TypeScript, Next.js on Node.js, and PostgreSQL. Reconsider runtimes through an explicit architecture decision when concrete requirements justify a change.
 - Keep business rules and application operations in modules; keep framework handlers and UI components thin.
-- All user interface work follows [DESIGN.md](DESIGN.md): tokens, component rules, and the hard rules on typography, corners, borders, and glass. Do not introduce a new visual pattern without updating that file.
+- All user interface work follows [DESIGN.md](DESIGN.md): tokens, component rules, and the hard rules on typography, corners, borders, and glass. Do not introduce a new visual pattern without updating that file. The produced PDFs and recruiter text follow [DESIGN-DOCS.md](DESIGN-DOCS.md) instead (one page, Helvetica, monochrome, sentence case, rules but no boxes).
 - Write modules as plain exported functions over typed data (Zod schemas and TypeScript types). Pass dependencies such as the database handle as parameters or through a small factory; do not use global singletons or dependency-injection frameworks. Use a class only where state and behavior genuinely belong together, such as an adapter holding a client, and never for data-only records. Prefer immutable data and pure functions for rules; keep side effects at the edges (persistence, network, rendering).
 - Persistence goes through Drizzle in each module's repository file. Migrations are generated SQL files committed to the repository and reviewed like code.
 - Each module owns writes to its data. Call public module operations rather than another module's persistence internals. Avoid circular dependencies.
 - Treat PostgreSQL as the source of truth. Embeddings are optional derived indexes, not a replacement for relational records.
+- Model access (ADR 006): the app calls the provider through the `ModelAdapter` interface in `src/infrastructure/model/`; provider, model, key and base URL come from the environment only (`LANDED_MODEL_*`), never from the database or the browser, and the key is never logged. Every call writes a `generation_runs` row. All checks run with `LANDED_MODEL_PROVIDER=fake`; only `pnpm eval` calls a real provider.
 - Add modules, agent frameworks, workers, or external services when an implemented feature requires them; do not scaffold speculative infrastructure.
 
 ## Working in the code
@@ -42,7 +43,7 @@
 
 ## Local operation and data
 
-- Preserve local operation and a straightforward installation. Phase 0 must not require AI credentials or an installed agent CLI.
+- Preserve local operation and a straightforward installation. No phase may require AI credentials or an installed agent CLI to run the checks, and generation must stay usable without a key through paste-back mode.
 - Preserve personal data across restarts and supported upgrades. Keep migrations explicit; never reset a database or delete persistent volumes as routine setup.
 - Keep real profiles, credentials, resumes, and private notes out of commits, screenshots, fixtures, logs, and release bundles. Use fictional examples in isolated demo/test data stores.
 - Do not force-add ignored files. Public documentation must remain useful without access to private maintainer context.
