@@ -1,6 +1,6 @@
 # ADR 006 — Model access path for generated materials
 
-Date: 2026-09-14. Status: accepted; implementation in Phase 1b.
+Date: 2026-09-14. Status: accepted and implemented (Phase 1b, 2026-09-14).
 
 ## Context
 

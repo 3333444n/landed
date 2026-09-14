@@ -1,6 +1,6 @@
 # 06 — AI, harnesses, and retrieval
 
-Status: model access path accepted for Phase 1b ([ADR 006](adr/006-model-access-path.md)); agentic research, discovery and retrieval remain future design. Updated 2026-09-14.
+Status: model access path implemented in Phase 1b ([ADR 006](adr/006-model-access-path.md)); no provider has been run through the evaluation set yet; agentic research, discovery and retrieval remain future design. Updated 2026-09-14.
 
 ## Distinguish the moving parts
 
