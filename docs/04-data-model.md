@@ -1,6 +1,6 @@
 # 04 — PostgreSQL data model
 
-Status: Phase 0 tables implemented in `db/migrations/0000_phase0_profile_tables.sql`; Phase 1 sketch. Updated 2026-09-13.
+Status: Phase 0 tables implemented in `db/migrations/0000_phase0_profile_tables.sql`; Phase 1a tables in `db/migrations/0001_phase1a_jobs_and_applications.sql`; Phase 1b sketch. Updated 2026-09-14.
 
 An Entity–Relationship (ER) diagram describes entities and their relationships. A logical relational ER model adds keys, attributes, and cardinality; a physical schema adds database-specific types, constraints, and indexes. The domain model explains what a Loan means; the ER model shows how `loans.copy_id` references `copies.id`.
 
@@ -67,15 +67,37 @@ Preferences JSONB contains a small validated structure (`desiredRoles`, `locatio
 - Save an achievement and its selected skill links in one transaction. Index commonly queried ownership/FK columns and avoid indexes already covered by suitable leading composite keys.
 - Deleting employment/projects with dependent facts is restricted (`ON DELETE RESTRICT`) until the user explicitly detaches or reassigns them; the UI explains which records block the deletion. Deleting an achievement or a skill removes only its join rows (`ON DELETE CASCADE` on `achievement_skills`). Deleting a profile cascades to everything it owns and is not exposed in the UI yet.
 - Historical generated input snapshots are not live cascading references to achievements. Deleting current data does not silently alter an old document; a full personal-data purge must also remove snapshots and PDFs.
-- Backup and restore use `pg_dump`/`pg_restore` through `pnpm db:backup` and `pnpm db:restore` (doc 07); the document artifact volume joins the procedure in Phase 1.
+- Backup and restore use `pg_dump`/`pg_restore` through `pnpm db:backup` and `pnpm db:restore` (doc 07); the document artifact volume joins the procedure in Phase 1b.
 - Owner-aware links require `UNIQUE (profile_id, id)` on each parent table; that index also serves per-profile lookups, so no separate `profile_id` index is added there.
 
-## Phase 1 storage sketch (not Phase 0 migrations)
+## Phase 1a tables
+
+Postings and pursuits, implemented 2026-09-14:
+
+```mermaid
+erDiagram
+  profiles ||--o{ jobs : has
+  profiles ||--o{ applications : has
+  jobs ||--o| applications : "one pursuit"
+```
+
+| Table | Key fields / content |
+|---|---|
+| jobs | id, profile_id; title, company_name (both required, not blank), location, source (`pasted`), source_url, raw_description (required, not blank), availability (`active`, `expired`, `unknown`, default active) |
+| applications | id, profile_id, job_id; status (the eight values of document 05, default `preparing`), notes, submitted_at |
+
+Rules the database backs up: `UNIQUE (profile_id, id)` on jobs so applications link owner-aware; `UNIQUE (profile_id, job_id)` on applications, one pursuit per profile and job; the composite foreign key `(profile_id, job_id)` references `jobs (profile_id, id)` with `ON DELETE CASCADE`, so deleting a job deletes its application (the interface confirms first); check constraints on source, availability and status; an index on jobs `(profile_id, updated_at)` for the list. `submitted_at` is set the first time the status becomes `applied` and kept on every later change; it is the user's own record of having sent the application, never something the app sets on its own. The derived status chip is never stored (document 05). Both tables carry `created_at` and `updated_at`, the latter as the stale-edit token.
+
+| Parent | Child FK | Parent per child | Children per parent |
+|---|---|---|---|
+| profiles | jobs.profile_id | 1 | 0..N |
+| profiles | applications.profile_id | 1 | 0..N |
+| jobs | applications.(profile_id, job_id) | 1 | 0..1 |
+
+## Phase 1b storage sketch (not migrated)
 
 | Record | Purpose |
 |---|---|
-| jobs | raw description, source, URL if provided, title/company, normalized attributes |
-| applications | profile_id, job_id, status, notes, submission time; one pursuit per profile/job initially |
 | generation_runs | state, selected input snapshot, template/prompt/model identifiers, timing/errors and usage when supplied |
 | documents | application_id, type: resume / cover_letter / recruiter_message |
 | document_revisions | document_id, structured content JSONB, optional generation_run_id, reviewed state; immutable saved revisions |

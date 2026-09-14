@@ -1,6 +1,6 @@
 # 03 — System and modules
 
-Status: stack, Profile module and packaged runtime implemented; Phase 1 modules proposed. Updated 2026-09-14.
+Status: stack, Profile, Jobs and Applications modules and packaged runtime implemented; Phase 1b modules proposed. Updated 2026-09-14.
 
 ## System boundary
 
@@ -31,12 +31,12 @@ Phase 0/1 module boundaries:
 
 ```mermaid
 flowchart TB
-  model["Model integration<br/>(infrastructure adapter, Phase 1)"]
-  pdf["PDF rendering<br/>(component inside Documents)"]
+  model["Model integration<br/>(infrastructure adapter, Phase 1b)"]
+  pdf["PDF rendering<br/>(component inside Documents, Phase 1b)"]
   profile["Profile<br/>Phase 0: career facts and achievements"]
-  jobs["Jobs<br/>Phase 1: pasted text and metadata"]
-  documents["Documents<br/>Phase 1: drafts, snapshots, review"]
-  applications["Applications<br/>Phase 1: status and saved materials"]
+  jobs["Jobs<br/>Phase 1a: pasted text and metadata (implemented)"]
+  documents["Documents<br/>Phase 1b: drafts, snapshots, review"]
+  applications["Applications<br/>Phase 1a: status and notes (implemented)"]
   documents -->|"read facts"| profile
   documents -->|"read posting"| jobs
   documents -->|"structured generation"| model
@@ -44,21 +44,21 @@ flowchart TB
   applications -->|"reference saved revisions"| documents
 ```
 
-Arrows are code calls or dependencies, not HTTP connections or deployment boundaries. Matching, Research and Discovery enter in Phase 2 and 3.
+Arrows are code calls or dependencies, not HTTP connections or deployment boundaries. Jobs and Applications are implemented; in Phase 1a Applications only stores a job id and the two are joined by the composition code in `src/app`. Matching, Research and Discovery enter in Phase 2 and 3.
 
 | Module | Owns | May depend on |
 |---|---|---|
 | Profile | Career records, skills, editable achievements | Database adapter |
-| Jobs | Raw posting, metadata, normalized fields | Database adapter; later import adapters |
+| Jobs (implemented) | Raw pasted posting, title, company, location, source URL, availability | Database adapter; later import adapters |
 | Documents | Generation coordination, saved revisions, input snapshots, review, artifact metadata | Profile/Jobs read operations, model adapter, PDF renderer, file storage |
-| Applications | Pursuit status, notes, submission record, exact material references | Jobs and Documents read operations |
+| Applications (implemented) | Pursuit status, notes, submission time, the derived job status rule; later exact material references | Stores a job id; Documents read operations in Phase 1b |
 | Matching (later) | Eligibility checks and explained assessments | Profile and Jobs reads, model/retrieval adapters |
 | Research (later) | Sourced findings and bounded research runs | Jobs reads, search/fetch adapters, model runtime |
 | Discovery (later) | Provider adapters, schedules, ingestion runs | Jobs write operations; orchestration can then invoke Matching/Documents |
 
 PDF rendering is a small component within Documents initially, not a separately deployed service. It converts validated structured content through templates into PDFs. Extract an independent package only if real reuse or isolation needs emerge. Model integration is infrastructure, not a business module that knows how resumes work.
 
-Keep cross-module workflows at an application composition boundary; avoid circular imports. Documents can store an opaque application ID without importing Applications operations; an application-level use case coordinates creating the application and generating its materials. Database foreign keys do not mandate circular code dependencies.
+Keep cross-module workflows at an application composition boundary; avoid circular imports. The implemented example is `src/app/jobs/pursue-job.ts`: pasting a posting must create the job and its application together, so the function opens one transaction and passes the handle to the Jobs and Applications use cases, whose own transactions nest as savepoints inside it; a failure in either rolls back both. Neither module imports the other, and the owner-aware foreign key in the database checks the link. Documents will likewise store an opaque application ID without importing Applications operations; an application-level use case will coordinate creating the application and generating its materials. Database foreign keys do not mandate circular code dependencies.
 
 ## Repository shape
 
@@ -72,11 +72,18 @@ src/
                          each: layout.tsx (list column + add control), page.tsx (placeholder),
                          new/page.tsx (blank form column), [id]/page.tsx (edit column with delete),
                          actions.ts (Server Actions) and the form component
-    jobs/                empty state until Phase 1
+    jobs/                layout.tsx (list column; the client JobList and JobListControls apply the
+                         filter and sort search parameters), page.tsx (placeholder), new/page.tsx
+                         (paste form), [id]/layout.tsx (job column: status form, blocks, delete),
+                         [id]/page.tsx (renders nothing), [id]/description/ and [id]/company/,
+                         actions.ts, pursue-job.ts (composition), list-jobs.ts, list-params.ts
     form-state.ts        shared action result shape and form helpers
     tokens.css           design tokens from DESIGN.md (the only place values live)
   modules/
+    shared/              contracts.ts (Result, ModuleError, field helpers), service.ts (BaseDeps, error mapping)
     profile/             schema.ts, contracts.ts, rules.ts, repository.ts, service.ts, index.ts
+    jobs/                same shape; postings
+    applications/        same shape; pursuits and the derived job status rule
   components/            shared presentation components (Shell, Column, Toolbar, Card, Field, ...)
   infrastructure/        database pool, configuration
 db/migrations/           generated SQL migrations and drizzle-kit journal
@@ -94,7 +101,7 @@ docs/                    numbered design and ADRs
 
 Inside a module: `schema.ts` declares tables, `contracts.ts` holds Zod input schemas and result types (browser-safe), `rules.ts` holds pure functions, `repository.ts` holds Drizzle queries over a database or transaction handle, `service.ts` holds use cases that open transactions and map database errors to typed results, and `index.ts` is the only import path for callers. Layouts render their own column followed by `children`, so a route like `/about/achievements/[id]` produces the hub, the list and the edit form as sibling columns and CSS shows the last two (one on a phone); the old Phase 0 addresses redirect to their new columns from `next.config.ts`. Server Actions in `src/app` import from `index.ts`; a client component that needs a contract imports `contracts.ts` directly so no database code reaches the browser bundle.
 
-Add Jobs, Documents, and Applications when Phase 1 begins, with the same file shape.
+Add Documents when Phase 1b begins, with the same file shape.
 
 Framework handlers translate requests, validate transport input, invoke operations, and return useful errors. Domain rules live in modules. Database constraints back up critical rules. Persistence uses Drizzle: the schema is TypeScript, queries stay close to SQL, and migrations are generated as reviewable SQL files ([ADR 004](adr/004-drizzle-persistence.md)). Do not maintain multiple persistence implementations for hypothetical portability.
 

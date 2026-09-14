@@ -17,7 +17,7 @@ pnpm db:migrate                 # applies db/migrations to the landed database
 pnpm dev                        # http://localhost:3000
 ```
 
-The first visit asks for your name and creates the single profile of this installation. Career facts live under About me in the sidebar; Jobs stays empty until Phase 1. Data lives in the Docker volume `landed_pgdata`, outside the source checkout. `pnpm db:down` stops the database and keeps the volume.
+The first visit asks for your name and creates the single profile of this installation. Career facts live under About me in the sidebar; pasted postings and their applications live under Jobs. Data lives in the Docker volume `landed_pgdata`, outside the source checkout. `pnpm db:down` stops the database and keeps the volume.
 
 Tests use a second database, `landed_test`, created automatically when the volume is first initialised. Apply migrations to it once, then run the checks listed in [CONTRIBUTING](../CONTRIBUTING.md):
 
