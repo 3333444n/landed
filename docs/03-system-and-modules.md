@@ -23,7 +23,7 @@ flowchart LR
 
 This is a logical runtime view: PostgreSQL is a process/container with its own volume, and the `migrate` task is a Compose service that runs once per `start` rather than a product component. The diagram abstracts volumes and networks.
 
-Phase 0 and 1a have no runtime network dependency beyond local processes. Installation/image downloads require internet. From Phase 1b the web service makes outbound HTTPS calls to the model provider configured in the environment file, and only then; with no provider configured, paste-back mode keeps everything local. Later job/search providers require outbound access too. LAN/public access and remote MCP require a separate access/security design.
+Phase 0 and 1a have no runtime network dependency beyond local processes. Installation/image downloads require internet. From Phase 1b the web service makes outbound HTTPS calls to the model provider configured in the environment file, and only then; with no provider configured, paste-back mode keeps everything local. The one other outbound call is user-initiated: pasting an image address for a job's logo fetches that address once, through the guarded fetcher in `src/infrastructure/fetch` ([ADR 007](adr/007-user-initiated-image-fetch.md)). Later job/search providers require outbound access too. LAN/public access and remote MCP require a separate access/security design.
 
 ## Ownership and dependencies
 
@@ -52,7 +52,7 @@ Arrows are code calls or dependencies, not HTTP connections or deployment bounda
 | Module | Owns | May depend on |
 |---|---|---|
 | Profile | Career records, skills, editable achievements | Database adapter |
-| Jobs (implemented) | Raw pasted posting, title, company, location, source URL, availability | Database adapter; later import adapters |
+| Jobs (implemented) | Raw pasted posting, title, company, location, salary, source URL, availability, the logo file and its metadata | Database adapter and the artifact directory; later import adapters |
 | Documents (implemented) | Generation runs, input snapshots, saved revisions, grounding warnings, review state, artifact metadata, PDF rendering | The model adapter interface and the artifact directory; receives snapshots as data, imports no other module |
 | Applications (implemented) | Pursuit status, notes, submission time, the derived job status rule; pinning the exact revisions used for a submission is deferred (document 09) | Stores a job id; the composition in `src/app/jobs/list-jobs.ts` feeds it run and draft facts read from Documents |
 | Matching (later) | Eligibility checks and explained assessments | Profile and Jobs reads, model/retrieval adapters |
@@ -97,7 +97,7 @@ src/
     applications/        same shape; pursuits and the derived job status rule
     documents/           same shape plus prompts/ (versioned prompt builders), pdf/ (templates) and artifacts.ts
   components/            shared presentation components (Shell, SidebarNav, ThemeToggle, Drawer, Column, Toolbar, ToolbarMenu, Card, IconTile, Field, AutoGrowTextarea, ...)
-  infrastructure/        database pool, configuration, model/ (adapter interface, AI SDK class, fake, factory)
+  infrastructure/        database pool, configuration, model/ (adapter interface, AI SDK class, fake, factory), fetch/ (guarded image fetch, ADR 007)
 db/migrations/           generated SQL migrations and drizzle-kit journal
 db/migrate.mjs           migration runner used inside the release image (production dependencies only)
 db/init/                 creates the test database on first start of the development database

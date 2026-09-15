@@ -12,6 +12,9 @@ import { availabilityLabels, jobAvailabilities } from "@/modules/jobs/contracts"
  * Paste and edit share one form. Fields remount on every result (React resets forms after an
  * action): after a save they clear with a new record id, after an error they keep the input.
  */
+/** The logo picker in the column header binds its inputs to the form through this id. */
+export const jobFormId = "job-form";
+
 export function JobForm({
   action,
   record,
@@ -26,8 +29,14 @@ export function JobForm({
   const values = prefill(state, record ?? {});
 
   return (
-    <form action={formAction} className={formStyles.form} noValidate>
+    <form id={jobFormId} action={formAction} className={formStyles.form} noValidate>
       <Fields key={fieldsKey(state)} values={values} errors={errors} editing={!!record} />
+      {errors.logoFile || errors.logoUrl ? (
+        <p className={`${formStyles.status} ${formStyles.failed}`} role="alert">
+          Logo: {[...(errors.logoFile ?? []), ...(errors.logoUrl ?? [])].join(" ")}. Choose it again
+          from the tile next to the title.
+        </p>
+      ) : null}
       {errors.form ? (
         <p className={`${formStyles.status} ${formStyles.failed}`} role="alert">
           {errors.form.join(" ")}

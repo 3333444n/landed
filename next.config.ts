@@ -4,6 +4,8 @@ const nextConfig: NextConfig = {
   // The release image copies .next/standalone (a traced server with only the files it needs)
   // instead of the whole workspace and node_modules (ADR 003).
   output: "standalone",
+  // A company logo (up to 1 MB) travels with the paste form through a Server Action.
+  experimental: { serverActions: { bodySizeLimit: "2mb" } },
   // The Phase 0 routes moved under /about when the column layout arrived; old bookmarks still work.
   async redirects() {
     return [

@@ -1,10 +1,10 @@
-import { FileText } from "lucide-react";
 import { notFound } from "next/navigation";
 import { deps, requireProfile } from "@/app/current-profile";
 import { Column } from "@/components/Column";
-import { getJob } from "@/modules/jobs";
+import { LogoPicker } from "@/components/LogoPicker";
+import { getJob, logoHref } from "@/modules/jobs";
 import { saveJobAction } from "../../actions";
-import { JobForm } from "../../JobForm";
+import { JobForm, jobFormId } from "../../JobForm";
 
 export const dynamic = "force-dynamic";
 
@@ -16,9 +16,9 @@ export default async function JobDescriptionPage({ params }: { params: Promise<{
 
   return (
     <Column
-      icon={<FileText />}
+      control={<LogoPicker formId={jobFormId} current={logoHref(job)} />}
       title="Job description"
-      subtitle="The posting as you pasted it."
+      subtitle="The posting as you pasted it. The tile changes the logo."
       parentHref={`/jobs/${job.id}`}
       parentTitle={job.title}
       width="detail"

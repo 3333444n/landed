@@ -12,6 +12,7 @@ import styles from "./Column.module.css";
  */
 export function Column({
   icon,
+  control,
   title,
   count,
   subtitle,
@@ -23,6 +24,8 @@ export function Column({
 }: {
   /** A meaningful icon shown in a tile before the title (DESIGN.md "Icon tile"). */
   icon?: ReactNode;
+  /** An interactive control in the tile's place, such as the logo picker ("Icon tile button"). */
+  control?: ReactNode;
   title: string;
   count?: number;
   subtitle?: string;
@@ -47,7 +50,7 @@ export function Column({
           </Link>
         ) : null}
         <div className={styles.header}>
-          {icon ? <IconTile>{icon}</IconTile> : null}
+          {control ?? (icon ? <IconTile>{icon}</IconTile> : null)}
           <div className={styles.titles}>
             <h2 id={headingId} className={`title-lg ${styles.title}`}>
               {title}

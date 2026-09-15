@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import { check, index, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 import { profiles } from "@/modules/profile/schema";
-import { jobAvailabilities, jobSources } from "./contracts";
+import { jobAvailabilities, jobSources, logoContentTypes } from "./contracts";
 
 /*
  * Phase 1a table (docs/04). A job is an external posting; its text is untrusted input and is
@@ -28,6 +28,9 @@ export const jobs = pgTable(
     sourceUrl: text("source_url"),
     rawDescription: text("raw_description").notNull(),
     availability: text("availability", { enum: jobAvailabilities }).notNull().default("active"),
+    /** A company logo stored as a file under the artifact directory (docs/04); both or neither. */
+    logoStorageKey: text("logo_storage_key"),
+    logoContentType: text("logo_content_type", { enum: logoContentTypes }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -39,5 +42,10 @@ export const jobs = pgTable(
     notBlank(t.rawDescription.name),
     check("jobs_source_valid", sql`source IN ('pasted')`),
     check("jobs_availability_valid", sql`availability IN ('active', 'expired', 'unknown')`),
+    check("jobs_logo_pair", sql`(logo_storage_key IS NULL) = (logo_content_type IS NULL)`),
+    check(
+      "jobs_logo_content_type_valid",
+      sql`logo_content_type IS NULL OR logo_content_type IN ('image/png', 'image/jpeg', 'image/webp', 'image/svg+xml')`,
+    ),
   ],
 );
