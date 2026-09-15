@@ -276,6 +276,7 @@ export const warningKinds = [
   "no_evidence",
   "unsupported_number",
   "unknown_heading",
+  "misattributed_evidence",
 ] as const;
 export type WarningKind = (typeof warningKinds)[number];
 
@@ -291,6 +292,7 @@ export const warningLabels: Record<WarningKind, string> = {
   no_evidence: "Cites no evidence",
   unsupported_number: "Contains a number not found in the cited evidence",
   unknown_heading: "Names an employer, project or institution not in your facts",
+  misattributed_evidence: "Cites a record that belongs to another role or project",
 };
 
 // Inputs

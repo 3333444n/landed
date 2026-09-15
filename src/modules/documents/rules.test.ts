@@ -64,6 +64,43 @@ describe("groundingCheck", () => {
     expect(groundingCheck("cover_letter", letter, snapshot)).toEqual([]);
     expect(groundingCheck("recruiter_message", message, snapshot)).toEqual([]);
   });
+  it("flags a bullet that cites another role's or project's record", () => {
+    const projectAchievement = "50000000-0000-4000-8000-000000000002"; // Community Tool Library
+    const standalone = "50000000-0000-4000-8000-000000000003";
+    const warnings = groundingCheck(
+      "resume",
+      minimalResume({ text: "Built accessible forms.", evidenceIds: [projectAchievement] }),
+      snapshot,
+    );
+    expect(warnings.map((w) => w.kind)).toEqual(["misattributed_evidence"]);
+    expect(warnings[0]?.path).toBe("sections.0.entries.0.bullets.0");
+    // The role's own achievement, the profile and an unplaced achievement are fine anywhere
+    expect(
+      groundingCheck(
+        "resume",
+        minimalResume({
+          text: "Built a reporting tool.",
+          evidenceIds: [achievement, snapshot.profile.id, standalone],
+        }),
+        snapshot,
+      ),
+    ).toEqual([]);
+    // Under the project's own entry the project achievement is at home
+    const projectResume = minimalResume(
+      { text: "Built accessible forms.", evidenceIds: [projectAchievement] },
+      "Community Tool Library",
+    );
+    projectResume.sections[0]!.kind = "projects";
+    expect(groundingCheck("resume", projectResume, snapshot)).toEqual([]);
+    // An unknown heading is reported once, not also as misattribution
+    expect(
+      groundingCheck(
+        "resume",
+        minimalResume({ text: "Did things.", evidenceIds: [achievement] }, "Nowhere Inc"),
+        snapshot,
+      ).map((w) => w.kind),
+    ).toEqual(["unknown_heading"]);
+  });
   it("flags evidence ids that are not in the snapshot", () => {
     const warnings = groundingCheck(
       "resume",

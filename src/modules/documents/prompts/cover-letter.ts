@@ -2,7 +2,7 @@ import { factsBlock, groundingRules, type PromptDefinition } from "./shared";
 
 export const coverLetterPrompt: PromptDefinition = {
   name: "cover-letter",
-  version: 1,
+  version: 2,
   instructions: `You write a one-page cover letter for one job posting from a candidate's own career facts.
 
 ${groundingRules}

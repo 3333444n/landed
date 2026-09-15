@@ -18,7 +18,7 @@ Plain TypeScript functions, Zod schemas, explicit versioned prompts, and one ada
 
 Paste-back is the same workflow with a person as the model: the app shows the prompt and the snapshot, the user runs it anywhere and pastes the JSON back, and the answer passes the same validation and grounding check. It needs no key and works from a phone.
 
-Grounding is enforced after generation by the application, not by the prompt: every unit must cite evidence ids that exist in the snapshot, and any number in the text must appear in the cited records. Violations are warnings for the user, shown as chips in the review view. Every call writes a run record (provider, model, prompt name and version, tokens, latency, cost when reported, outcome); the Runs column shows them. Quality is measured on a synthetic evaluation set in `examples/generation` run by `pnpm eval`; the documentation names the providers it has actually been run against.
+Grounding is enforced after generation by the application, not by the prompt: every unit must cite evidence ids that exist in the snapshot, any number in the text must appear in the cited records, and in a resume a bullet under an entry may cite only records that belong to that employer, project or institution (added 2026-09-14 after the first real run placed a personal-project achievement under an employer with every id valid and every number matching). Violations are warnings for the user, shown as chips in the review view. Every call writes a run record (provider, model, prompt name and version, tokens, latency, cost when reported, outcome); the Runs column shows them. Quality is measured on a synthetic evaluation set in `examples/generation` run by `pnpm eval`; the documentation names the providers it has actually been run against.
 
 The JSON schema a provider receives is not the Zod schema verbatim. Providers compile the schema into a decoding grammar and each has its own dialect: OpenAI's strict mode rejects `minLength`, `maxLength`, `minItems` and `maxItems`, and Google rejects a schema whose nested `maxItems` multiply past a complexity limit, which the resume's sections × entries × bullets × evidence ids did on the first real run. The adapter therefore sends the schema without length keywords and validates the answer with the full Zod schema afterwards; the budgets are also stated in the prompt text. Adding a keyword to the document schemas means re-running `pnpm eval`.
 
@@ -27,6 +27,7 @@ The JSON schema a provider receives is not the Zod schema verbatim. Providers co
 | Date | Provider | Model | Result |
 |---|---|---|---|
 | 2026-09-14 | `openrouter` | `google/gemini-3.1-flash-lite` | 9 of 9 answers valid, no grounding warnings, cost reported (about $0.011 for the set), 1.4 to 3.1 s per call |
+| 2026-09-14 | `openrouter` | `google/gemini-3.1-flash-lite` | prompts v2 (attribution rule, resume budget): 9 of 9 valid, no warnings, $0.011 |
 
 Providers not in this table are wired up but unverified; run `pnpm eval` against them and add the row in the pull request.
 

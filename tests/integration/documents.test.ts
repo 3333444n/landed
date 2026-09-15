@@ -17,6 +17,7 @@ import {
   getRun,
   listRunsForDocument,
   markReviewed,
+  prompts,
   startRun,
   submitPastedAnswer,
   sweepInterruptedRuns,
@@ -181,7 +182,7 @@ describe("generateDocument with the fake adapter", () => {
     expect(run.mode).toBe("adapter");
     expect(run.provider).toBe("fake");
     expect(run.promptName).toBe("resume");
-    expect(run.promptVersion).toBe(1);
+    expect(run.promptVersion).toBe(prompts.resume.version);
     expect(run.inputTokens).toBe(1200);
     expect(run.outputTokens).toBe(400);
     expect(run.costUsd).toBeNull();
