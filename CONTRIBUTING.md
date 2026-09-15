@@ -31,6 +31,10 @@ Commit messages follow `<type>(<scope>): <short imperative description>`, for ex
 
 Pull requests use the template: **What** (one or two sentences), **Why** (the problem, link the issue), **How** (decisions, trade-offs, what to review first), **Testing** (what was run, new tests, manual steps for UI). Keep each change focused on one concern.
 
+### Stacked pull requests
+
+Prefer independent branches from `origin/main`. Use a stack only when one change genuinely depends on another and splitting improves review. In a stack (`branch-a → main`, `branch-b → branch-a`, `branch-c → branch-b`) each pull request targets its immediate parent, so its diff shows only its own layer. State the dependency and the merge order at the top of every PR in the stack. Never merge a child before its parent. This repository merges with merge commits, so a child needs no restack after its parent merges and GitHub retargets it to `main` when the parent branch is deleted; if a parent were ever squash-merged, rebase the children onto `main` before merging them.
+
 ## Rules that are easy to miss
 
 - Achievements are edited in place; do not add revision history without a revised decision.
