@@ -22,6 +22,8 @@ export const jobs = pgTable(
     title: text("title").notNull(),
     companyName: text("company_name").notNull(),
     location: text("location"),
+    /** As the posting states it, any currency or period; never parsed (docs/01). */
+    salary: text("salary"),
     source: text("source", { enum: jobSources }).notNull().default("pasted"),
     sourceUrl: text("source_url"),
     rawDescription: text("raw_description").notNull(),

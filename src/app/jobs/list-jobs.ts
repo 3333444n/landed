@@ -17,6 +17,7 @@ export interface JobRow {
   title: string;
   companyName: string;
   location: string | null;
+  salary: string | null;
   summary: string;
   createdAt: string;
   updatedAt: string;
@@ -53,6 +54,7 @@ export async function listJobRows(deps: BaseDeps, profileId: string): Promise<Jo
       title: job.title,
       companyName: job.companyName,
       location: job.location,
+      salary: job.salary,
       summary: jobSummary(job.rawDescription),
       createdAt: job.createdAt.toISOString(),
       updatedAt: job.updatedAt.toISOString(),

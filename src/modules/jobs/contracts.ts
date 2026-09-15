@@ -31,6 +31,7 @@ export const jobInput = z.object({
   title: requiredText("Enter the job title"),
   companyName: requiredText("Enter the company"),
   location: optionalText(200),
+  salary: optionalText(200),
   sourceUrl: optionalUrl,
   rawDescription: requiredText("Paste the job description", 50_000),
   availability: z.enum(jobAvailabilities).default("active"),

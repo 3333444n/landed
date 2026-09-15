@@ -47,6 +47,7 @@ export async function saveJob(
     title: input.title,
     companyName: input.companyName,
     location: input.location ?? null,
+    salary: input.salary ?? null,
     sourceUrl: input.sourceUrl ?? null,
     rawDescription: input.rawDescription,
     availability: input.availability,

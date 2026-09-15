@@ -1,6 +1,6 @@
 # 04 — PostgreSQL data model
 
-Status: Phase 0 tables implemented in `db/migrations/0000_phase0_profile_tables.sql`; Phase 1a tables in `db/migrations/0001_phase1a_jobs_and_applications.sql`; Phase 1b tables in `db/migrations/0002_phase1b_documents_and_profile_links.sql`. Updated 2026-09-14.
+Status: Phase 0 tables implemented in `db/migrations/0000_phase0_profile_tables.sql`; Phase 1a tables in `db/migrations/0001_phase1a_jobs_and_applications.sql`; Phase 1b tables in `db/migrations/0002_phase1b_documents_and_profile_links.sql`; the job salary column in `db/migrations/0003_phase1c_job_salary.sql`. Updated 2026-09-14.
 
 An Entity–Relationship (ER) diagram describes entities and their relationships. A logical relational ER model adds keys, attributes, and cardinality; a physical schema adds database-specific types, constraints, and indexes. The domain model explains what a Loan means; the ER model shows how `loans.copy_id` references `copies.id`.
 
@@ -83,7 +83,7 @@ erDiagram
 
 | Table | Key fields / content |
 |---|---|
-| jobs | id, profile_id; title, company_name (both required, not blank), location, source (`pasted`), source_url, raw_description (required, not blank), availability (`active`, `expired`, `unknown`, default active) |
+| jobs | id, profile_id; title, company_name (both required, not blank), location, salary (free text as the posting states it, never parsed), source (`pasted`), source_url, raw_description (required, not blank), availability (`active`, `expired`, `unknown`, default active) |
 | applications | id, profile_id, job_id; status (the eight values of document 05, default `preparing`), notes, submitted_at |
 
 Rules the database backs up: `UNIQUE (profile_id, id)` on jobs so applications link owner-aware; `UNIQUE (profile_id, job_id)` on applications, one pursuit per profile and job; the composite foreign key `(profile_id, job_id)` references `jobs (profile_id, id)` with `ON DELETE CASCADE`, so deleting a job deletes its application (the interface confirms first); check constraints on source, availability and status; an index on jobs `(profile_id, updated_at)` for the list. `submitted_at` is set the first time the status becomes `applied` and kept on every later change; it is the user's own record of having sent the application, never something the app sets on its own. The derived status chip is never stored (document 05). Both tables carry `created_at` and `updated_at`, the latter as the stale-edit token.
