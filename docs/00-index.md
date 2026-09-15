@@ -7,7 +7,7 @@ Numbers establish reading order, not software release versions. Accepted choices
 | Document | Question answered | Status |
 |---|---|---|
 | [01 — Product and phases](01-product-and-phases.md) | What can users accomplish, and when? | Phases 0, 1a and 1b complete; Phases 2 to 4 proposed |
-| [02 — Domain model](02-domain-model.md) | What do the product's concepts mean? | Proposed vocabulary and rules |
+| [02 — Domain model](02-domain-model.md) | What do the product's concepts mean? | Vocabulary through Phase 1b in use; Phase 2 to 4 concepts proposed |
 | [03 — System and modules](03-system-and-modules.md) | Where does code run, and who owns behavior? | Profile, Jobs and Applications modules, column interface and packaged runtime implemented; Documents module, model adapter and PDF rendering implemented |
 | [04 — Data model](04-data-model.md) | How does PostgreSQL represent those concepts? | Phase 0, 1a and 1b schemas migrated |
 | [05 — Workflows and failures](05-workflows-and-failures.md) | What happens on success, failure, and retry? | Phases 0, 1a and 1b implemented; Phase 2 and 3 workflows proposed |
@@ -21,7 +21,7 @@ Numbers establish reading order, not software release versions. Accepted choices
 | ADR | Decision | Status |
 |---|---|---|
 | [001 — Local TypeScript application with PostgreSQL](adr/001-local-typescript-postgresql.md) | Language, framework, database, local execution | Accepted, implemented |
-| [002 — Simple achievements and generation snapshots](adr/002-achievements-and-snapshots.md) | Achievements edited in place; Phase 1 input snapshots | Accepted, implemented (snapshots since Phase 1b) |
+| [002 — Simple achievements and generation snapshots](adr/002-achievements-and-snapshots.md) | Achievements edited in place; Phase 1b input snapshots | Accepted, implemented (snapshots since Phase 1b) |
 | [003 — Local packaging and quickstart](adr/003-local-packaging.md) | Docker Compose release and launcher | Accepted, implemented |
 | [004 — Drizzle for persistence](adr/004-drizzle-persistence.md) | Schema, queries and SQL migrations | Accepted, implemented |
 | [005 — Interface as URL-driven columns](adr/005-url-driven-columns.md) | Path as navigation state, sidebar and shifting columns, derived job status | Accepted, implemented |

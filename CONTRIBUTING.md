@@ -1,6 +1,6 @@
 # Contributing
 
-Start at the [documentation index](docs/00-index.md) and the [decision register](docs/09-decisions-and-readiness.md). Phase 0 (career data entry) and Phase 1a (jobs and applications) are implemented; Phase 1b (generated materials) is in progress and later phases are design only. Distinguish accepted decisions from suggestions and avoid describing planned features as implemented.
+Start at the [documentation index](docs/00-index.md) and the [decision register](docs/09-decisions-and-readiness.md). Phase 0 (career data entry), Phase 1a (jobs and applications) and Phase 1b (generated materials, review, PDFs, model access) are implemented; later phases are design only. Distinguish accepted decisions from suggestions and avoid describing planned features as implemented.
 
 ## Set up
 
@@ -21,7 +21,7 @@ pnpm build
 pnpm db:generate       # must report no schema changes; otherwise commit the new migration
 ```
 
-Paid model credentials are never required for standard checks: `.env.test` selects the fake model adapter (`LANDED_MODEL_PROVIDER=fake`), which answers from `examples/generation/fixtures`. The only command that calls a real provider is `pnpm eval`, which runs the synthetic cases in `examples/generation/cases` against the provider configured in `.env` and prints grounding warnings, tokens, latency and cost; run it when you change a prompt or add a provider, and paste its table into the pull request.
+Paid model credentials are never required for standard checks: `.env.test` selects the fake model adapter (`LANDED_MODEL_PROVIDER=fake`), which answers from `examples/generation/fixtures`. The only command that calls a real provider is the optional `pnpm eval`, which is never part of CI and runs the synthetic cases in `examples/generation/cases` against the provider configured in `.env` and prints grounding warnings, tokens, latency and cost; run it when you change a prompt or add a provider, and paste its table into the pull request.
 
 The packaged installation is `Dockerfile`, `compose.release.yml`, `db/migrate.mjs`, `scripts/landed.sh`, `scripts/landed.ps1` and `.env.release.example`. CI does not build the image; a change to any of these files must re-run the checks listed under "Required verification" in [doc 07](docs/07-quickstart-contract.md) (fresh `start`, restart, backup and restore, factory reset) and state the results in the pull request.
 

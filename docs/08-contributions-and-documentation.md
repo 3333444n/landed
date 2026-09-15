@@ -1,6 +1,6 @@
 # 08 — Contributions and living documentation
 
-Status: CI, commit conventions, PR template and SECURITY in place; the packaged installation is built from the checkout, no tagged release yet. Updated 2026-09-13.
+Status: CI, commit conventions, PR template and SECURITY in place; the packaged installation is built from the checkout, no tagged release yet. Updated 2026-09-14.
 
 ## Small public-repository baseline
 
@@ -18,7 +18,7 @@ Examples do not include real names/contact details from the maintainer. Do not r
 2. Runtime/module changes update document 03 and its Mermaid diagrams.
 3. Schema changes update document 04, relationships, migration, and relevant tests together.
 4. Behavior/failure changes update document 05.
-5. Integration changes update document 06 and the supported setup path.
+5. Integration changes update document 06 and the supported setup path; prompt or provider changes also update the evaluation set (`examples/generation`, `tests/eval`) and its `pnpm eval` results in the pull request.
 6. Installation changes update document 07 and its clean-install checks.
 7. Scope/decision changes update documents 01/09 and create or supersede an ADR when significant.
 8. Visual changes update DESIGN.md at the repository root; the UI and the file must never disagree. Changes to the produced PDFs or the recruiter text update DESIGN-DOCS.md the same way.
