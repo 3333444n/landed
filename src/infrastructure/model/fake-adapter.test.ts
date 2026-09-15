@@ -78,6 +78,15 @@ describe("createModelAdapter", () => {
     expect(
       createModelAdapter({
         kind: "configured",
+        provider: "openrouter",
+        model: "google/gemini-3.1-flash-lite",
+        apiKey: "k",
+        baseUrl: "https://openrouter.ai/api/v1",
+      }),
+    ).toMatchObject({ provider: "openrouter", model: "google/gemini-3.1-flash-lite" });
+    expect(
+      createModelAdapter({
+        kind: "configured",
         provider: "openai_compatible",
         model: "llama3.1",
         apiKey: null,

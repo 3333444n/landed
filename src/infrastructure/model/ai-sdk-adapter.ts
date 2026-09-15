@@ -1,9 +1,13 @@
 /*
  * The Vercel AI SDK implementation: a class because it holds a live client (the provider's
- * language model) and an optional cost lookup. One call per generate; no tools, no loop.
+ * language model), an optional cost lookup and optional provider options sent with every request
+ * (OpenRouter's usage accounting, for example). One call per generate; no tools, no loop.
  */
 import { generateText, NoObjectGeneratedError, Output, type LanguageModel } from "ai";
 import type { GenerateOutcome, GenerateRequest, GenerateUsage, ModelAdapter } from "./adapter";
+
+/** The SDK does not export this type; it is whatever `generateText` accepts as `providerOptions`. */
+export type ProviderOptions = NonNullable<Parameters<typeof generateText>[0]["providerOptions"]>;
 
 export type CostLookup = (
   providerMetadata: Record<string, unknown> | undefined,
@@ -15,6 +19,7 @@ export class AiSdkModelAdapter implements ModelAdapter {
     readonly model: string,
     private readonly languageModel: LanguageModel,
     private readonly lookupCost: CostLookup = async () => null,
+    private readonly providerOptions: ProviderOptions | undefined = undefined,
   ) {}
 
   async generate<T>(request: GenerateRequest<T>): Promise<GenerateOutcome<T>> {
@@ -26,6 +31,7 @@ export class AiSdkModelAdapter implements ModelAdapter {
         prompt: request.input,
         output: Output.object({ schema: request.schema }),
         maxRetries: 1,
+        providerOptions: this.providerOptions,
       });
       const latencyMs = Date.now() - started;
       const costUsd = await this.lookupCost(

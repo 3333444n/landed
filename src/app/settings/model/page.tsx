@@ -5,11 +5,52 @@ import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
 
-const providerLines = [
-  "LANDED_MODEL_PROVIDER: anthropic, openai, gateway (Vercel AI Gateway) or openai_compatible (OpenRouter, Ollama, Groq, LM Studio)",
-  "LANDED_MODEL: the model name as the provider spells it, for example claude-opus-5 or anthropic/claude-opus-5 through the gateway",
-  "LANDED_MODEL_API_KEY: the provider's key; it stays in that file and is never stored or logged",
-  "LANDED_MODEL_BASE_URL: only for openai_compatible, for example https://openrouter.ai/api/v1 or http://localhost:11434/v1",
+/**
+ * One recipe per provider: the exact lines to put in the environment file. The values shown are
+ * examples; the model name is whatever the provider spells it as on its own model page.
+ */
+const recipes: { title: string; note: string; lines: string[] }[] = [
+  {
+    title: "OpenRouter",
+    note: "One key for models from many companies. The model name is the slug shown on the model's OpenRouter page, for example google/gemini-3.1-flash-lite or anthropic/claude-sonnet-5. Get a key at openrouter.ai/settings/keys.",
+    lines: [
+      "LANDED_MODEL_PROVIDER=openrouter",
+      "LANDED_MODEL=google/gemini-3.1-flash-lite",
+      "LANDED_MODEL_API_KEY=sk-or-…",
+    ],
+  },
+  {
+    title: "Anthropic",
+    note: "A key from console.anthropic.com.",
+    lines: [
+      "LANDED_MODEL_PROVIDER=anthropic",
+      "LANDED_MODEL=claude-sonnet-5",
+      "LANDED_MODEL_API_KEY=sk-ant-…",
+    ],
+  },
+  {
+    title: "OpenAI",
+    note: "A key from platform.openai.com.",
+    lines: ["LANDED_MODEL_PROVIDER=openai", "LANDED_MODEL=gpt-5", "LANDED_MODEL_API_KEY=sk-…"],
+  },
+  {
+    title: "Vercel AI Gateway",
+    note: "One key for many models, addressed as company/model.",
+    lines: [
+      "LANDED_MODEL_PROVIDER=gateway",
+      "LANDED_MODEL=anthropic/claude-sonnet-5",
+      "LANDED_MODEL_API_KEY=vck_…",
+    ],
+  },
+  {
+    title: "Ollama or another OpenAI-compatible server",
+    note: "Any endpoint that speaks the OpenAI chat API. Needs the base URL; the key is optional for a local server. From the packaged installation, a server on this computer is host.docker.internal, not localhost.",
+    lines: [
+      "LANDED_MODEL_PROVIDER=openai_compatible",
+      "LANDED_MODEL=llama3.1",
+      "LANDED_MODEL_BASE_URL=http://localhost:11434/v1",
+    ],
+  },
 ];
 
 /** Reads the environment and shows what is configured (ADR 006). The key is never rendered. */
@@ -22,18 +63,21 @@ export default function ModelSetupPage() {
           <Card title="No model configured">
             <p className={styles.text}>
               Paste back works without one: every document can show you its prompt, you run it in
-              any assistant and paste the answer back. To let Landed call a provider itself, add
-              these lines to your .env file (.env.release for the packaged installation) and
-              restart.
+              any assistant and paste the answer back. To let Landed call a provider itself, add one
+              of the blocks below to your .env file (.env.release for the packaged installation),
+              then restart. The key stays in that file: it is never stored, shown or logged.
             </p>
           </Card>
-          <Card title="Lines to add">
-            <ul className={styles.lines}>
-              {providerLines.map((line) => (
-                <li key={line}>{line}</li>
-              ))}
-            </ul>
-          </Card>
+          {recipes.map((recipe) => (
+            <Card key={recipe.title} title={recipe.title}>
+              <p className={`${styles.text} text-secondary`}>{recipe.note}</p>
+              <ul className={styles.lines}>
+                {recipe.lines.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
+            </Card>
+          ))}
         </>
       ) : null}
       {status.kind === "invalid" ? (

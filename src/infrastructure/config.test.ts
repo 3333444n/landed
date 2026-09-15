@@ -75,6 +75,34 @@ describe("modelConfig", () => {
       baseUrl: "http://localhost:11434/v1",
     });
   });
+  it("fills in the OpenRouter base URL and lets the environment override it", () => {
+    const base = {
+      LANDED_MODEL_PROVIDER: "openrouter",
+      LANDED_MODEL: "google/gemini-3.1-flash-lite",
+    };
+    expect(modelConfig(loadConfig(env(base)))).toEqual({
+      kind: "invalid",
+      problems: ["LANDED_MODEL_API_KEY is empty"],
+    });
+    expect(modelConfig(loadConfig(env({ ...base, LANDED_MODEL_API_KEY: "sk-or-1234" })))).toEqual({
+      kind: "configured",
+      provider: "openrouter",
+      model: "google/gemini-3.1-flash-lite",
+      apiKey: "sk-or-1234",
+      baseUrl: "https://openrouter.ai/api/v1",
+    });
+    expect(
+      modelConfig(
+        loadConfig(
+          env({
+            ...base,
+            LANDED_MODEL_API_KEY: "sk-or-1234",
+            LANDED_MODEL_BASE_URL: "https://proxy.example.com/v1",
+          }),
+        ),
+      ),
+    ).toMatchObject({ baseUrl: "https://proxy.example.com/v1" });
+  });
   it("rejects an unknown provider and a bad base URL", () => {
     expect(() => loadConfig(env({ LANDED_MODEL_PROVIDER: "bedrock" }))).toThrow(
       /LANDED_MODEL_PROVIDER must be one of/,

@@ -13,6 +13,7 @@ The application calls the model provider directly through the Vercel AI SDK, beh
 - `anthropic` and `openai` through their AI SDK provider packages;
 - `gateway`, the Vercel AI Gateway, one key for any model addressed as `creator/model`;
 - `openai_compatible`, any endpoint that speaks the OpenAI chat API given a base URL, which covers OpenRouter, Ollama, Groq and LM Studio without provider-specific code;
+- `openrouter`, added 2026-09-14 after the first real setup: the same OpenAI-compatible client with the base URL filled in, OpenRouter's usage accounting requested so each run records its cost, and the app named in the headers. Three lines instead of four, and no "model URL" to look for;
 - `fake`, a test double that returns fixtures from `examples/`, used by every automated check.
 
 Configuration lives only in the environment file (`.env` for contributors, `.env.release` for the packaged installation): provider, model name, API key and, for compatible endpoints, the base URL. The key is never stored in the database, never sent to the browser and never logged. The interface has a Model setup column that reports which provider is configured (showing at most the last characters of the key) and the exact lines to add; the document cards link to it when nothing is configured.
