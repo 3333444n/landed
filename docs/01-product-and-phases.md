@@ -1,6 +1,6 @@
 # 01 — Product and phases
 
-Status: Phase 0 complete (2026-09-13); Phase 1a complete (2026-09-14); Phase 1b decided and in progress (2026-09-14); Phases 2 to 4 proposed. Updated 2026-09-14.
+Status: Phase 0 complete (2026-09-13); Phase 1a complete (2026-09-14); Phase 1b complete (2026-09-14); Phases 2 to 4 proposed. Updated 2026-09-14.
 
 Landed is a locally run job-search application that produces factual, tailored materials and helps people manage applications. It must be usable without editing source code. Code can be cloned/forked independently of personal data. The shortest useful outcome is a reviewed resume, cover letter, and recruiter message for a real job.
 
@@ -30,7 +30,7 @@ Completed on 2026-09-14: a paste form (title, company, optional location and pos
 
 ### Phase 1b — Generated materials and PDFs
 
-Milestones 2 to 4 below. The decisions document 09 required before code were taken on 2026-09-14 ([ADR 006](adr/006-model-access-path.md), documents 04, 05 and 06, [DESIGN-DOCS.md](../DESIGN-DOCS.md)). In the interface, each document block on a job opens a review column. Its actions are Generate, which asks the configured model provider; Paste back, which shows the same prompt for the user to run in any assistant and paste the JSON answer into, so no provider setup is required; Mark reviewed; and, once PDFs exist, Download. Text is edited in place on the preview, each bullet or paragraph individually, and every edit is a new saved revision. Beside the text, an Evidence column lists the career records each bullet cites, and a Runs column shows every model call with its model, prompt version, tokens, latency and cost. A document card that has no configured provider offers "Set up a model", which opens a column explaining what to put in the environment file.
+Milestones 2 to 4 below, completed on 2026-09-14 under the decisions in [ADR 006](adr/006-model-access-path.md), documents 04, 05 and 06 and [DESIGN-DOCS.md](../DESIGN-DOCS.md). In the interface, each document block on a job opens a review column. Its actions are Generate, which asks the configured model provider; Paste back, which shows the same prompt for the user to run in any assistant and paste the JSON answer into, so no provider setup is required; Mark reviewed; and Download PDF for the resume and the cover letter (the recruiter message is copied as text). Text is edited in place on the preview, each bullet or paragraph individually, and every edit is a new saved revision. Beside the text, an Evidence column lists the career records each bullet cites, and a Runs column shows every model call with its model, prompt version, tokens, latency and cost. A document card that has no configured provider offers "Set up a model", which opens a column explaining what to put in the environment file.
 
 Generated content is checked by the application, not trusted: every bullet must cite records in the frozen input snapshot, and numbers that do not appear in the cited evidence are flagged with a warning chip for the user to fix or accept. The resume is strictly one page; the content schema carries the bullet and length budgets that make that possible, and the PDF uses the conservative single-column layout in DESIGN-DOCS.md. Reordering sections and bullets by drag and drop is a later refinement, not part of 1b.
 
@@ -41,6 +41,8 @@ Recommended implementation milestones:
 4. Export resume and cover letter PDFs from saved content; support copyable recruiter text.
 
 One resume template and one cover-letter layout initially. PDF rendering does not call an LLM. The user explicitly marks an application submitted; generating or downloading materials does not submit anything. Phase 1 completion includes a tested end-to-end application bundle, not just model text in a console.
+
+Completed on 2026-09-14: the Documents module with generation runs, frozen snapshots, immutable revisions and grounding warnings; the model adapter with four providers selected in the environment file, a fake adapter for every check and paste-back mode; the review column with inline editing of summary, bullets, paragraphs, subject and message text; the Evidence, Paste back and Runs columns; the Model setup page; profile links; one-page resume and cover-letter PDFs stored as artifacts with atomic writes; the synthetic evaluation set behind `pnpm eval`. Verified with 86 unit tests, 41 integration tests against PostgreSQL and 4 browser journeys against the production build, all with the fake adapter. Known gaps, carried rather than blocking: the header, entry headings, date ranges, greeting and closing are not editable in place (regenerate or paste back to change them); no drag-and-drop reordering; `pnpm eval` has not yet been run against a real provider, so no provider is listed as verified; opening Paste back creates a queued run per visit (earlier ones are superseded); the PowerShell launcher does not back up the artifacts volume; the exact revisions used for a submission are not pinned on the application; the Phase 0 and 1a gaps remain.
 
 ## Phase 2 — Assisted import, matching, and research
 

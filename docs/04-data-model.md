@@ -1,6 +1,6 @@
 # 04 — PostgreSQL data model
 
-Status: Phase 0 tables implemented in `db/migrations/0000_phase0_profile_tables.sql`; Phase 1a tables in `db/migrations/0001_phase1a_jobs_and_applications.sql`; Phase 1b tables designed (migration 0002 arrives with the Documents module). Updated 2026-09-14.
+Status: Phase 0 tables implemented in `db/migrations/0000_phase0_profile_tables.sql`; Phase 1a tables in `db/migrations/0001_phase1a_jobs_and_applications.sql`; Phase 1b tables in `db/migrations/0002_phase1b_documents_and_profile_links.sql`. Updated 2026-09-14.
 
 An Entity–Relationship (ER) diagram describes entities and their relationships. A logical relational ER model adds keys, attributes, and cardinality; a physical schema adds database-specific types, constraints, and indexes. The domain model explains what a Loan means; the ER model shows how `loans.copy_id` references `copies.id`.
 
@@ -94,7 +94,7 @@ Rules the database backs up: `UNIQUE (profile_id, id)` on jobs so applications l
 | profiles | applications.profile_id | 1 | 0..N |
 | jobs | applications.(profile_id, job_id) | 1 | 0..1 |
 
-## Phase 1b tables (designed 2026-09-14, migration 0002)
+## Phase 1b tables (implemented 2026-09-14, migration 0002)
 
 ```mermaid
 erDiagram
@@ -112,7 +112,7 @@ erDiagram
 | document_revisions | id, profile_id, document_id, generation_run_id nullable; content JSONB (validated against the type's Zod schema); warnings JSONB (grounding results); source (`generated`, `pasted`, `edited`); reviewed_at nullable; created_at. Rows are never updated except to set reviewed_at |
 | document_artifacts | id, profile_id, document_revision_id; format (`pdf`), template_version, storage_key (relative path under the artifact directory), checksum, byte_size; created_at. Inserted only after the file is fully written |
 
-Rules the database backs up: owner-aware composite foreign keys from `generation_runs` and `documents` to `applications (profile_id, id)` with `ON DELETE CASCADE`, so deleting a job removes its application, documents, revisions, runs and artifact rows in one statement (files are reconciled separately); `document_revisions` and `document_artifacts` link owner-aware to their parents the same way; check constraints on every enumerated column; an index on `generation_runs (profile_id, application_id, created_at)` for the Runs column and the chip facts, and on `document_revisions (profile_id, document_id, created_at)` for the latest revision.
+Rules the database backs up: `UNIQUE (profile_id, id)` on applications, added in the same migration so the new links can be owner-aware; owner-aware composite foreign keys from `generation_runs` and `documents` to `applications (profile_id, id)` with `ON DELETE CASCADE`, so deleting a job removes its application, documents, revisions, runs and artifact rows in one statement (files are reconciled separately); `document_revisions` and `document_artifacts` link owner-aware to their parents the same way; check constraints on every enumerated column; an index on `generation_runs (profile_id, application_id, created_at)` for the Runs column and the chip facts, and on `document_revisions (profile_id, document_id, created_at)` for the latest revision.
 
 The database stores editable structured content and input snapshots. PDFs live in a persistent local artifact volume, with metadata in PostgreSQL. A renderer failure leaves saved text intact. Editing creates a new saved document revision, not a new achievement revision. Evidence ids inside document content are the ids of records in the run's snapshot, which are the original record ids, so a bullet can be traced to the live record while it exists and to the frozen copy forever. Pinning the exact revisions used for a submission on the application is deferred (document 09 gaps) until the submission flow needs it.
 

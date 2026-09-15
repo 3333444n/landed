@@ -2,9 +2,9 @@
 
 Get the interview. Landed is a locally run job-search application that turns your real career evidence into tailored resumes, cover letters, and recruiter messages, and tracks every application. It rewrites and reorganizes your facts; it never invents them.
 
-**Status: Phase 1a complete (2026-09-14) and installable with Docker. You can enter and keep your career data locally, paste job postings and track each application's status; generated materials (Phase 1b) are decided and in progress, not yet shipped.** What works today: profile, work history, education, projects, skills and achievements, plus jobs and their applications with a status list you can filter and sort, entered in the browser and stored in PostgreSQL on your machine, with backup and restore. No AI account is needed, and Phase 1b keeps it optional: bring a provider key or use paste-back mode ([ADR 006](docs/adr/006-model-access-path.md)).
+**Status: Phase 1b complete (2026-09-14) and installable with Docker. You can enter and keep your career data locally, paste job postings, track each application's status, and generate a reviewed resume, cover letter and recruiter message for each job, with one-page PDFs.** What works today: profile, work history, education, projects, skills and achievements; jobs and their applications with a status list you can filter and sort; per job, a generated resume, cover letter and recruiter message that cite your own records, flag unsupported claims, are edited in place and downloaded as PDF; all stored in PostgreSQL on your machine, with backup and restore. An AI account is optional: bring a key for Anthropic, OpenAI, the Vercel AI Gateway or any OpenAI-compatible endpoint (OpenRouter, Ollama), or use paste-back mode and run the prompt in whatever assistant you already have ([ADR 006](docs/adr/006-model-access-path.md)).
 
-The stack is TypeScript, Next.js on Node.js, and PostgreSQL. Later milestones add tailored resumes, cover letters, recruiter messages, PDFs, matching, research, discovery, and interview tracking.
+The stack is TypeScript, Next.js on Node.js, and PostgreSQL. Later milestones add link import and matching, research, discovery, and interview tracking.
 
 ## Install
 

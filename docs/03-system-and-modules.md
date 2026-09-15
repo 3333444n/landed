@@ -1,6 +1,6 @@
 # 03 — System and modules
 
-Status: stack, Profile, Jobs and Applications modules and packaged runtime implemented; Documents module and model adapter designed for Phase 1b (ADR 006). Updated 2026-09-14.
+Status: stack, Profile, Jobs and Applications modules and packaged runtime implemented; Documents module, model adapter and PDF rendering implemented (Phase 1b, ADR 006). Updated 2026-09-14.
 
 ## System boundary
 
@@ -53,7 +53,7 @@ Arrows are code calls or dependencies, not HTTP connections or deployment bounda
 |---|---|---|
 | Profile | Career records, skills, editable achievements | Database adapter |
 | Jobs (implemented) | Raw pasted posting, title, company, location, source URL, availability | Database adapter; later import adapters |
-| Documents (Phase 1b) | Generation runs, input snapshots, saved revisions, grounding warnings, review state, artifact metadata, PDF rendering | The model adapter interface and the artifact directory; receives snapshots as data, imports no other module |
+| Documents (implemented) | Generation runs, input snapshots, saved revisions, grounding warnings, review state, artifact metadata, PDF rendering | The model adapter interface and the artifact directory; receives snapshots as data, imports no other module |
 | Applications (implemented) | Pursuit status, notes, submission time, the derived job status rule; later exact material references | Stores a job id; Documents read operations in Phase 1b |
 | Matching (later) | Eligibility checks and explained assessments | Profile and Jobs reads, model/retrieval adapters |
 | Research (later) | Sourced findings and bounded research runs | Jobs reads, search/fetch adapters, model runtime |
@@ -111,7 +111,7 @@ docs/                    numbered design and ADRs
 
 Inside a module: `schema.ts` declares tables, `contracts.ts` holds Zod input schemas and result types (browser-safe), `rules.ts` holds pure functions, `repository.ts` holds Drizzle queries over a database or transaction handle, `service.ts` holds use cases that open transactions and map database errors to typed results, and `index.ts` is the only import path for callers. Layouts render their own column followed by `children`, so a route like `/about/achievements/[id]` produces the hub, the list and the edit form as sibling columns and CSS shows the last two (one on a phone); the old Phase 0 addresses redirect to their new columns from `next.config.ts`. Server Actions in `src/app` import from `index.ts`; a client component that needs a contract imports `contracts.ts` directly so no database code reaches the browser bundle.
 
-Documents arrives with Phase 1b in the same file shape; its `prompts/` folder holds one versioned prompt builder per document type and `pdf/` the two react-pdf templates. PDFs are written to `LANDED_ARTIFACT_DIR` (a named volume in the packaged installation) with metadata rows in PostgreSQL.
+Documents has the same file shape plus `prompts/` (one versioned prompt builder per document type), `pdf/` (the two react-pdf templates and the renderer) and `artifacts.ts` (atomic file writes under `LANDED_ARTIFACT_DIR`, a named volume in the packaged installation, with metadata rows inserted only after the file exists). The PDF downloads are the first Route Handlers in the app (`pdf/route.ts` under the resume and cover-letter routes), because a file download is not a form submission.
 
 Framework handlers translate requests, validate transport input, invoke operations, and return useful errors. Domain rules live in modules. Database constraints back up critical rules. Persistence uses Drizzle: the schema is TypeScript, queries stay close to SQL, and migrations are generated as reviewable SQL files ([ADR 004](adr/004-drizzle-persistence.md)). Do not maintain multiple persistence implementations for hypothetical portability.
 

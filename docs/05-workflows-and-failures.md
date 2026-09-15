@@ -1,6 +1,6 @@
 # 05 — Workflows and failures
 
-Status: Phase 0 save and Phase 1a paste-and-track implemented; Phase 1b generation designed and in progress. Updated 2026-09-14.
+Status: Phase 0 save and Phase 1a paste-and-track implemented; Phase 1b generation, review and PDF rendering implemented. Updated 2026-09-14.
 
 ## Phase 0 save
 
@@ -55,6 +55,6 @@ Phase 0 (implemented in `tests/`): save/reload across restart; input and FK cons
 
 Phase 1a (implemented in `tests/`): the paste writes job and application together and replays the same id; blank fields write nothing; status changes record `submitted_at` once; stale tokens are refused; availability never moves the application; deleting a job removes its application; one unit test per row of the chip table and per filter; one browser journey from paste to delete.
 
-Phase 1b: the grounding check for each warning kind (unknown evidence id, uncited unit, number absent from the cited evidence); budgets rejected by the content schema; the run lifecycle with the fake adapter (running to succeeded with a revision; validation and provider failures leave no revision; a sibling document keeps its revision); the interrupted-run sweep; edited revisions as new rows with the old one intact; stale edits refused; paste-back with valid and invalid JSON; job deletion cascading to documents, revisions and runs; the resume PDF rendering to exactly one page; and one browser journey from paste to reviewed document. Every check uses fixed synthetic cases and the fake adapter, never a paid call. `pnpm eval` runs the synthetic cases against the configured real provider and reports warnings, tokens and cost for whoever holds a key. Runs record prompt and model identity and whatever usage the provider reports; cost is null when not reported, never estimated.
+Phase 1b (implemented in `src/**/*.test.ts` and `tests/`): the grounding check for each warning kind (unknown evidence id, uncited unit, number absent from the cited evidence); budgets rejected by the content schema; the run lifecycle with the fake adapter (running to succeeded with a revision; validation and provider failures leave no revision; a sibling document keeps its revision); the interrupted-run sweep; edited revisions as new rows with the old one intact; stale edits refused; paste-back with valid and invalid JSON; job deletion cascading to documents, revisions and runs; the resume PDF rendering to exactly one page; and one browser journey from paste to reviewed document. Every check uses fixed synthetic cases and the fake adapter, never a paid call. `pnpm eval` runs the synthetic cases against the configured real provider and reports warnings, tokens and cost for whoever holds a key. Runs record prompt and model identity and whatever usage the provider reports; cost is null when not reported, never estimated.
 
 Logs identify operation/run and error category without copying career content or secrets by default. Add diagnostic detail as needed; no external observability account is a quickstart prerequisite.

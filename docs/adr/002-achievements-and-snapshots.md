@@ -1,6 +1,6 @@
 # ADR 002 — Simple achievements and generation snapshots
 
-Date: 2026-09-13. Status: no achievement versioning accepted; snapshot/document details proposed.
+Date: 2026-09-13. Status: accepted; achievements in place since Phase 0, generation snapshots and immutable document revisions implemented in Phase 1b (2026-09-14, `generation_runs.snapshot` and `document_revisions`).
 
 ## Context
 
