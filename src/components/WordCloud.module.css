@@ -36,10 +36,35 @@
   font-weight: 500;
 }
 
+/* The primary-button pattern: accent fill, accent.contrast text, so a match reads at a glance. */
 .matched {
-  color: var(--accent);
-  background: var(--accent-soft);
-  padding: 2px var(--space-2);
+  color: var(--accent-contrast);
+  background: var(--accent);
+  padding: 2px 10px;
+}
+
+/* Under a form field: a label, the cloud, a helper line; no card (forms sit on the surface). */
+.inline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.inline .cloud {
+  margin: 0;
+}
+
+.label {
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.helper {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-secondary);
 }
 
 /* Read by assistive technology, never seen. */

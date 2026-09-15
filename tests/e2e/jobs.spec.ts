@@ -33,6 +33,12 @@ test("a pasted job gets an application whose status the user moves by hand", asy
   await page.getByLabel("Location").fill(demo.location);
   await page.getByLabel("Salary").fill(demo.salary);
   await page.getByLabel("Description").fill(demo.rawDescription);
+
+  // The word cloud follows the description before anything is saved and tints the skill
+  const liveCloud = page.getByRole("list", { name: "Frequent words" });
+  await expect(
+    liveCloud.getByRole("listitem").filter({ hasText: "postgresql, 1 time, in your skills" }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Save job" }).click();
 
   // The job opens beside the list with its Preparing chip and inert document blocks

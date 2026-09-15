@@ -1,12 +1,16 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useDeferredValue, useMemo, useState } from "react";
 import { Button } from "@/components/Button";
 import { Field } from "@/components/Field";
 import { Select } from "@/components/Select";
+import { WordCloud } from "@/components/WordCloud";
 import formStyles from "@/components/forms.module.css";
 import { fieldsKey, idleState, prefill, type ActionState, type FormValues } from "@/app/form-state";
 import { availabilityLabels, jobAvailabilities } from "@/modules/jobs/contracts";
+// Imported from the rules file, not the module index: the index pulls in the service and the
+// database, and this component runs in the browser.
+import { buildWordCloud, type SkillLike } from "@/modules/jobs/rules";
 
 /**
  * Paste and edit share one form. Fields remount on every result (React resets forms after an
@@ -19,10 +23,13 @@ export function JobForm({
   action,
   record,
   submitLabel,
+  skills,
 }: {
   action: (state: ActionState, formData: FormData) => Promise<ActionState>;
   record?: FormValues;
   submitLabel: string;
+  /** The profile's skills as plain data, so the live word cloud can tint its matches. */
+  skills: SkillLike[];
 }) {
   const [state, formAction, pending] = useActionState(action, idleState);
   const errors = state.status === "error" ? state.fieldErrors : {};
@@ -30,7 +37,13 @@ export function JobForm({
 
   return (
     <form id={jobFormId} action={formAction} className={formStyles.form} noValidate>
-      <Fields key={fieldsKey(state)} values={values} errors={errors} editing={!!record} />
+      <Fields
+        key={fieldsKey(state)}
+        values={values}
+        errors={errors}
+        editing={!!record}
+        skills={skills}
+      />
       {errors.logoFile || errors.logoUrl ? (
         <p className={`${formStyles.status} ${formStyles.failed}`} role="alert">
           Logo: {[...(errors.logoFile ?? []), ...(errors.logoUrl ?? [])].join(" ")}. Choose it again
@@ -60,12 +73,22 @@ function Fields({
   values,
   errors,
   editing,
+  skills,
 }: {
   values: FormValues;
   errors: Record<string, string[]>;
   editing: boolean;
+  skills: SkillLike[];
 }) {
   const [recordId] = useState(() => values.id ?? crypto.randomUUID());
+  // The word cloud follows the description as it is typed or pasted. The deferred value lets a
+  // long paste render first and the cloud catch up, so typing never waits on the count.
+  const [description, setDescription] = useState(values.rawDescription ?? "");
+  const deferredDescription = useDeferredValue(description);
+  const cloud = useMemo(
+    () => buildWordCloud(deferredDescription, skills),
+    [deferredDescription, skills],
+  );
   return (
     <>
       {editing ? (
@@ -119,8 +142,10 @@ function Fields({
         helper="Paste the posting as it is. It is kept as data, never followed as instructions."
         defaultValue={values.rawDescription}
         errors={errors.rawDescription}
+        onChange={(event) => setDescription(event.target.value)}
         required
       />
+      <WordCloud items={cloud} variant="inline" />
       {editing ? (
         <Select
           label="Availability"
