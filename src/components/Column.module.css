@@ -5,8 +5,12 @@
  */
 .detail:last-child,
 .detail:has(+ .placeholder:last-child) {
-  background: var(--bg-surface);
-  --card-bg: var(--bg-surface-raised);
+  --card-bg: var(--glass-card-raised);
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--glass-panel), var(--glass-panel)) padding-box,
+    var(--glass-edge) border-box;
+  box-shadow: var(--shadow-glass-inset);
 }
 
 /*
@@ -63,12 +67,10 @@
     padding: var(--space-6);
     padding-top: var(--space-16);
   }
-  .list {
-    flex: 0 0 var(--width-list);
-    width: var(--width-list);
-  }
+  /* The two visible columns share the width equally (DESIGN.md "Layout"). */
+  .list,
   .detail {
-    flex: 1 1 var(--width-detail-min);
+    flex: 1 1 0;
     min-width: 0;
   }
   .detail:last-child,

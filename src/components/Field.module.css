@@ -23,9 +23,11 @@
   transition: background-color var(--duration-hover) var(--ease);
 }
 
+/* A textarea grows with its content (AutoGrowTextarea); `rows` is only its minimum. */
 textarea.control {
   padding: var(--space-2) var(--space-3);
   resize: vertical;
+  field-sizing: content;
 }
 
 .control::placeholder {

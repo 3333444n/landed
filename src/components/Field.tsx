@@ -1,4 +1,5 @@
 import { useId, type ComponentProps } from "react";
+import { AutoGrowTextarea } from "./AutoGrowTextarea";
 import styles from "./Field.module.css";
 
 type Shared = {
@@ -27,7 +28,7 @@ export function Field(props: InputProps | TextareaProps) {
         {label}
       </label>
       {rest.multiline ? (
-        <textarea
+        <AutoGrowTextarea
           rows={3}
           {...omitMultiline(rest)}
           id={id}

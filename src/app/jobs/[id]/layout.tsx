@@ -1,3 +1,4 @@
+import { Building2, FileText } from "lucide-react";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { deps, requireProfile } from "@/app/current-profile";
@@ -16,6 +17,7 @@ import {
 import { getJob, jobSummary } from "@/modules/jobs";
 import { deleteJobAction, saveApplicationAction } from "../actions";
 import { ApplicationStatusForm } from "../ApplicationStatusForm";
+import { documentIcons } from "./documents/icons";
 import { documentChip, runSummary } from "./documents/summary";
 
 export const dynamic = "force-dynamic";
@@ -79,19 +81,27 @@ export default async function JobLayout({
           <li>
             <Card
               href={`/jobs/${job.id}/description`}
+              icon={<FileText />}
               title="Job description"
               subtitle={jobSummary(job.rawDescription)}
             />
           </li>
           <li>
-            <Card href={`/jobs/${job.id}/company`} title="Company" subtitle={job.companyName} />
+            <Card
+              href={`/jobs/${job.id}/company`}
+              icon={<Building2 />}
+              title="Company"
+              subtitle={job.companyName}
+            />
           </li>
           {views.map(({ type, view }) => {
             const chip = documentChip(view);
+            const Icon = documentIcons[type];
             return (
               <li key={type}>
                 <Card
                   href={`/jobs/${job.id}/${documentSlugs[type]}`}
+                  icon={<Icon />}
                   title={documentTypeLabels[type]}
                   subtitle={runSummary(view)}
                   chips={chip ? <Chip tone={chip.tone}>{chip.label}</Chip> : undefined}

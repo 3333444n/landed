@@ -1,31 +1,50 @@
+/*
+ * Layered glass (DESIGN.md "Glass material"): a translucent fill in the padding box, a 1px
+ * gradient edge highlight in the border box, and an inset glow along the top. No blur: nothing
+ * scrolls beneath a card. A card inside a panel reads `--card-bg` from the column.
+ */
 .card {
+  --card-fill: var(--card-bg, var(--glass-card));
   display: block;
-  background: var(--card-bg, var(--bg-surface));
+  border: 1px solid transparent;
   border-radius: var(--radius-lg);
-  padding: var(--space-6);
+  padding: calc(var(--space-6) - 1px);
+  background:
+    linear-gradient(var(--card-fill), var(--card-fill)) padding-box,
+    var(--glass-edge) border-box;
+  box-shadow: var(--shadow-glass-inset);
   color: var(--text-primary);
 }
 
 @media (max-width: 640px) {
   .card {
-    padding: var(--space-4);
+    padding: calc(var(--space-4) - 1px);
   }
 }
 
 .link {
   text-decoration: none;
-  transition:
-    box-shadow var(--duration-hover) var(--ease),
-    background-color var(--duration-hover) var(--ease);
+  transition: box-shadow var(--duration-hover) var(--ease);
 }
 
 .link:hover,
 .link:focus-visible {
-  box-shadow: var(--shadow-hover);
+  box-shadow: var(--shadow-glass-inset), var(--shadow-hover);
 }
 
 .selected {
-  background: var(--accent-soft);
+  --card-fill: var(--glass-card-selected);
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.body {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .header {

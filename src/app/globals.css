@@ -8,6 +8,7 @@
 }
 
 html {
+  background: var(--bg-canvas);
   font-family: var(--font-sans);
   font-size: 15px;
   line-height: 22px;
@@ -16,7 +17,10 @@ html {
 
 body {
   margin: 0;
-  background: var(--bg-canvas);
+  /* The shell fills the viewport and never scrolls, so the gradient covers it once. */
+  background:
+    var(--bg-canvas-gradient) no-repeat,
+    var(--bg-canvas);
   color: var(--text-primary);
 }
 

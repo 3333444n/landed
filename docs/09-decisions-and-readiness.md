@@ -12,7 +12,7 @@ Updated 2026-09-14. Accepted decisions below reflect the user's explicit instruc
 - Phase 3 automates discovery and draft generation; Phase 4 adds detailed interview tracking.
 - Prioritize an easy clean installation and fictional examples for other users.
 - Drizzle ORM for schema, typed queries, and SQL migration files ([ADR 004](adr/004-drizzle-persistence.md)).
-- Libraries: Zod for validation and structured model output, Vercel AI SDK for model access, @react-pdf/renderer for PDFs, Vitest and Playwright for tests, pnpm as the package manager.
+- Libraries: Zod for validation and structured model output, Vercel AI SDK for model access, @react-pdf/renderer for PDFs, lucide-react for interface icons, Vitest and Playwright for tests, pnpm as the package manager.
 - Node 22 LTS and PostgreSQL 17 as the supported runtime versions.
 - GitHub Actions runs lint, typecheck, tests, build, and migration checks on every pull request.
 - MIT license, copyright Luis Peregrino.

@@ -25,7 +25,11 @@
   .sidebar {
     display: block;
     margin: var(--space-4) 0 var(--space-4) var(--space-4);
-    background: var(--bg-surface);
+    border: 1px solid transparent;
+    background:
+      linear-gradient(var(--glass-panel), var(--glass-panel)) padding-box,
+      var(--glass-edge) border-box;
+    box-shadow: var(--shadow-glass-inset);
     border-radius: var(--radius-xl);
   }
 }

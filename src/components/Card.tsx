@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { IconTile } from "./IconTile";
 import { LinkCard } from "./LinkCard";
 import styles from "./Card.module.css";
 
@@ -7,6 +8,7 @@ import styles from "./Card.module.css";
  * column and shows as selected while its route is open.
  */
 export function Card({
+  icon,
   title,
   subtitle,
   meta = [],
@@ -14,6 +16,8 @@ export function Card({
   href,
   children,
 }: {
+  /** A meaningful icon shown in a tile at the left of the header (DESIGN.md "Icon tile"). */
+  icon?: ReactNode;
   title?: string;
   subtitle?: string;
   /** Short metadata lines in `body.sm`, shown under the subtitle. */
@@ -22,7 +26,7 @@ export function Card({
   href?: string;
   children?: ReactNode;
 }) {
-  const body = (
+  const content = (
     <>
       {title ? (
         <div className={styles.header}>
@@ -38,6 +42,14 @@ export function Card({
       {chips ? <div className={styles.chips}>{chips}</div> : null}
       {children}
     </>
+  );
+  const body = icon ? (
+    <div className={styles.row}>
+      <IconTile>{icon}</IconTile>
+      <div className={styles.body}>{content}</div>
+    </div>
+  ) : (
+    content
   );
   if (href) return <LinkCard href={href}>{body}</LinkCard>;
   return <section className={styles.card}>{body}</section>;
