@@ -31,7 +31,12 @@ export default defineConfig({
     command: process.env.CI ? `pnpm start -p ${port}` : `pnpm dev -p ${port}`,
     url: `http://localhost:${port}`,
     reuseExistingServer: false,
-    env: { DATABASE_URL: testDatabaseUrl() },
+    // The fake adapter answers from examples/generation; no key is ever needed (ADR 006).
+    env: {
+      DATABASE_URL: testDatabaseUrl(),
+      LANDED_MODEL_PROVIDER: "fake",
+      LANDED_ARTIFACT_DIR: "./artifacts-test",
+    },
     timeout: 120_000,
   },
 });

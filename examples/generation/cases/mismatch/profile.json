@@ -1,0 +1,118 @@
+{
+  "profiles": [
+    {
+      "id": "10000000-0000-4000-8000-000000000001",
+      "display_name": "Alex Rivera",
+      "headline": "Software developer",
+      "email": "alex@example.com",
+      "summary": "Builds internal tools and accessible web interfaces.",
+      "location": "Mexico City",
+      "preferences": {
+        "desired_roles": [
+          "Full-stack developer"
+        ],
+        "work_arrangement": [
+          "remote"
+        ]
+      }
+    }
+  ],
+  "employment": [
+    {
+      "id": "20000000-0000-4000-8000-000000000001",
+      "profile_id": "10000000-0000-4000-8000-000000000001",
+      "employer_name": "Example Workshop",
+      "role": "Software developer",
+      "start_year": 2023,
+      "start_month": 4,
+      "end_year": 2025,
+      "end_month": 6,
+      "is_current": false
+    }
+  ],
+  "education": [
+    {
+      "id": "30000000-0000-4000-8000-000000000001",
+      "profile_id": "10000000-0000-4000-8000-000000000001",
+      "institution": "Example Learning Institute",
+      "qualification": "Web development certificate",
+      "subject": "Software development",
+      "start_year": 2022,
+      "start_month": 1,
+      "end_year": 2022,
+      "end_month": 9,
+      "status": "completed"
+    }
+  ],
+  "projects": [
+    {
+      "id": "40000000-0000-4000-8000-000000000001",
+      "profile_id": "10000000-0000-4000-8000-000000000001",
+      "employment_id": null,
+      "name": "Community Tool Library",
+      "description": "A volunteer project for tracking borrowed tools.",
+      "url": null
+    }
+  ],
+  "achievements": [
+    {
+      "id": "50000000-0000-4000-8000-000000000001",
+      "profile_id": "10000000-0000-4000-8000-000000000001",
+      "employment_id": "20000000-0000-4000-8000-000000000001",
+      "project_id": null,
+      "statement": "Reduced weekly report preparation from four hours to one by building a PostgreSQL-backed reporting tool.",
+      "problem": "Manual preparation of weekly reports.",
+      "action": "Built a reporting tool with reusable SQL queries.",
+      "result": "Weekly preparation took one hour.",
+      "metric": "4 hours to 1 hour per week",
+      "source_note": "Fictional user assertion for testing; no real employer data.",
+      "reviewed": true
+    },
+    {
+      "id": "50000000-0000-4000-8000-000000000002",
+      "profile_id": "10000000-0000-4000-8000-000000000001",
+      "employment_id": null,
+      "project_id": "40000000-0000-4000-8000-000000000001",
+      "statement": "Implemented keyboard-accessible forms for recording tool loans.",
+      "metric": null,
+      "source_note": "Fictional project description; no measured adoption result.",
+      "reviewed": true
+    },
+    {
+      "id": "50000000-0000-4000-8000-000000000003",
+      "profile_id": "10000000-0000-4000-8000-000000000001",
+      "employment_id": null,
+      "project_id": null,
+      "statement": "Documented a local development setup for a volunteer team.",
+      "metric": null,
+      "source_note": "Fictional standalone contribution.",
+      "reviewed": false
+    }
+  ],
+  "skills": [
+    {
+      "id": "60000000-0000-4000-8000-000000000001",
+      "profile_id": "10000000-0000-4000-8000-000000000001",
+      "display_name": "PostgreSQL",
+      "normalized_name": "postgresql"
+    },
+    {
+      "id": "60000000-0000-4000-8000-000000000002",
+      "profile_id": "10000000-0000-4000-8000-000000000001",
+      "display_name": "Web accessibility",
+      "normalized_name": "web accessibility"
+    }
+  ],
+  "achievement_skills": [
+    {
+      "profile_id": "10000000-0000-4000-8000-000000000001",
+      "achievement_id": "50000000-0000-4000-8000-000000000001",
+      "skill_id": "60000000-0000-4000-8000-000000000001"
+    },
+    {
+      "profile_id": "10000000-0000-4000-8000-000000000001",
+      "achievement_id": "50000000-0000-4000-8000-000000000002",
+      "skill_id": "60000000-0000-4000-8000-000000000002"
+    }
+  ]
+}

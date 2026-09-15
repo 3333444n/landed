@@ -1,0 +1,19 @@
+{
+  "greeting": "Dear hiring team",
+  "paragraphs": [
+    {
+      "text": "I am applying for the full-stack developer role at Example Analytics. Building internal reporting tools on PostgreSQL and TypeScript is close to the work I did at Example Workshop, where I built a reporting tool that reduced weekly report preparation from four hours to one.",
+      "evidenceIds": ["20000000-0000-4000-8000-000000000001", "50000000-0000-4000-8000-000000000001"]
+    },
+    {
+      "text": "On the Community Tool Library I implemented keyboard-accessible forms for recording tool loans and documented the local development setup for a volunteer team, which is the kind of care internal tools deserve.",
+      "evidenceIds": ["50000000-0000-4000-8000-000000000002", "50000000-0000-4000-8000-000000000003"]
+    },
+    {
+      "text": "I would welcome a conversation about how I could help your team.",
+      "evidenceIds": ["10000000-0000-4000-8000-000000000001"]
+    }
+  ],
+  "closing": "Kind regards",
+  "signature": "Alex Rivera"
+}

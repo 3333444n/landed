@@ -25,6 +25,8 @@ export const applications = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
+    // Phase 1b: documents and runs link owner-aware to (profile_id, id), as jobs do for us.
+    unique("applications_profile_id_id_unique").on(t.profileId, t.id),
     unique("applications_profile_id_job_id_unique").on(t.profileId, t.jobId),
     foreignKey({
       name: "applications_job_fk",

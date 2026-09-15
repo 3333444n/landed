@@ -1,0 +1,6 @@
+{
+  "title": "Data engineer",
+  "company_name": "Example Logistics",
+  "location": "Hybrid, Mexico City",
+  "raw_description": "Example Logistics needs a data engineer to maintain nightly ETL pipelines in Python and Airflow feeding a PostgreSQL warehouse.\n\nExperience with dbt and Kafka is a plus. You will document pipelines for analysts."
+}

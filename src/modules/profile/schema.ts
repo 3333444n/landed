@@ -62,6 +62,12 @@ function monthDateChecks(table: string) {
 const notBlank = (table: string, column: string) =>
   check(`${table}_${column}_not_blank`, sql.raw(`btrim(${column}) <> ''`));
 
+/** Public links for the resume header (Phase 1b): LinkedIn, GitHub, a website. */
+export interface ProfileLinkRecord {
+  label: string;
+  url: string;
+}
+
 export interface ProfilePreferences {
   desiredRoles?: string[];
   locations?: string[];
@@ -80,6 +86,7 @@ export const profiles = pgTable(
     phone: text("phone"),
     location: text("location"),
     preferences: jsonb("preferences").$type<ProfilePreferences>().notNull().default({}),
+    links: jsonb("links").$type<ProfileLinkRecord[]>().notNull().default([]),
     ...timestamps,
   },
   (t) => [notBlank("profiles", t.displayName.name)],

@@ -1,0 +1,9 @@
+{
+  "greeting": "Dear hiring team",
+  "paragraphs": [
+    { "text": "I have led 20 engineers across 5 countries.", "evidenceIds": ["20000000-0000-4000-8000-000000000001"] },
+    { "text": "I look forward to hearing from you.", "evidenceIds": [] }
+  ],
+  "closing": "Kind regards",
+  "signature": "Alex Rivera"
+}

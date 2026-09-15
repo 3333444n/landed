@@ -7,6 +7,7 @@ import styles from "./SidebarNav.module.css";
 const items = [
   { href: "/about", label: "About me" },
   { href: "/jobs", label: "Jobs" },
+  { href: "/settings/model", label: "Settings" },
 ];
 
 /** The brand and at most five items; shared by the sidebar and the drawer. */

@@ -1,0 +1,75 @@
+{
+  "header": {
+    "name": "Alex Rivera",
+    "headline": "Software developer",
+    "contact": ["alex@example.com", "Mexico City"]
+  },
+  "summary": {
+    "text": "Software developer who builds internal tools and accessible web interfaces, with PostgreSQL-backed reporting work that cut weekly preparation from four hours to one.",
+    "evidenceIds": ["10000000-0000-4000-8000-000000000001", "50000000-0000-4000-8000-000000000001"]
+  },
+  "sections": [
+    {
+      "kind": "experience",
+      "title": "Work experience",
+      "entries": [
+        {
+          "heading": "Example Workshop",
+          "subheading": "Software developer",
+          "dateRange": "Apr 2023 – Jun 2025",
+          "bullets": [
+            {
+              "text": "Reduced weekly report preparation from 4 hours to 1 by building a PostgreSQL-backed reporting tool with reusable SQL queries.",
+              "evidenceIds": ["50000000-0000-4000-8000-000000000001"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "projects",
+      "title": "Projects",
+      "entries": [
+        {
+          "heading": "Community Tool Library",
+          "subheading": "Volunteer project for tracking borrowed tools",
+          "dateRange": null,
+          "bullets": [
+            {
+              "text": "Implemented keyboard-accessible forms for recording tool loans.",
+              "evidenceIds": ["50000000-0000-4000-8000-000000000002"]
+            },
+            {
+              "text": "Documented a local development setup for a volunteer team.",
+              "evidenceIds": ["50000000-0000-4000-8000-000000000003"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "education",
+      "title": "Education",
+      "entries": [
+        {
+          "heading": "Example Learning Institute",
+          "subheading": "Web development certificate, Software development",
+          "dateRange": "Jan 2022 – Sep 2022",
+          "bullets": []
+        }
+      ]
+    },
+    {
+      "kind": "skills",
+      "title": "Skills",
+      "entries": [
+        {
+          "heading": "Technical",
+          "subheading": "PostgreSQL, Web accessibility",
+          "dateRange": null,
+          "bullets": []
+        }
+      ]
+    }
+  ]
+}
