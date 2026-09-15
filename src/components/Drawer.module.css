@@ -1,18 +1,72 @@
-.menu {
+/* Round glass buttons (DESIGN.md "Buttons"): the hamburger on the page, the close inside the drawer. */
+.menu,
+.close {
   position: fixed;
-  top: var(--space-4);
-  left: var(--space-4);
   z-index: 30;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: var(--size-control);
+  height: var(--size-control);
   border: 0;
   border-radius: var(--radius-full);
-  background: var(--bg-surface-raised);
+  background: var(--glass-control);
   color: var(--text-primary);
   cursor: pointer;
+  transition: background-color var(--duration-hover) var(--ease);
+}
+
+.menu::before,
+.close::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--glass-edge);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.menu:hover,
+.close:hover {
+  --glass-control: var(--accent-soft);
+}
+
+.menu svg,
+.close svg {
+  width: var(--size-icon);
+  height: var(--size-icon);
+}
+
+/* The hamburger sits on the column's left padding line, where the back button also sits. */
+.menu {
+  top: var(--space-4);
+  left: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .menu {
+    left: var(--space-6);
+  }
+}
+
+/* While the drawer is open the hamburger gives way to a close button in the drawer's corner. */
+.menu.hidden {
+  visibility: hidden;
+}
+
+.close {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
 }
 
 .scrim {
