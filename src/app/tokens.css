@@ -1,41 +1,45 @@
 /*
- * Design tokens from DESIGN.md, the only place colors, radii, spacing, type and motion values
- * are defined. Components consume these variables and never hardcode values.
+ * Design tokens from DESIGN.md, the only names components use. Three layers:
+ *   1. palettes.css owns every colour as a light and a dark value per palette;
+ *   2. the scheme blocks below pick the light or the dark value into each semantic token;
+ *   3. sizes, radii, spacing, type and motion live here and never change with the palette.
+ * Components reference the semantic tokens and never a palette value or a literal.
  */
+@import "./palettes.css";
+
 :root {
   color-scheme: light dark;
 
-  --bg-canvas: #f5f5f7;
-  --bg-surface: #ffffff;
-  --bg-surface-raised: #efeff2;
-  --bg-input: #efeff2;
-  --bg-glass: rgba(245, 245, 247, 0.8);
+  --bg-canvas: var(--l-canvas);
+  --bg-surface: var(--l-surface);
+  --bg-surface-raised: var(--l-raised);
+  --bg-input: var(--l-input);
+  --line: var(--l-line);
+  --text-primary: var(--l-text-primary);
+  --text-secondary: var(--l-text-secondary);
+  --text-tertiary: var(--l-text-tertiary);
+  --accent: var(--l-accent);
+  --accent-soft: var(--l-accent-soft);
+  --success: var(--l-success);
+  --warning: var(--l-warning);
+  --danger: var(--l-danger);
+  --glow: var(--l-glow);
+  --bg-glass: var(--l-glass);
+  --glass-panel: var(--l-glass-panel);
+  --glass-card: var(--l-glass-card);
+  --glass-card-raised: var(--l-glass-card-raised);
+  --glass-card-selected: var(--l-glass-card-selected);
+  --glass-control: var(--l-glass-control);
+  --glass-edge: var(--l-glass-edge);
+  --glass-highlight: var(--l-glass-highlight);
+  --icon-tile-bg: var(--l-icon-tile);
+  --shadow-hover: var(--l-shadow-hover);
+  --shadow-float: var(--l-shadow-float);
 
-  --line: rgba(0, 0, 0, 0.08);
-  --text-primary: #111114;
-  --text-secondary: #5f5f66;
-  --text-tertiary: #8e8e96;
-  --accent: #2f6fed;
-  --accent-soft: #e8efff;
-  --success: #1f8a4c;
-  --warning: #b7791f;
-  --danger: #c5372c;
-  --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.06);
-  --shadow-float: 0 12px 40px rgba(0, 0, 0, 0.1);
-  --glass-highlight: rgba(255, 255, 255, 0.35);
-
-  /* Canvas gradient and layered glass (DESIGN.md "Glass material"). */
-  --glow: rgba(20, 184, 166, 0.22);
+  /* The canvas is lit by two glows; the only gradient background in the interface. */
   --bg-canvas-gradient:
     radial-gradient(70% 55% at 100% 0%, var(--glow), transparent 70%),
     radial-gradient(55% 45% at 0% 100%, var(--glow), transparent 70%);
-  --glass-panel: rgba(255, 255, 255, 0.5);
-  --glass-card: rgba(255, 255, 255, 0.6);
-  --glass-card-raised: rgba(0, 0, 0, 0.035);
-  --glass-card-selected: rgba(232, 239, 255, 0.85);
-  --glass-edge: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(0, 0, 0, 0.05));
-  --glass-control: rgba(255, 255, 255, 0.5);
-  --icon-tile-bg: rgba(0, 0, 0, 0.05);
 
   --size-icon-tile: 36px;
   --size-icon-tile-sm: 28px;
@@ -72,66 +76,65 @@
 
 /*
  * Dark values apply with the system preference unless the person chose light, and always when
- * they chose dark (the `data-theme` attribute set by ThemeToggle).
+ * they chose dark (the `data-theme` attribute set by ThemeToggle). Both blocks are the same
+ * mapping; the palette decides the values.
  */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg-canvas: #0b0b0d;
-    --bg-surface: #161618;
-    --bg-surface-raised: #242428;
-    --bg-input: #242428;
-    --bg-glass: rgba(22, 22, 24, 0.78);
-
-    --line: rgba(255, 255, 255, 0.1);
-    --text-primary: #f5f5f7;
-    --text-secondary: #a1a1aa;
-    --text-tertiary: #6e6e76;
-    --accent: #5b8dff;
-    --accent-soft: #1a2440;
-    --success: #4cc47e;
-    --warning: #e3b04b;
-    --danger: #f0655a;
-    --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.4);
-    --shadow-float: 0 12px 40px rgba(0, 0, 0, 0.5);
-    --glass-highlight: rgba(255, 255, 255, 0.08);
-    --glow: rgba(20, 184, 166, 0.4);
-    --glass-panel: rgba(22, 22, 24, 0.62);
-    --glass-card: rgba(28, 28, 32, 0.72);
-    --glass-card-raised: rgba(255, 255, 255, 0.06);
-    --glass-card-selected: rgba(26, 36, 64, 0.8);
-    --glass-edge: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.03));
-    --glass-control: rgba(255, 255, 255, 0.06);
-    --icon-tile-bg: rgba(255, 255, 255, 0.08);
+    --bg-canvas: var(--d-canvas);
+    --bg-surface: var(--d-surface);
+    --bg-surface-raised: var(--d-raised);
+    --bg-input: var(--d-input);
+    --line: var(--d-line);
+    --text-primary: var(--d-text-primary);
+    --text-secondary: var(--d-text-secondary);
+    --text-tertiary: var(--d-text-tertiary);
+    --accent: var(--d-accent);
+    --accent-soft: var(--d-accent-soft);
+    --success: var(--d-success);
+    --warning: var(--d-warning);
+    --danger: var(--d-danger);
+    --glow: var(--d-glow);
+    --bg-glass: var(--d-glass);
+    --glass-panel: var(--d-glass-panel);
+    --glass-card: var(--d-glass-card);
+    --glass-card-raised: var(--d-glass-card-raised);
+    --glass-card-selected: var(--d-glass-card-selected);
+    --glass-control: var(--d-glass-control);
+    --glass-edge: var(--d-glass-edge);
+    --glass-highlight: var(--d-glass-highlight);
+    --icon-tile-bg: var(--d-icon-tile);
+    --shadow-hover: var(--d-shadow-hover);
+    --shadow-float: var(--d-shadow-float);
   }
 }
 
 :root[data-theme="dark"] {
-  --bg-canvas: #0b0b0d;
-  --bg-surface: #161618;
-  --bg-surface-raised: #242428;
-  --bg-input: #242428;
-  --bg-glass: rgba(22, 22, 24, 0.78);
-
-  --line: rgba(255, 255, 255, 0.1);
-  --text-primary: #f5f5f7;
-  --text-secondary: #a1a1aa;
-  --text-tertiary: #6e6e76;
-  --accent: #5b8dff;
-  --accent-soft: #1a2440;
-  --success: #4cc47e;
-  --warning: #e3b04b;
-  --danger: #f0655a;
-  --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.4);
-  --shadow-float: 0 12px 40px rgba(0, 0, 0, 0.5);
-  --glass-highlight: rgba(255, 255, 255, 0.08);
-  --glow: rgba(20, 184, 166, 0.4);
-  --glass-panel: rgba(22, 22, 24, 0.62);
-  --glass-card: rgba(28, 28, 32, 0.72);
-  --glass-card-raised: rgba(255, 255, 255, 0.06);
-  --glass-card-selected: rgba(26, 36, 64, 0.8);
-  --glass-edge: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.03));
-  --glass-control: rgba(255, 255, 255, 0.06);
-  --icon-tile-bg: rgba(255, 255, 255, 0.08);
+  --bg-canvas: var(--d-canvas);
+  --bg-surface: var(--d-surface);
+  --bg-surface-raised: var(--d-raised);
+  --bg-input: var(--d-input);
+  --line: var(--d-line);
+  --text-primary: var(--d-text-primary);
+  --text-secondary: var(--d-text-secondary);
+  --text-tertiary: var(--d-text-tertiary);
+  --accent: var(--d-accent);
+  --accent-soft: var(--d-accent-soft);
+  --success: var(--d-success);
+  --warning: var(--d-warning);
+  --danger: var(--d-danger);
+  --glow: var(--d-glow);
+  --bg-glass: var(--d-glass);
+  --glass-panel: var(--d-glass-panel);
+  --glass-card: var(--d-glass-card);
+  --glass-card-raised: var(--d-glass-card-raised);
+  --glass-card-selected: var(--d-glass-card-selected);
+  --glass-control: var(--d-glass-control);
+  --glass-edge: var(--d-glass-edge);
+  --glass-highlight: var(--d-glass-highlight);
+  --icon-tile-bg: var(--d-icon-tile);
+  --shadow-hover: var(--d-shadow-hover);
+  --shadow-float: var(--d-shadow-float);
 }
 
 :root[data-theme="light"] {

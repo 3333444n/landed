@@ -29,6 +29,8 @@ Minimalism here means fewer elements, not smaller ones. Remove before you decora
 
 Neutral first. One accent. Semantic colours only for meaning, as chip tints and text.
 
+Colour has three layers in the code. `src/app/palettes.css` holds the palettes: each is one block that gives every colour a light (`--l-*`) and a dark (`--d-*`) value. `src/app/tokens.css` picks the light or the dark value into the semantic tokens below according to the scheme, and holds everything that is not a colour. Components use only the semantic tokens. To try a palette, copy the slate block, name it with a new `data-palette` value, change the values, and open the app with `?palette=<name>` (remembered in the browser; `?palette=` returns to slate). Two palettes exist: `slate` (default, the values below) and `violet` (purple-black canvas, lavender accent, violet glow), under evaluation.
+
 | Token               | Light                    | Dark                     | Use                                              |
 | ------------------- | ------------------------ | ------------------------ | ------------------------------------------------ |
 | `bg.canvas`         | `#F5F5F7`                | `#0B0B0D`                | Base colour under the canvas gradient            |
