@@ -61,53 +61,114 @@
   --d-shadow-float: 0 12px 40px rgba(0, 0, 0, 0.5);
 }
 
-/* Violet: a purple-black canvas, lavender accent and a violet glow. Under evaluation. */
+/*
+ * Violet: the same near-black and near-white neutrals as slate; only the accent, the selection
+ * and the glow carry the hue. Under evaluation.
+ */
 :root[data-palette="violet"] {
-  --l-canvas: #f7f3fc;
+  --l-canvas: #f6f5f8;
   --l-surface: #ffffff;
-  --l-raised: #efe8f8;
-  --l-input: #efe8f8;
-  --l-line: rgba(19, 8, 32, 0.08);
-  --l-text-primary: #130820;
-  --l-text-secondary: #5d5a75;
-  --l-text-tertiary: #8f92b5;
+  --l-raised: #efeef2;
+  --l-input: #efeef2;
+  --l-line: rgba(0, 0, 0, 0.08);
+  --l-text-primary: #111114;
+  --l-text-secondary: #5f5f66;
+  --l-text-tertiary: #8e8e96;
   --l-accent: #8232e9;
   --l-accent-soft: #f4ecff;
   --l-success: #1f8a4c;
   --l-warning: #b7791f;
   --l-danger: #c5372c;
-  --l-glow: rgba(158, 106, 225, 0.3);
-  --l-glass: rgba(247, 243, 252, 0.8);
+  --l-glow: rgba(158, 106, 225, 0.26);
+  --l-glass: rgba(246, 245, 248, 0.8);
   --l-glass-panel: rgba(255, 255, 255, 0.5);
   --l-glass-card: rgba(255, 255, 255, 0.6);
-  --l-glass-card-raised: rgba(19, 8, 32, 0.035);
+  --l-glass-card-raised: rgba(0, 0, 0, 0.035);
   --l-glass-card-selected: rgba(244, 236, 255, 0.85);
   --l-glass-control: rgba(255, 255, 255, 0.5);
-  --l-glass-edge: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(19, 8, 32, 0.05));
+  --l-glass-edge: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(0, 0, 0, 0.05));
   --l-glass-highlight: rgba(255, 255, 255, 0.35);
-  --l-icon-tile: rgba(19, 8, 32, 0.05);
-  --l-shadow-hover: 0 8px 24px rgba(19, 8, 32, 0.06);
-  --l-shadow-float: 0 12px 40px rgba(19, 8, 32, 0.1);
+  --l-icon-tile: rgba(0, 0, 0, 0.05);
+  --l-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.06);
+  --l-shadow-float: 0 12px 40px rgba(0, 0, 0, 0.1);
 
-  --d-canvas: #130820;
-  --d-surface: #1c1030;
-  --d-raised: #291a44;
-  --d-input: #291a44;
+  --d-canvas: #0c0b0e;
+  --d-surface: #161618;
+  --d-raised: #242428;
+  --d-input: #242428;
   --d-line: rgba(255, 255, 255, 0.1);
-  --d-text-primary: #f6f2ff;
-  --d-text-secondary: #b3b0c9;
-  --d-text-tertiary: #8f92b5;
+  --d-text-primary: #f5f5f7;
+  --d-text-secondary: #a1a1aa;
+  --d-text-tertiary: #6e6e76;
   --d-accent: #9e6ae1;
-  --d-accent-soft: #2a1a4f;
+  --d-accent-soft: #241a38;
   --d-success: #4cc47e;
   --d-warning: #e3b04b;
   --d-danger: #f0655a;
-  --d-glow: rgba(130, 50, 233, 0.45);
-  --d-glass: rgba(28, 16, 48, 0.78);
-  --d-glass-panel: rgba(28, 16, 48, 0.62);
-  --d-glass-card: rgba(40, 26, 68, 0.72);
+  --d-glow: rgba(130, 50, 233, 0.4);
+  --d-glass: rgba(22, 22, 24, 0.78);
+  --d-glass-panel: rgba(22, 22, 24, 0.62);
+  --d-glass-card: rgba(28, 28, 32, 0.72);
   --d-glass-card-raised: rgba(255, 255, 255, 0.06);
-  --d-glass-card-selected: rgba(60, 36, 110, 0.8);
+  --d-glass-card-selected: rgba(36, 26, 56, 0.8);
+  --d-glass-control: rgba(255, 255, 255, 0.06);
+  --d-glass-edge: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.03));
+  --d-glass-highlight: rgba(255, 255, 255, 0.08);
+  --d-icon-tile: rgba(255, 255, 255, 0.08);
+  --d-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --d-shadow-float: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+/*
+ * Earth: warm near-black and near-white neutrals with a clay accent (#A8836C on dark, #77574A
+ * on light), a sand selection tint and a warm glow, from a six-step brown scale. Under evaluation.
+ */
+:root[data-palette="earth"] {
+  --l-canvas: #f9f5ee;
+  --l-surface: #ffffff;
+  --l-raised: #f1ebe2;
+  --l-input: #f1ebe2;
+  --l-line: rgba(74, 58, 52, 0.1);
+  --l-text-primary: #1d1715;
+  --l-text-secondary: #6b5f58;
+  --l-text-tertiary: #9a8d84;
+  --l-accent: #77574a;
+  --l-accent-soft: #ebd7be;
+  --l-success: #1f8a4c;
+  --l-warning: #b7791f;
+  --l-danger: #c5372c;
+  --l-glow: rgba(208, 174, 146, 0.4);
+  --l-glass: rgba(249, 245, 238, 0.8);
+  --l-glass-panel: rgba(255, 255, 255, 0.5);
+  --l-glass-card: rgba(255, 255, 255, 0.6);
+  --l-glass-card-raised: rgba(74, 58, 52, 0.045);
+  --l-glass-card-selected: rgba(235, 215, 190, 0.7);
+  --l-glass-control: rgba(255, 255, 255, 0.5);
+  --l-glass-edge: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(74, 58, 52, 0.06));
+  --l-glass-highlight: rgba(255, 255, 255, 0.35);
+  --l-icon-tile: rgba(74, 58, 52, 0.06);
+  --l-shadow-hover: 0 8px 24px rgba(74, 58, 52, 0.08);
+  --l-shadow-float: 0 12px 40px rgba(74, 58, 52, 0.12);
+
+  --d-canvas: #0e0c0b;
+  --d-surface: #191614;
+  --d-raised: #272220;
+  --d-input: #272220;
+  --d-line: rgba(255, 255, 255, 0.1);
+  --d-text-primary: #f9f2e4;
+  --d-text-secondary: #b3a89e;
+  --d-text-tertiary: #7a6f67;
+  --d-accent: #a8836c;
+  --d-accent-soft: #2f2622;
+  --d-success: #4cc47e;
+  --d-warning: #e3b04b;
+  --d-danger: #f0655a;
+  --d-glow: rgba(119, 87, 74, 0.5);
+  --d-glass: rgba(25, 22, 20, 0.78);
+  --d-glass-panel: rgba(25, 22, 20, 0.62);
+  --d-glass-card: rgba(32, 28, 26, 0.72);
+  --d-glass-card-raised: rgba(255, 255, 255, 0.06);
+  --d-glass-card-selected: rgba(47, 38, 34, 0.85);
   --d-glass-control: rgba(255, 255, 255, 0.06);
   --d-glass-edge: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.03));
   --d-glass-highlight: rgba(255, 255, 255, 0.08);
