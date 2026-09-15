@@ -5,6 +5,7 @@
  */
 import { generateText, NoObjectGeneratedError, Output, type LanguageModel } from "ai";
 import type { GenerateOutcome, GenerateRequest, GenerateUsage, ModelAdapter } from "./adapter";
+import { portableSchema } from "./portable-schema";
 
 /** The SDK does not export this type; it is whatever `generateText` accepts as `providerOptions`. */
 export type ProviderOptions = NonNullable<Parameters<typeof generateText>[0]["providerOptions"]>;
@@ -29,7 +30,7 @@ export class AiSdkModelAdapter implements ModelAdapter {
         model: this.languageModel,
         instructions: request.instructions,
         prompt: request.input,
-        output: Output.object({ schema: request.schema }),
+        output: Output.object({ schema: portableSchema(request.schema) }),
         maxRetries: 1,
         providerOptions: this.providerOptions,
       });

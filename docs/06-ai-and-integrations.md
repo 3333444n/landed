@@ -1,6 +1,6 @@
 # 06 — AI, harnesses, and retrieval
 
-Status: model access path implemented in Phase 1b ([ADR 006](adr/006-model-access-path.md)); no provider has been run through the evaluation set yet; agentic research, discovery and retrieval remain future design. Updated 2026-09-14.
+Status: model access path implemented in Phase 1b ([ADR 006](adr/006-model-access-path.md)); the evaluation set has been run against OpenRouter (see "Providers run through the evaluation set"); agentic research, discovery and retrieval remain future design. Updated 2026-09-14.
 
 ## Distinguish the moving parts
 
@@ -14,11 +14,21 @@ Status: model access path implemented in Phase 1b ([ADR 006](adr/006-model-acces
 
 ## First generation implementation (Phase 1b, ADR 006)
 
-Plain TypeScript functions, Zod schemas, explicit versioned prompts, and one adapter interface in `src/infrastructure/model/`: an AI SDK class holding the configured provider client, a fake adapter that answers from fixtures, and a factory that reads the environment. Providers: Anthropic and OpenAI directly, the Vercel AI Gateway (one key, any model), and any OpenAI-compatible endpoint by base URL (OpenRouter, Ollama, Groq, LM Studio). The provider and key live in the environment file only. Each of the three documents is a workflow, not an agent: build the snapshot, call once with a schema, validate, check grounding, save. The whole profile goes into the snapshot; deterministic selection can come when postings or profiles outgrow the context.
+Plain TypeScript functions, Zod schemas, explicit versioned prompts, and one adapter interface in `src/infrastructure/model/`: an AI SDK class holding the configured provider client, a fake adapter that answers from fixtures, and a factory that reads the environment. Providers: Anthropic and OpenAI directly, OpenRouter and the Vercel AI Gateway (one key, any model), and any OpenAI-compatible endpoint by base URL (Ollama, Groq, LM Studio). OpenRouter is the OpenAI-compatible path with its base URL known, usage accounting switched on so cost is reported, and the app named in the request headers. The provider and key live in the environment file only. Each of the three documents is a workflow, not an agent: build the snapshot, call once with a schema, validate, check grounding, save. The whole profile goes into the snapshot; deterministic selection can come when postings or profiles outgrow the context.
 
 Paste-back is the same workflow with a person as the model: the app shows the prompt and the snapshot, the user runs it anywhere and pastes the JSON back, and the answer passes the same validation and grounding check. It needs no key and works from a phone.
 
 Grounding is enforced after generation by the application, not by the prompt: every unit must cite evidence ids that exist in the snapshot, and any number in the text must appear in the cited records. Violations are warnings for the user, shown as chips in the review view. Every call writes a run record (provider, model, prompt name and version, tokens, latency, cost when reported, outcome); the Runs column shows them. Quality is measured on a synthetic evaluation set in `examples/generation` run by `pnpm eval`; the documentation names the providers it has actually been run against.
+
+The JSON schema a provider receives is not the Zod schema verbatim. Providers compile the schema into a decoding grammar and each has its own dialect: OpenAI's strict mode rejects `minLength`, `maxLength`, `minItems` and `maxItems`, and Google rejects a schema whose nested `maxItems` multiply past a complexity limit, which the resume's sections × entries × bullets × evidence ids did on the first real run. The adapter therefore sends the schema without length keywords and validates the answer with the full Zod schema afterwards; the budgets are also stated in the prompt text. Adding a keyword to the document schemas means re-running `pnpm eval`.
+
+### Providers run through the evaluation set
+
+| Date | Provider | Model | Result |
+|---|---|---|---|
+| 2026-09-14 | `openrouter` | `google/gemini-3.1-flash-lite` | 9 of 9 answers valid, no grounding warnings, cost reported (about $0.011 for the set), 1.4 to 3.1 s per call |
+
+Providers not in this table are wired up but unverified; run `pnpm eval` against them and add the row in the pull request.
 
 When agentic research arrives, a small bounded tool loop is a useful baseline: give allowed tools and current state to a model, validate its tool request, execute the approved operation, record the observation, repeat until complete or the step/time budget is exhausted. Avoid rebuilding a general orchestration framework. Reconsider LangGraph when checkpointing, branching, resumable human approval, recovery, or state persistence becomes costly to maintain. The user's preference for LangGraph/LangChain is recorded as a future direction, not permission to add both to Phase 0.
 
