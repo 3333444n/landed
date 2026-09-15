@@ -11,7 +11,7 @@ Numbers establish reading order, not software release versions. Accepted choices
 | [03 — System and modules](03-system-and-modules.md) | Where does code run, and who owns behavior? | Profile, Jobs and Applications modules, column interface and packaged runtime implemented; Documents module, model adapter and PDF rendering implemented |
 | [04 — Data model](04-data-model.md) | How does PostgreSQL represent those concepts? | Phase 0, 1a and 1b schemas migrated |
 | [05 — Workflows and failures](05-workflows-and-failures.md) | What happens on success, failure, and retry? | Phases 0, 1a and 1b implemented; Phase 2 and 3 workflows proposed |
-| [06 — AI and integrations](06-ai-and-integrations.md) | How do models, harnesses, RAG, and agents fit? | Model access path implemented (ADR 006); later integrations proposed |
+| [06 — AI and integrations](06-ai-and-integrations.md) | How do models, harnesses, RAG, and agents fit? | Model access path implemented (ADR 006); OpenRouter run through the evaluation set; later integrations proposed |
 | [07 — Quickstart](07-quickstart-contract.md) | How do you run it, and what does the packaged install guarantee? | Both paths tested on macOS; Windows and Linux untested |
 | [08 — Contributions and documentation](08-contributions-and-documentation.md) | How do changes stay understandable and documented? | CI, conventions and SECURITY in place |
 | [09 — Decisions and readiness](09-decisions-and-readiness.md) | What is accepted, open, or deferred? | Current decision register |
