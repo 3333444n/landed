@@ -34,12 +34,13 @@ Updated 2026-09-14. Accepted decisions below reflect the user's explicit instruc
   - Grounding: a deterministic check after every generation (evidence ids exist, numbers appear in cited evidence) shown as warning chips; a synthetic evaluation set in `examples/generation` run by `pnpm eval` against a real provider, and by the fake adapter in CI.
   - Observability: every model call writes a run record with provider, model, prompt name and version, tokens, latency, cost when reported and outcome, visible in a Runs column.
   - Profile gains a `links` list (LinkedIn, GitHub, website) with a migration, for the resume header.
+- A modular monolith with Profile first, Jobs and Applications in Phase 1a, Documents in Phase 1b (proposed 2026-09-13, implemented and accepted 2026-09-14).
+- Input snapshots attached to generated materials, with saved document revisions but no achievement revisions (ADR 002; implemented 2026-09-14).
+- Structured document content in PostgreSQL; PDFs in a persistent local volume with database metadata (implemented 2026-09-14).
+- Testing scope by behavioural blast radius with `pnpm check`, `pnpm verify` and `pnpm verify:full` (CONTRIBUTING "Checks", 2026-09-14).
 
 ## Proposed defaults
 
-- A modular monolith with Profile first; Jobs and Applications in Phase 1a, Documents in Phase 1b.
-- Input snapshots attached to generated materials, with saved document revisions but no achievement revisions.
-- Structured document content in PostgreSQL; PDFs in a persistent local volume with database metadata.
 - Provider support claims follow the evaluation set: a provider is listed as verified only after `pnpm eval` has been run against it; harness integration and phone or claude.ai access wait for their own designs.
 - LangGraph as a later orchestration candidate after a small explicit implementation establishes requirements.
 
