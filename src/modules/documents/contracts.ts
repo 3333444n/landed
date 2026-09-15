@@ -81,7 +81,12 @@ const resumeSection = z.object({
 });
 export type ResumeSection = z.infer<typeof resumeSection>;
 
-/** Per-kind budgets (DESIGN-DOCS.md): what fits on one Letter page at 10 pt. */
+/**
+ * Budgets (DESIGN-DOCS.md): what fits on one Letter page at 10 pt. Per-kind caps shape each
+ * section; the totals are what the render test proves fit in the worst case.
+ */
+export const resumeTotals = { entries: 6, bullets: 8 } as const;
+
 export const resumeBudgets: Record<ResumeSectionKind, { entries: number; bullets: number }> = {
   experience: { entries: 4, bullets: 4 },
   projects: { entries: 3, bullets: 2 },
@@ -104,6 +109,26 @@ export const resumeContent = z
   })
   .superRefine((content, ctx) => {
     const seen = new Set<ResumeSectionKind>();
+    let entries = 0;
+    let bullets = 0;
+    for (const section of content.sections) {
+      if (section.kind !== "skills") entries += section.entries.length;
+      for (const entry of section.entries) bullets += entry.bullets.length;
+    }
+    if (entries > resumeTotals.entries) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["sections"],
+        message: `At most ${resumeTotals.entries} entries across experience, projects and education`,
+      });
+    }
+    if (bullets > resumeTotals.bullets) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["sections"],
+        message: `At most ${resumeTotals.bullets} bullets in the whole resume`,
+      });
+    }
     content.sections.forEach((section, i) => {
       if (seen.has(section.kind)) {
         ctx.addIssue({ code: "custom", path: ["sections", i], message: "Duplicate section" });

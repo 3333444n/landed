@@ -67,7 +67,7 @@ sh scripts/landed.sh backup                                   # writes backups/l
 sh scripts/landed.sh restore backups/landed-release-<timestamp>.dump   # replaces the database contents
 ```
 
-Copy dumps somewhere safe; `backups/` is ignored by Git but lives in the checkout.
+`backup` also writes `landed-release-<timestamp>-artifacts.tar` with the generated PDFs when the web service is running, and `restore` puts them back when that file sits next to the dump (shell launcher only; the PowerShell launcher backs up the database alone for now). Copy both files somewhere safe; `backups/` is ignored by Git but lives in the checkout.
 
 Factory reset (separate, deliberate; deletes all your data): take a backup if you want one, then
 

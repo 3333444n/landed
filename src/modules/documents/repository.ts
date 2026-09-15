@@ -4,7 +4,7 @@
 import { and, desc, eq, inArray, lt } from "drizzle-orm";
 import type { DbHandle } from "@/infrastructure/database";
 import type { DocumentType } from "./contracts";
-import { documentRevisions, documents, generationRuns } from "./schema";
+import { documentArtifacts, documentRevisions, documents, generationRuns } from "./schema";
 
 export type GenerationRunRecord = typeof generationRuns.$inferSelect;
 export type DocumentRecord = typeof documents.$inferSelect;
@@ -275,4 +275,38 @@ export async function listDocumentsForApplicationsById(
     .select()
     .from(documents)
     .where(and(eq(documents.profileId, profileId), inArray(documents.id, [...documentIds])));
+}
+
+// Artifacts
+
+export type DocumentArtifactRecord = typeof documentArtifacts.$inferSelect;
+
+export async function findArtifact(
+  db: DbHandle,
+  profileId: string,
+  documentRevisionId: string,
+  format: "pdf",
+  templateVersion: number,
+): Promise<DocumentArtifactRecord | null> {
+  const rows = await db
+    .select()
+    .from(documentArtifacts)
+    .where(
+      and(
+        eq(documentArtifacts.profileId, profileId),
+        eq(documentArtifacts.documentRevisionId, documentRevisionId),
+        eq(documentArtifacts.format, format),
+        eq(documentArtifacts.templateVersion, templateVersion),
+      ),
+    )
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+export async function insertArtifact(
+  db: DbHandle,
+  values: typeof documentArtifacts.$inferInsert,
+): Promise<DocumentArtifactRecord> {
+  const rows = await db.insert(documentArtifacts).values(values).returning();
+  return rows[0]!;
 }

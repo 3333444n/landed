@@ -105,7 +105,7 @@ scripts/                 landed.sh / landed.ps1 launcher; db-backup.sh / db-rest
 tests/integration/       Vitest against real PostgreSQL
 tests/e2e/               Playwright browser journeys
 examples/                synthetic data; generation/ holds the evaluation cases and fixtures (Phase 1b)
-scripts/eval-generation  runs the evaluation cases against the configured real provider (pnpm eval, Phase 1b)
+tests/eval/               the evaluation cases against the configured real provider (pnpm eval, never in CI)
 docs/                    numbered design and ADRs
 ```
 

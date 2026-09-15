@@ -31,6 +31,8 @@ COPY --from=build --chown=node:node /app/.next/static ./.next/static
 COPY --from=build --chown=node:node /app/public ./public
 COPY --from=build --chown=node:node /app/db/migrations ./db/migrations
 COPY --from=build --chown=node:node /app/db/migrate.mjs ./db/migrate.mjs
+# Generated PDFs (Phase 1b) live on the artifacts volume mounted here by compose.release.yml.
+RUN mkdir -p /app/artifacts && chown node:node /app/artifacts
 # The base image ships an unprivileged `node` user; the app needs no root at runtime.
 USER node
 EXPOSE 3000

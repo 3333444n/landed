@@ -25,6 +25,16 @@ export default defineConfig({
           testTimeout: 20_000,
         },
       },
+      {
+        // The synthetic evaluation set against a real provider (pnpm eval). Never in CI.
+        resolve: { alias: { "@": src } },
+        test: {
+          name: "eval",
+          include: ["tests/eval/**/*.eval.ts"],
+          environment: "node",
+          fileParallelism: false,
+        },
+      },
     ],
   },
 });
