@@ -26,6 +26,7 @@ Numbers establish reading order, not software release versions. Accepted choices
 | [004 — Drizzle for persistence](adr/004-drizzle-persistence.md) | Schema, queries and SQL migrations | Accepted, implemented |
 | [005 — Interface as URL-driven columns](adr/005-url-driven-columns.md) | Path as navigation state, sidebar and shifting columns, derived job status | Accepted, implemented |
 | [006 — Model access path](adr/006-model-access-path.md) | App calls a provider through one adapter; env-only configuration; paste-back mode; fake adapter for checks | Accepted, implemented |
+| [007 — User-initiated image fetch](adr/007-user-initiated-image-fetch.md) | The one outbound call besides the provider: a logo address the user pastes, fetched once through a guarded fetcher and stored | Accepted, implemented |
 
 ## Architecture diagrams
 

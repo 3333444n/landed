@@ -88,7 +88,7 @@ Base unit 4px. Scale: 4, 8, 12, 16, 24, 32, 48, 64. Column padding 24px on deskt
 | `radius.md`   | 12px   | Inputs, buttons, blocks inside a card  |
 | `radius.lg`   | 16px   | Cards                                  |
 | `radius.xl`   | 24px   | Drawer, sheets, popovers               |
-| `radius.full` | 9999px | Pills, the "+" button, avatars         |
+| `radius.full` | 9999px | Pills, the "+" button, avatars (a company logo keeps the tile's `radius.md`)         |
 
 Nested radius rule: inner radius = outer radius minus the padding between them, with a floor of `radius.sm`.
 
@@ -175,7 +175,9 @@ Durations: 150ms for hover and focus, 250ms for reveal and dismiss, 400ms for th
 
 **Inputs.** `bg.input` fill, no border, `radius.md`, 40px tall, focus ring 2px accent with 2px offset. Labels above in `label` style, sentence case. Helper and error text below in `body.sm`. Textareas share the fill and radius and grow with their content; `rows` is only the minimum, so long text never scrolls inside a short box. Selects and checkboxes use the same fill; the checkbox is 18px with `radius.sm` and the accent as its checked color.
 
-**Icon tile.** A rounded raised square (`icon.tile.bg`, 36px with `radius.md`, or 28px with `radius.sm` in the sidebar) holding one 18px (16px) stroke icon from Lucide in `text.primary`. It sits before column titles, on hub, record, job and material cards and on sidebar items. It is always `aria-hidden`; the word next to it carries the meaning. One icon per kind of thing: briefcase for work history and jobs, graduation cap for education, folder for projects, bulb for skills, award for achievements, person for the profile, and the job card's icon follows its status.
+**Icon tile.** A rounded raised square (`icon.tile.bg`, 36px with `radius.md`, or 28px with `radius.sm` in the sidebar) holding one 18px (16px) stroke icon from Lucide in `text.primary`. It sits before column titles, on hub, record, job and material cards and on sidebar items. It is always `aria-hidden`; the word next to it carries the meaning. One icon per kind of thing: briefcase for work history and jobs, graduation cap for education, folder for projects, bulb for skills, award for achievements, person for the profile, and the job card's icon follows its status. A job with a logo shows it in the tile instead of its status icon, filling the tile with the tile's corners; the chip still carries the status word, so nothing is lost. The logo is a decorative image with an empty alternative text, as the tile is hidden from assistive technology anyway.
+
+**Icon tile button.** The same square as a control, used only to choose a job's logo on the New job and Job description columns: `icon.tile.bg` fill, `accent.soft` on hover and while its menu is open, the focus ring of every control, and an accessible name that says what it does ("Add logo", "Change logo"). It opens a popover with the choices (choose an image, paste an image address, remove the logo) and shows the chosen image in the tile before the form is saved.
 
 **Popover.** Floating glass, `radius.xl`, 8px padding, opening below its button. Items are 40px rows in `label` style with `radius.md`; the current one is in `accent` with a check glyph. Escape closes it and returns focus; a click outside closes it.
 
