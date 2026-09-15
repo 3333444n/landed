@@ -1,3 +1,4 @@
+import { ClipboardPaste } from "lucide-react";
 import { deps } from "@/app/current-profile";
 import { Column } from "@/components/Column";
 import { Field } from "@/components/Field";
@@ -22,6 +23,7 @@ export async function PasteColumn({ jobId, type }: { jobId: string; type: Docume
 
   return (
     <Column
+      icon={<ClipboardPaste />}
       title="Paste back"
       subtitle={`${label} for ${job.title}`}
       parentHref={href}

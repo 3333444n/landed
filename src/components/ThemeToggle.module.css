@@ -1,0 +1,64 @@
+/* A round glass button like the toolbar controls (DESIGN.md "Buttons"). */
+.toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-control);
+  height: var(--size-control);
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--glass-control);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background-color var(--duration-hover) var(--ease);
+}
+
+.toggle::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--glass-edge);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.toggle:hover {
+  --glass-control: var(--accent-soft);
+}
+
+.toggle svg {
+  width: var(--size-icon);
+  height: var(--size-icon);
+}
+
+/* Which glyph shows follows the effective scheme, so the button never needs to know it. */
+.sun {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .moon {
+    display: none;
+  }
+  :root:not([data-theme="light"]) .sun {
+    display: block;
+  }
+}
+
+:root[data-theme="dark"] .moon {
+  display: none;
+}
+
+:root[data-theme="dark"] .sun {
+  display: block;
+}

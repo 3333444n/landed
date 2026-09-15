@@ -46,14 +46,24 @@ test("a pasted job gets an application whose status the user moves by hand", asy
 
   // An applied job leaves the default Needs attention filter; filters read the address only
   await expect(page.getByText("Nothing under this filter.")).toBeVisible();
-  await page.getByLabel("Filter").selectOption("active");
+  const choose = async (menu: "Filter" | "Sort", option: string) => {
+    await page.getByRole("button", { name: menu }).click();
+    await page.getByRole("menuitemradio", { name: option }).click();
+    await expect(page.getByRole("menu")).toBeHidden();
+  };
+  await choose("Filter", "Active");
   await expect(page).toHaveURL(/filter=active/);
   await expect(list.getByText("Applied", { exact: true })).toBeVisible();
-  await page.getByLabel("Filter").selectOption("closed");
+  await page.getByRole("button", { name: "Filter" }).click();
+  await expect(page.getByRole("menuitemradio", { name: "Active" })).toHaveAttribute(
+    "aria-checked",
+    "true",
+  );
+  await page.getByRole("menuitemradio", { name: "Closed" }).click();
   await expect(page.getByText("Nothing under this filter.")).toBeVisible();
-  await page.getByLabel("Filter").selectOption("all");
+  await choose("Filter", "All");
   await expect(list.getByRole("heading", { name: demo.title })).toBeVisible();
-  await page.getByLabel("Sort").selectOption("added");
+  await choose("Sort", "Added");
   await expect(page).toHaveURL(/sort=added/);
 
   // Editing the posting in its own column updates the job column and the list

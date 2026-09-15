@@ -1,5 +1,7 @@
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useId, type ReactNode } from "react";
+import { IconTile } from "./IconTile";
 import styles from "./Column.module.css";
 
 /**
@@ -9,6 +11,7 @@ import styles from "./Column.module.css";
  * wherever the parent column is visible.
  */
 export function Column({
+  icon,
   title,
   count,
   subtitle,
@@ -18,6 +21,8 @@ export function Column({
   width = "list",
   children,
 }: {
+  /** A meaningful icon shown in a tile before the title (DESIGN.md "Icon tile"). */
+  icon?: ReactNode;
   title: string;
   count?: number;
   subtitle?: string;
@@ -32,16 +37,24 @@ export function Column({
     <section className={`${styles.column} ${styles[width]}`} aria-labelledby={headingId}>
       <div className={styles.inner}>
         {parentHref && parentTitle ? (
-          <Link href={parentHref} className={styles.back}>
-            {parentTitle}
+          <Link
+            href={parentHref}
+            className={styles.back}
+            aria-label={parentTitle}
+            title={parentTitle}
+          >
+            <ArrowLeft aria-hidden="true" focusable="false" />
           </Link>
         ) : null}
         <div className={styles.header}>
-          <h2 id={headingId} className={`title-lg ${styles.title}`}>
-            {title}
-            {count !== undefined ? <span className={styles.count}> {count}</span> : null}
-          </h2>
-          {subtitle ? <p className={styles.subtitle}>{subtitle}</p> : null}
+          {icon ? <IconTile>{icon}</IconTile> : null}
+          <div className={styles.titles}>
+            <h2 id={headingId} className={`title-lg ${styles.title}`}>
+              {title}
+              {count !== undefined ? <span className={styles.count}> {count}</span> : null}
+            </h2>
+            {subtitle ? <p className={styles.subtitle}>{subtitle}</p> : null}
+          </div>
         </div>
         {toolbar}
         {children}

@@ -1,3 +1,4 @@
+import { Award, Briefcase, FolderKanban, GraduationCap, Lightbulb, UserRound } from "lucide-react";
 import type { ReactNode } from "react";
 import { deps, requireProfile } from "@/app/current-profile";
 import { Card, CardList } from "@/components/Card";
@@ -27,33 +28,60 @@ export default async function AboutLayout({ children }: { children: ReactNode })
     listAchievements(deps(), profile.id),
   ]);
   const cards = [
-    { href: "/about/profile", title: "Profile", subtitle: "How you appear on a resume" },
+    {
+      href: "/about/profile",
+      title: "Profile",
+      subtitle: "How you appear on a resume",
+      icon: UserRound,
+    },
     {
       href: "/about/work-history",
       title: "Work history",
       subtitle: count(employment.length, "role"),
+      icon: Briefcase,
     },
     {
       href: "/about/education",
       title: "Education",
       subtitle: count(education.length, "record"),
+      icon: GraduationCap,
     },
-    { href: "/about/projects", title: "Projects", subtitle: count(projects.length, "project") },
-    { href: "/about/skills", title: "Skills", subtitle: count(skills.length, "skill") },
+    {
+      href: "/about/projects",
+      title: "Projects",
+      subtitle: count(projects.length, "project"),
+      icon: FolderKanban,
+    },
+    {
+      href: "/about/skills",
+      title: "Skills",
+      subtitle: count(skills.length, "skill"),
+      icon: Lightbulb,
+    },
     {
       href: "/about/achievements",
       title: "Achievements",
       subtitle: count(achievements.length, "achievement"),
+      icon: Award,
     },
   ];
 
   return (
     <>
-      <Column title="About me" subtitle="Your career facts, in your own words.">
+      <Column
+        icon={<UserRound />}
+        title="About me"
+        subtitle="Your career facts, in your own words."
+      >
         <CardList label="About me">
           {cards.map((card) => (
             <li key={card.href}>
-              <Card href={card.href} title={card.title} subtitle={card.subtitle} />
+              <Card
+                href={card.href}
+                icon={<card.icon />}
+                title={card.title}
+                subtitle={card.subtitle}
+              />
             </li>
           ))}
         </CardList>

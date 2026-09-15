@@ -1,3 +1,4 @@
+import { Award } from "lucide-react";
 import { notFound } from "next/navigation";
 import { deps, requireProfile } from "@/app/current-profile";
 import { Column } from "@/components/Column";
@@ -25,6 +26,7 @@ export default async function EditAchievementPage({ params }: { params: Promise<
 
   return (
     <Column
+      icon={<Award />}
       title="Edit achievement"
       subtitle={truncate(achievement.statement, 80)}
       parentHref="/about/achievements"

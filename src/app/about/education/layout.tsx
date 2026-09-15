@@ -1,3 +1,4 @@
+import { GraduationCap } from "lucide-react";
 import type { ReactNode } from "react";
 import { deps, requireProfile } from "@/app/current-profile";
 import { dateRange } from "@/app/form-state";
@@ -27,6 +28,7 @@ export default async function EducationLayout({ children }: { children: ReactNod
   return (
     <>
       <Column
+        icon={<GraduationCap />}
         title="Education"
         count={records.length}
         subtitle="Programmes and qualifications, finished or not."
@@ -44,6 +46,7 @@ export default async function EducationLayout({ children }: { children: ReactNod
               return (
                 <li key={record.id}>
                   <Card
+                    icon={<GraduationCap />}
                     href={`/about/education/${record.id}`}
                     title={record.institution}
                     subtitle={detail || undefined}

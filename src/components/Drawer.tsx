@@ -1,5 +1,6 @@
 "use client";
 
+import { Menu, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { SidebarNav } from "./SidebarNav";
 import styles from "./Drawer.module.css";
@@ -11,42 +12,40 @@ import styles from "./Drawer.module.css";
 export function Drawer() {
   const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const firstLinkRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
 
+  const wasOpen = useRef(false);
+
+  // Focus moves to the close button on open and back to the hamburger once it is visible again.
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      if (wasOpen.current) buttonRef.current?.focus();
+      wasOpen.current = false;
+      return;
+    }
+    wasOpen.current = true;
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") setOpen(false);
     };
     document.addEventListener("keydown", onKey);
-    firstLinkRef.current?.querySelector<HTMLAnchorElement>("a")?.focus();
+    closeRef.current?.focus();
     return () => document.removeEventListener("keydown", onKey);
   }, [open]);
 
-  const close = () => {
-    setOpen(false);
-    buttonRef.current?.focus();
-  };
+  const close = () => setOpen(false);
 
   return (
     <>
       <button
         ref={buttonRef}
         type="button"
-        className={styles.menu}
+        className={`${styles.menu} ${open ? styles.hidden : ""}`}
         aria-label="Menu"
         aria-expanded={open}
         aria-controls="drawer"
         onClick={() => setOpen(true)}
       >
-        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" focusable="false">
-          <path
-            d="M2 4h14M2 9h14M2 14h14"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-        </svg>
+        <Menu aria-hidden="true" focusable="false" />
       </button>
       <div
         className={`${styles.scrim} ${open ? styles.open : ""}`}
@@ -60,7 +59,17 @@ export function Drawer() {
         // Off-screen links must not be reachable by keyboard while closed.
         inert={!open}
       >
-        <div className={styles.tint} ref={firstLinkRef}>
+        <div className={styles.tint}>
+          <button
+            ref={closeRef}
+            type="button"
+            className={styles.close}
+            aria-label="Close menu"
+            title="Close menu"
+            onClick={close}
+          >
+            <X aria-hidden="true" focusable="false" />
+          </button>
           <SidebarNav onNavigate={() => setOpen(false)} />
         </div>
       </div>

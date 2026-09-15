@@ -1,3 +1,4 @@
+import { Lightbulb } from "lucide-react";
 import { notFound } from "next/navigation";
 import { deps, requireProfile } from "@/app/current-profile";
 import { Column } from "@/components/Column";
@@ -16,6 +17,7 @@ export default async function EditSkillPage({ params }: { params: Promise<{ id: 
 
   return (
     <Column
+      icon={<Lightbulb />}
       title={skill.displayName}
       subtitle={skill.category ?? undefined}
       parentHref="/about/skills"

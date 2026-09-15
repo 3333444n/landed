@@ -14,17 +14,36 @@
 }
 
 .add {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: var(--size-control);
+  height: var(--size-control);
   border-radius: var(--radius-full);
-  background: var(--bg-surface-raised);
+  background: var(--glass-control);
   color: var(--text-primary);
   transition: background-color var(--duration-hover) var(--ease);
 }
 
+.add::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--glass-edge);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
 .add:hover {
-  background: var(--accent-soft);
+  --glass-control: var(--accent-soft);
 }

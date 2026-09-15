@@ -1,3 +1,4 @@
+import { Plus } from "lucide-react";
 import { Column } from "@/components/Column";
 import { saveEmploymentAction } from "../actions";
 import { EmploymentForm } from "../EmploymentForm";
@@ -5,6 +6,7 @@ import { EmploymentForm } from "../EmploymentForm";
 export default function NewRolePage() {
   return (
     <Column
+      icon={<Plus />}
       title="New role"
       parentHref="/about/work-history"
       parentTitle="Work history"

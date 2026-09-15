@@ -1,11 +1,12 @@
 "use client";
 
+import { ArrowUpDown, SlidersHorizontal } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ToolbarSelect } from "@/components/ToolbarSelect";
+import { ToolbarMenu } from "@/components/ToolbarMenu";
 import { filterLabels, listFilters, listSorts, sortLabels } from "@/modules/applications/contracts";
 import { defaultFilter, defaultSort, readListParams } from "./list-params";
 
-/** Filter and sort selects that rewrite the address; nothing is stored. */
+/** Filter and sort menus that rewrite the address; nothing is stored. */
 export function JobListControls() {
   const router = useRouter();
   const pathname = usePathname();
@@ -26,16 +27,20 @@ export function JobListControls() {
 
   return (
     <>
-      <ToolbarSelect
+      <ToolbarMenu
         label="Filter"
+        icon={<SlidersHorizontal />}
         value={filter}
-        onChange={(e) => update({ filter: e.target.value })}
+        defaultValue={defaultFilter}
+        onChange={(value) => update({ filter: value })}
         options={listFilters.map((value) => ({ value, label: filterLabels[value] }))}
       />
-      <ToolbarSelect
+      <ToolbarMenu
         label="Sort"
+        icon={<ArrowUpDown />}
         value={sort}
-        onChange={(e) => update({ sort: e.target.value })}
+        defaultValue={defaultSort}
+        onChange={(value) => update({ sort: value })}
         options={listSorts.map((value) => ({ value, label: sortLabels[value] }))}
       />
     </>

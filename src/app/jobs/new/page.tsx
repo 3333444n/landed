@@ -1,3 +1,4 @@
+import { Plus } from "lucide-react";
 import { Column } from "@/components/Column";
 import { saveJobAction } from "../actions";
 import { JobForm } from "../JobForm";
@@ -5,6 +6,7 @@ import { JobForm } from "../JobForm";
 export default function NewJobPage() {
   return (
     <Column
+      icon={<Plus />}
       title="New job"
       subtitle="Paste a posting. Its application starts as Preparing."
       parentHref="/jobs"

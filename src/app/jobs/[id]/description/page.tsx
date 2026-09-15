@@ -1,3 +1,4 @@
+import { FileText } from "lucide-react";
 import { notFound } from "next/navigation";
 import { deps, requireProfile } from "@/app/current-profile";
 import { Column } from "@/components/Column";
@@ -15,6 +16,7 @@ export default async function JobDescriptionPage({ params }: { params: Promise<{
 
   return (
     <Column
+      icon={<FileText />}
       title="Job description"
       subtitle="The posting as you pasted it."
       parentHref={`/jobs/${job.id}`}

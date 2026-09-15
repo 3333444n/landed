@@ -1,3 +1,4 @@
+import { Plus } from "lucide-react";
 import { Column } from "@/components/Column";
 import { saveEducationAction } from "../actions";
 import { EducationForm } from "../EducationForm";
@@ -5,6 +6,7 @@ import { EducationForm } from "../EducationForm";
 export default function NewEducationPage() {
   return (
     <Column
+      icon={<Plus />}
       title="New education"
       parentHref="/about/education"
       parentTitle="Education"

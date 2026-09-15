@@ -1,3 +1,4 @@
+import { Plus } from "lucide-react";
 import { deps, requireProfile } from "@/app/current-profile";
 import { Column } from "@/components/Column";
 import { listEmployment } from "@/modules/profile";
@@ -11,7 +12,13 @@ export default async function NewProjectPage() {
   const roles = await listEmployment(deps(), profile.id);
 
   return (
-    <Column title="New project" parentHref="/about/projects" parentTitle="Projects" width="detail">
+    <Column
+      icon={<Plus />}
+      title="New project"
+      parentHref="/about/projects"
+      parentTitle="Projects"
+      width="detail"
+    >
       <ProjectForm
         action={saveProjectAction.bind(null, undefined)}
         submitLabel="Save project"

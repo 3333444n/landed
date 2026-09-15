@@ -1,3 +1,4 @@
+import { UserRound } from "lucide-react";
 import { requireProfile } from "@/app/current-profile";
 import { Column } from "@/components/Column";
 import { updateProfileAction } from "./actions";
@@ -11,6 +12,7 @@ export default async function ProfilePage() {
 
   return (
     <Column
+      icon={<UserRound />}
       title="Profile"
       subtitle="How you appear on a resume."
       parentHref="/about"

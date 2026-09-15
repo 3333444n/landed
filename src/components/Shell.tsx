@@ -11,7 +11,9 @@ export function Shell({ children }: { children: ReactNode }) {
   return (
     <div className={styles.shell}>
       <aside className={styles.sidebar}>
-        <SidebarNav />
+        <div className={styles.sidebarInner}>
+          <SidebarNav />
+        </div>
       </aside>
       <Drawer />
       <div className={styles.columns}>{children}</div>

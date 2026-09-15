@@ -1,3 +1,4 @@
+import { House } from "lucide-react";
 import Link from "next/link";
 import { createProfileAction } from "@/app/actions";
 import { Card } from "@/components/Card";
@@ -28,6 +29,7 @@ export default async function HomePage() {
   if (!profile) {
     return (
       <Column
+        icon={<House />}
         title="Welcome to Landed"
         subtitle="Start with your name. Everything else can follow."
         width="detail"
@@ -56,6 +58,7 @@ export default async function HomePage() {
 
   return (
     <Column
+      icon={<House />}
       title={profile.displayName}
       subtitle="Your career facts, in your own words."
       width="detail"

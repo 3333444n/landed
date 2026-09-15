@@ -39,7 +39,7 @@ Prefer independent branches from `origin/main`. Use a stack only when one change
 
 - Achievements are edited in place; do not add revision history without a revised decision.
 - Every schema change ships with its generated migration in `db/migrations`, reviewed like code, and with updates to [doc 04](docs/04-data-model.md).
-- UI follows [DESIGN.md](DESIGN.md); tokens live in `src/app/tokens.css`, never in component files. The produced PDFs follow [DESIGN-DOCS.md](DESIGN-DOCS.md).
+- UI follows [DESIGN.md](DESIGN.md); colours live in `src/app/palettes.css` and every other token in `src/app/tokens.css`, never in component files, and components use only the semantic tokens. The produced PDFs follow [DESIGN-DOCS.md](DESIGN-DOCS.md).
 - The model key comes from the environment only (`LANDED_MODEL_API_KEY`); never store it, log it, or send it to the browser. Prompts keep pasted postings in labelled data blocks, never in the instructions, and bump the prompt version when the text changes.
 - Modules expose plain functions from `index.ts`; framework code never imports a module's repository or schema.
 - Do not include personal profiles, credentials, real resumes, or private notes in patches, screenshots, tests or examples. Use the [fictional examples](examples/README.md).

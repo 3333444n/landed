@@ -1,3 +1,4 @@
+import { Briefcase } from "lucide-react";
 import type { ReactNode } from "react";
 import { deps, requireProfile } from "@/app/current-profile";
 import { dateRange } from "@/app/form-state";
@@ -15,6 +16,7 @@ export default async function WorkHistoryLayout({ children }: { children: ReactN
   return (
     <>
       <Column
+        icon={<Briefcase />}
         title="Work history"
         count={roles.length}
         subtitle="Roles you have held, in your own words."
@@ -31,6 +33,7 @@ export default async function WorkHistoryLayout({ children }: { children: ReactN
               return (
                 <li key={role.id}>
                   <Card
+                    icon={<Briefcase />}
                     href={`/about/work-history/${role.id}`}
                     title={role.role}
                     subtitle={role.employerName}

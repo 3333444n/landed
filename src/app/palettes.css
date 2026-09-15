@@ -1,0 +1,66 @@
+/*
+ * Palette layer (DESIGN.md "Tokens"): every colour a palette owns, as a light (`--l-*`) and a
+ * dark (`--d-*`) value. Nothing here is used by a component directly; tokens.css picks the
+ * light or dark value into the semantic tokens. Every palette keeps near-black and near-white
+ * neutrals with at most a faint cast of its hue; the accent, the selection tint and the glow
+ * carry the colour. To try another palette, copy the block, give it a new `data-palette` name and
+ * change the values; switch with `?palette=<name>` in the address. The first block is the default.
+ */
+
+/* Steel (default): from #2E3A44, #4C5F6B, #7E939C, #B0C2C6, #DDE4E1, #F6F4EE. */
+:root,
+:root[data-palette="steel"] {
+  --l-canvas: #f6f4ee;
+  --l-surface: #ffffff;
+  --l-raised: #e9ece9;
+  --l-input: #e9ece9;
+  --l-line: rgba(46, 58, 68, 0.1);
+  --l-text-primary: #171c21;
+  --l-text-secondary: #4c5f6b;
+  --l-text-tertiary: #7e939c;
+  --l-accent: #4c5f6b;
+  --l-accent-contrast: #ffffff;
+  --l-accent-soft: #dde4e1;
+  --l-success: #1f8a4c;
+  --l-warning: #b7791f;
+  --l-danger: #c5372c;
+  --l-glow: rgba(176, 194, 198, 0.5);
+  --l-glass: rgba(255, 255, 255, 0.8);
+  --l-glass-panel: rgba(255, 255, 255, 0.5);
+  --l-glass-card: rgba(255, 255, 255, 0.6);
+  --l-glass-card-raised: rgba(46, 58, 68, 0.045);
+  --l-glass-card-selected: rgba(221, 228, 225, 0.85);
+  --l-glass-control: rgba(255, 255, 255, 0.5);
+  --l-glass-edge: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(46, 58, 68, 0.06));
+  --l-glass-highlight: rgba(255, 255, 255, 0.35);
+  --l-icon-tile: rgba(46, 58, 68, 0.06);
+  --l-shadow-hover: 0 8px 24px rgba(46, 58, 68, 0.08);
+  --l-shadow-float: 0 12px 40px rgba(46, 58, 68, 0.12);
+
+  --d-canvas: #0c0e10;
+  --d-surface: #161a1d;
+  --d-raised: #22282c;
+  --d-input: #22282c;
+  --d-line: rgba(255, 255, 255, 0.1);
+  --d-text-primary: #eef0ee;
+  --d-text-secondary: #a8b3b8;
+  --d-text-tertiary: #6f7c83;
+  --d-accent: #9fb3ba;
+  --d-accent-contrast: #0c0e10;
+  --d-accent-soft: #1f272c;
+  --d-success: #4cc47e;
+  --d-warning: #e3b04b;
+  --d-danger: #f0655a;
+  --d-glow: rgba(76, 95, 107, 0.6);
+  --d-glass: rgba(22, 26, 29, 0.78);
+  --d-glass-panel: rgba(22, 26, 29, 0.62);
+  --d-glass-card: rgba(28, 33, 37, 0.72);
+  --d-glass-card-raised: rgba(255, 255, 255, 0.06);
+  --d-glass-card-selected: rgba(31, 39, 44, 0.85);
+  --d-glass-control: rgba(255, 255, 255, 0.06);
+  --d-glass-edge: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.03));
+  --d-glass-highlight: rgba(255, 255, 255, 0.08);
+  --d-icon-tile: rgba(255, 255, 255, 0.08);
+  --d-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --d-shadow-float: 0 12px 40px rgba(0, 0, 0, 0.5);
+}

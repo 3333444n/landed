@@ -1,3 +1,4 @@
+import { Settings } from "lucide-react";
 import { Card } from "@/components/Card";
 import { Column } from "@/components/Column";
 import { getModelStatus } from "@/infrastructure/server";
@@ -57,7 +58,12 @@ const recipes: { title: string; note: string; lines: string[] }[] = [
 export default function ModelSetupPage() {
   const status = getModelStatus();
   return (
-    <Column title="Model setup" subtitle="Where generated documents come from." width="detail">
+    <Column
+      icon={<Settings />}
+      title="Model setup"
+      subtitle="Where generated documents come from."
+      width="detail"
+    >
       {status.kind === "unconfigured" ? (
         <>
           <Card title="No model configured">

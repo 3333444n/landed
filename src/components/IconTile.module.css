@@ -1,0 +1,28 @@
+/* The rounded raised square that holds a meaningful icon (DESIGN.md "Icon tile"). */
+.tile {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-icon-tile);
+  height: var(--size-icon-tile);
+  border-radius: var(--radius-md);
+  background: var(--icon-tile-bg);
+  color: var(--text-primary);
+}
+
+.tile svg {
+  width: var(--size-icon);
+  height: var(--size-icon);
+}
+
+.sm {
+  width: var(--size-icon-tile-sm);
+  height: var(--size-icon-tile-sm);
+  border-radius: var(--radius-sm);
+}
+
+.sm svg {
+  width: var(--size-icon-sm);
+  height: var(--size-icon-sm);
+}

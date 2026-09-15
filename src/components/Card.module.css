@@ -1,9 +1,34 @@
+/*
+ * Layered glass (DESIGN.md "Glass material"): a flat translucent fill and a 1px gradient edge
+ * drawn by a masked pseudo-element, so nothing but the ring carries the gradient. No blur:
+ * nothing scrolls beneath a card. A card inside a panel reads `--card-bg` from the column.
+ */
 .card {
+  --card-fill: var(--card-bg, var(--glass-card));
+  position: relative;
   display: block;
-  background: var(--card-bg, var(--bg-surface));
   border-radius: var(--radius-lg);
   padding: var(--space-6);
+  background: var(--card-fill);
   color: var(--text-primary);
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--glass-edge);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
 @media (max-width: 640px) {
@@ -14,9 +39,7 @@
 
 .link {
   text-decoration: none;
-  transition:
-    box-shadow var(--duration-hover) var(--ease),
-    background-color var(--duration-hover) var(--ease);
+  transition: box-shadow var(--duration-hover) var(--ease);
 }
 
 .link:hover,
@@ -25,7 +48,18 @@
 }
 
 .selected {
-  background: var(--accent-soft);
+  --card-fill: var(--glass-card-selected);
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.body {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .header {

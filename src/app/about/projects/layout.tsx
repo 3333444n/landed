@@ -1,3 +1,4 @@
+import { FolderKanban } from "lucide-react";
 import type { ReactNode } from "react";
 import { deps, requireProfile } from "@/app/current-profile";
 import { dateRange } from "@/app/form-state";
@@ -19,6 +20,7 @@ export default async function ProjectsLayout({ children }: { children: ReactNode
   return (
     <>
       <Column
+        icon={<FolderKanban />}
         title="Projects"
         count={projects.length}
         subtitle="Distinct bodies of work, inside a role or on your own."
@@ -36,6 +38,7 @@ export default async function ProjectsLayout({ children }: { children: ReactNode
               return (
                 <li key={project.id}>
                   <Card
+                    icon={<FolderKanban />}
                     href={`/about/projects/${project.id}`}
                     title={project.name}
                     subtitle={role ? `${role.role} at ${role.employerName}` : undefined}

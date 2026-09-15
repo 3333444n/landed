@@ -4,6 +4,7 @@ import { useActionState, useEffect, useState } from "react";
 import { idleState, type ActionState } from "@/app/form-state";
 import { Button } from "@/components/Button";
 import { Chip } from "@/components/Chip";
+import { AutoGrowTextarea } from "@/components/AutoGrowTextarea";
 import fieldStyles from "@/components/Field.module.css";
 import {
   warningLabels,
@@ -225,7 +226,7 @@ function UnitEditor({
     <form action={formAction} className={styles.editor}>
       <input type="hidden" name="expectedRevisionId" value={ctx.revisionId} />
       <input type="hidden" name="path" value={path} />
-      <textarea
+      <AutoGrowTextarea
         name="text"
         aria-label={`Text of ${label}`}
         className={fieldStyles.control}
