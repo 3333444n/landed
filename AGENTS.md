@@ -39,7 +39,7 @@
 - Achievements are editable in place; do not introduce achievement revision history without a revised decision.
 - Keep job availability, application status, and background-run status independent.
 - Generated materials remain drafts until reviewed. Creating or exporting materials must not automatically send them or mark an application submitted.
-- Consult the data-model document for proposed generation snapshots and saved document revisions; do not confuse those with achievement history.
+- Consult the data-model document for generation snapshots and saved document revisions (implemented in Phase 1b); do not confuse those with achievement history.
 
 ## Local operation and data
 

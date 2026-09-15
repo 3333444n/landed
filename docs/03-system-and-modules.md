@@ -15,10 +15,10 @@ flowchart LR
   subgraph local["Your computer: one local installation"]
     browser["Browser UI"] -->|"HTTP on 127.0.0.1"| app["Next.js server<br/>module-owned use cases"]
     app -->|"SQL transactions"| db[("PostgreSQL")]
-    app -->|"read / write"| files[("Local files<br/>backups now, PDFs in Phase 1b")]
+    app -->|"read / write"| files[("Local files<br/>backups and PDF artifacts")]
     migrate["migrate task (one-shot)<br/>applies db/migrations, then exits"] -.->|"before web starts"| db
   end
-  app -.->|"outbound HTTPS, Phase 1b onward"| providers["External providers<br/>models (ADR 006), later job sources"]
+  app -.->|"outbound HTTPS, only with a provider configured"| providers["External providers<br/>models (ADR 006, implemented), later job sources"]
 ```
 
 This is a logical runtime view: PostgreSQL is a process/container with its own volume, and the `migrate` task is a Compose service that runs once per `start` rather than a product component. The diagram abstracts volumes and networks.
@@ -31,11 +31,11 @@ Phase 0/1 module boundaries:
 
 ```mermaid
 flowchart TB
-  model["Model adapter<br/>(src/infrastructure/model, Phase 1b)"]
-  pdf["PDF rendering<br/>(component inside Documents, Phase 1b)"]
+  model["Model adapter<br/>(src/infrastructure/model, implemented)"]
+  pdf["PDF rendering<br/>(component inside Documents, implemented)"]
   profile["Profile<br/>Phase 0: career facts and achievements"]
   jobs["Jobs<br/>Phase 1a: pasted text and metadata (implemented)"]
-  documents["Documents<br/>Phase 1b: runs, snapshots, revisions, review"]
+  documents["Documents<br/>Phase 1b: runs, snapshots, revisions, review (implemented)"]
   applications["Applications<br/>Phase 1a: status and notes (implemented)"]
   compose["Composition in src/app/jobs<br/>pursue-job (1a), generate-document (1b)"]
   compose -->|"read facts"| profile
@@ -54,14 +54,14 @@ Arrows are code calls or dependencies, not HTTP connections or deployment bounda
 | Profile | Career records, skills, editable achievements | Database adapter |
 | Jobs (implemented) | Raw pasted posting, title, company, location, source URL, availability | Database adapter; later import adapters |
 | Documents (implemented) | Generation runs, input snapshots, saved revisions, grounding warnings, review state, artifact metadata, PDF rendering | The model adapter interface and the artifact directory; receives snapshots as data, imports no other module |
-| Applications (implemented) | Pursuit status, notes, submission time, the derived job status rule; later exact material references | Stores a job id; Documents read operations in Phase 1b |
+| Applications (implemented) | Pursuit status, notes, submission time, the derived job status rule; pinning the exact revisions used for a submission is deferred (document 09) | Stores a job id; the composition in `src/app/jobs/list-jobs.ts` feeds it run and draft facts read from Documents |
 | Matching (later) | Eligibility checks and explained assessments | Profile and Jobs reads, model/retrieval adapters |
 | Research (later) | Sourced findings and bounded research runs | Jobs reads, search/fetch adapters, model runtime |
 | Discovery (later) | Provider adapters, schedules, ingestion runs | Jobs write operations; orchestration can then invoke Matching/Documents |
 
 PDF rendering is a small component within Documents initially, not a separately deployed service. It converts validated structured content through templates into PDFs. Extract an independent package only if real reuse or isolation needs emerge. Model integration is infrastructure, not a business module that knows how resumes work: `src/infrastructure/model/` holds the `ModelAdapter` interface (a structured-output request with a Zod schema in, a validated value with usage or a classified failure out), the AI SDK implementation as a class holding the configured provider client, the fake adapter that answers from `examples/generation`, and the factory that reads the environment ([ADR 006](adr/006-model-access-path.md)). The Model setup column under `/settings/model` reads the same configuration and shows its status without the key.
 
-Keep cross-module workflows at an application composition boundary; avoid circular imports. The implemented example is `src/app/jobs/pursue-job.ts`: pasting a posting must create the job and its application together, so the function opens one transaction and passes the handle to the Jobs and Applications use cases, whose own transactions nest as savepoints inside it; a failure in either rolls back both. Neither module imports the other, and the owner-aware foreign key in the database checks the link. Documents will likewise store an opaque application ID without importing Applications operations; an application-level use case will coordinate creating the application and generating its materials. Database foreign keys do not mandate circular code dependencies.
+Keep cross-module workflows at an application composition boundary; avoid circular imports. The implemented example is `src/app/jobs/pursue-job.ts`: pasting a posting must create the job and its application together, so the function opens one transaction and passes the handle to the Jobs and Applications use cases, whose own transactions nest as savepoints inside it; a failure in either rolls back both. Neither module imports the other, and the owner-aware foreign key in the database checks the link. Documents likewise stores an opaque application id without importing Applications operations; `src/app/jobs/generate-document.ts` coordinates reading the pursuit, building the snapshot and generating a document. Database foreign keys do not mandate circular code dependencies.
 
 ## Repository shape
 
@@ -81,10 +81,10 @@ src/
                          [id]/page.tsx (renders nothing), [id]/description/ and [id]/company/,
                          actions.ts, pursue-job.ts (composition), list-jobs.ts, list-params.ts
     jobs/[id]/resume/ cover-letter/ recruiter-message/
-                         Phase 1b: layout.tsx (review column with inline editing), page.tsx (null),
+                         layout.tsx (review column with inline editing), page.tsx (null),
                          evidence/, paste/, runs/ columns, pdf/route.ts download; document-actions.ts,
                          generate-document.ts and snapshot.ts (composition)
-    settings/model/      Phase 1b: Model setup column (configuration status, no key)
+    settings/model/      Model setup column (configuration status, no key)
     form-state.ts        shared action result shape and form helpers
     tokens.css           design tokens from DESIGN.md (the only place values live)
   modules/
@@ -92,7 +92,7 @@ src/
     profile/             schema.ts, contracts.ts, rules.ts, repository.ts, service.ts, index.ts
     jobs/                same shape; postings
     applications/        same shape; pursuits and the derived job status rule
-    documents/           Phase 1b: same shape plus prompts/ (versioned prompt builders) and pdf/ (templates)
+    documents/           same shape plus prompts/ (versioned prompt builders), pdf/ (templates) and artifacts.ts
   components/            shared presentation components (Shell, Column, Toolbar, Card, Field, ...)
   infrastructure/        database pool, configuration, model/ (adapter interface, AI SDK class, fake, factory)
 db/migrations/           generated SQL migrations and drizzle-kit journal

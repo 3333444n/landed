@@ -67,7 +67,7 @@ Preferences JSONB contains a small validated structure (`desiredRoles`, `locatio
 - Save an achievement and its selected skill links in one transaction. Index commonly queried ownership/FK columns and avoid indexes already covered by suitable leading composite keys.
 - Deleting employment/projects with dependent facts is restricted (`ON DELETE RESTRICT`) until the user explicitly detaches or reassigns them; the UI explains which records block the deletion. Deleting an achievement or a skill removes only its join rows (`ON DELETE CASCADE` on `achievement_skills`). Deleting a profile cascades to everything it owns and is not exposed in the UI yet.
 - Historical generated input snapshots are not live cascading references to achievements. Deleting current data does not silently alter an old document; a full personal-data purge must also remove snapshots and PDFs.
-- Backup and restore use `pg_dump`/`pg_restore` through `pnpm db:backup` and `pnpm db:restore` (doc 07); the packaged launcher's backup also archives the artifact volume once PDFs exist (Phase 1b).
+- Backup and restore use `pg_dump`/`pg_restore` through `pnpm db:backup` and `pnpm db:restore` (doc 07); the packaged shell launcher's backup also archives the artifact volume with the PDFs (doc 07).
 - Owner-aware links require `UNIQUE (profile_id, id)` on each parent table; that index also serves per-profile lookups, so no separate `profile_id` index is added there.
 
 ## Phase 1a tables

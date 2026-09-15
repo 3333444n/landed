@@ -26,7 +26,7 @@ Run states: `queued`, `running`, `succeeded`, `failed`, `cancelled`; `partially_
 
 ## Separate lifecycles
 
-Applications: proposed statuses `preparing`, `ready`, `applied`, `interviewing`, `offer`, `rejected`, `withdrawn`, `accepted`. Ready means user-reviewed materials; a successful model call alone does not make it ready. Users may import an already-applied pursuit without generating materials. Define normal transitions plus an explicit correction action rather than preventing legitimate data entry. Detailed interview rounds wait until Phase 4.
+Applications: statuses (implemented in Phase 1a) `preparing`, `ready`, `applied`, `interviewing`, `offer`, `rejected`, `withdrawn`, `accepted`. Ready means user-reviewed materials; a successful model call alone does not make it ready. Users may import an already-applied pursuit without generating materials. Define normal transitions plus an explicit correction action rather than preventing legitimate data entry. Detailed interview rounds wait until Phase 4.
 
 Job availability: active / expired / unknown. Generation run state is independent. A job expiring must not move an application out of interviewing. Later matching/research records do not overwrite pursuit status.
 
@@ -47,7 +47,7 @@ The Jobs list shows one status chip per job so the user can watch a posting move
 
 At most one modifier chip follows: "Posting expired" (warning) when availability is expired while the application is active, or "Generation failed" (warning) when the latest run failed. An expired job with no application is hidden by the default filter, never deleted. List filters: Needs attention (default: New, Preparing, Needs review, Generation failed, Posting expired), Active (every non-terminal status), Closed (rejected, withdrawn, accepted, and expired postings without an application), All. Preparing belongs to the default filter because a freshly pasted job has nothing but a preparing application, and the default view must show it (decided 2026-09-14). Sort: updated (default), added, and next interview date once Phase 4 exists. Filters and sort live in the address as search parameters (ADR 005); changing either changes nothing in the database.
 
-Phase 1a implements the function with every row and feeds it the application rows; the run and draft facts are constant (no run, no drafts) until Phase 1b, and Phase 2 and 3 add the assessment facts without changing the function's shape. The server derives every row's status when the list renders; the filter and sort are search parameters applied in the browser over those rows, because a Next.js App Router layout cannot read search parameters.
+Phase 1a implemented the function with every row and fed it the application rows; Phase 1b feeds it the run and draft facts from the Documents module (the run states above), and Phase 2 and 3 add the assessment facts without changing the function's shape. The server derives every row's status when the list renders; the filter and sort are search parameters applied in the browser over those rows, because a Next.js App Router layout cannot read search parameters.
 
 ## Minimum checks
 
