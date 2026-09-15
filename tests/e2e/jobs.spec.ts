@@ -78,8 +78,8 @@ test("a pasted job gets an application whose status the user moves by hand", asy
   await expect(page.getByRole("status")).toHaveText("Saved");
   await expect(page.getByRole("heading", { name: "Senior full-stack developer" })).toBeVisible();
 
-  // A logo chosen from the tile replaces the status icon on the list card; removing it brings it back
-  await expect(page.getByRole("list", { name: "Jobs" }).locator("img")).toHaveCount(0);
+  // A logo chosen from the tile replaces the status icon on the list card and the job column;
+  // removing it brings the icon back. The list is checked from the job route, where it is visible.
   await page.getByLabel("Logo file").setInputFiles({
     name: "logo.png",
     mimeType: "image/png",
@@ -90,6 +90,8 @@ test("a pasted job gets an application whose status the user moves by hand", asy
   });
   await page.getByRole("button", { name: "Save changes" }).click();
   await expect(page.getByRole("status")).toHaveText("Saved");
+  await expect(page.getByRole("button", { name: "Change logo" }).locator("img")).toHaveCount(1);
+  await page.goto(`${jobUrl}?filter=all`);
   const logo = page.getByRole("list", { name: "Jobs" }).locator("img");
   await expect(logo).toHaveCount(1);
   await expect
@@ -101,10 +103,17 @@ test("a pasted job gets an application whose status the user moves by hand", asy
   expect(response.headers()["content-type"]).toBe("image/png");
   expect(response.headers()["content-security-policy"]).toBe("sandbox");
   expect((await page.request.get(`${logoSrc?.split("?")[0]}?k=00000000`)).status()).toBe(404);
+  await page.getByRole("link", { name: "Job description" }).click();
   await page.getByRole("button", { name: "Change logo" }).click();
   await page.getByRole("menuitem", { name: "Remove logo" }).click();
   await page.getByRole("button", { name: "Save changes" }).click();
   await expect(page.getByRole("status")).toHaveText("Saved");
+  await page.goto(`${jobUrl}?filter=all`);
+  await expect(
+    page
+      .getByRole("list", { name: "Jobs" })
+      .getByRole("heading", { name: "Senior full-stack developer" }),
+  ).toBeVisible();
   await expect(page.getByRole("list", { name: "Jobs" }).locator("img")).toHaveCount(0);
 
   // The company block is an empty state until Phase 2
