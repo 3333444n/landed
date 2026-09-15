@@ -1,6 +1,6 @@
 # 06 — AI, harnesses, and retrieval
 
-Status: model access path implemented in Phase 1b ([ADR 006](adr/006-model-access-path.md)); the evaluation set has been run against OpenRouter (see "Providers run through the evaluation set"); agentic research, discovery and retrieval remain future design. Updated 2026-09-14.
+Status: model access path implemented in Phase 1b ([ADR 006](adr/006-model-access-path.md)); the guarded outbound fetch exists for a job's logo address ([ADR 007](adr/007-user-initiated-image-fetch.md), 2026-09-14); the evaluation set has been run against OpenRouter (see "Providers run through the evaluation set"); agentic research, discovery and retrieval remain future design. Updated 2026-09-14.
 
 ## Distinguish the moving parts
 

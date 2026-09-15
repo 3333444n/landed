@@ -17,7 +17,7 @@ In this application, a Job is an external opening; an Application is a person's 
 | Skill | A named capability recorded by the person; not proof of a specific accomplishment |
 | Achievement | A factual statement, optionally elaborated as problem/action/result/metric, with an optional source note |
 | Evidence | The facts supplied to support generated claims; includes more than achievements, such as education and employment |
-| Job | Original posting plus source and normalized attributes; its contents are untrusted input |
+| Job | Original posting plus source and normalized attributes, a salary as free text and an optional company logo file; its contents are untrusted input, and an uploaded image is typed from its bytes |
 | Application | A tracked pursuit, including preparation before submission; one per profile/job initially |
 | Document | A resume, cover letter, or recruiter message belonging to an application |
 | Document revision | Saved generated, pasted or explicitly saved edited content; immutable, so previous generated/submitted material stays intact |

@@ -18,6 +18,12 @@ test("a pasted job gets an application whose status the user moves by hand", asy
     await page.getByRole("button", { name: "Create profile" }).click();
   }
 
+  // A skill the posting mentions, so the word cloud has a match to tint
+  await page.goto("/about/skills/new");
+  await page.getByLabel("Skill", { exact: true }).fill("PostgreSQL");
+  await page.getByRole("button", { name: "Save skill" }).click();
+  await expect(page.getByRole("list", { name: "Skills" }).getByText("PostgreSQL")).toBeVisible();
+
   // Empty state, then the paste form from the add control
   await page.goto("/jobs");
   await expect(page.getByText("No jobs yet.")).toBeVisible();
@@ -27,6 +33,12 @@ test("a pasted job gets an application whose status the user moves by hand", asy
   await page.getByLabel("Location").fill(demo.location);
   await page.getByLabel("Salary").fill(demo.salary);
   await page.getByLabel("Description").fill(demo.rawDescription);
+
+  // The word cloud follows the description before anything is saved and tints the skill
+  const liveCloud = page.getByRole("list", { name: "Frequent words" });
+  await expect(
+    liveCloud.getByRole("listitem").filter({ hasText: "postgresql, 1 time, in your skills" }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Save job" }).click();
 
   // The job opens beside the list with its Preparing chip and inert document blocks
@@ -39,6 +51,15 @@ test("a pasted job gets an application whose status the user moves by hand", asy
   await expect(list.getByText("Preparing", { exact: true })).toBeVisible();
   const materials = page.getByRole("list", { name: "Materials" });
   await expect(materials.getByText("Not started")).toHaveCount(3);
+
+  // The word cloud counts the posting's words and tints the one that is a skill
+  const cloud = page.getByRole("list", { name: "Frequent words" });
+  await expect(
+    cloud.getByRole("listitem").filter({ hasText: "postgresql, 1 time, in your skills" }),
+  ).toBeVisible();
+  await expect(
+    cloud.getByRole("listitem").filter({ hasText: /^typescript, 1 time$/ }),
+  ).toBeVisible();
 
   // Manual status change survives a reload and shows the submission date
   await page.getByLabel("Status").selectOption("applied");

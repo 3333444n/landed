@@ -15,6 +15,20 @@ export {
   type StoredLogo,
 } from "./contracts";
 export { logoFieldErrors, readLogo, storeLogo } from "./logo";
-export { detectImageType, jobSummary, logoHref, logoVersion } from "./rules";
+export {
+  buildWordCloud,
+  centerOut,
+  detectImageType,
+  jobSummary,
+  logoHref,
+  logoVersion,
+  sizeStep,
+  skillWords,
+  tokenize,
+  wordFrequencies,
+  type SkillLike,
+  type WordCloudItem,
+  type WordCount,
+} from "./rules";
 export { deleteJob, getJob, listJobs, saveJob, type JobsDeps, type LogoChange } from "./service";
 export type { JobRecord } from "./repository";

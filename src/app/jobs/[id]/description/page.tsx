@@ -3,6 +3,7 @@ import { deps, requireProfile } from "@/app/current-profile";
 import { Column } from "@/components/Column";
 import { LogoPicker } from "@/components/LogoPicker";
 import { getJob, logoHref } from "@/modules/jobs";
+import { listSkills } from "@/modules/profile";
 import { saveJobAction } from "../../actions";
 import { JobForm, jobFormId } from "../../JobForm";
 
@@ -13,6 +14,7 @@ export default async function JobDescriptionPage({ params }: { params: Promise<{
   const profile = await requireProfile();
   const job = await getJob(deps(), profile.id, id);
   if (!job) notFound();
+  const skills = await listSkills(deps(), profile.id);
 
   return (
     <Column
@@ -26,6 +28,7 @@ export default async function JobDescriptionPage({ params }: { params: Promise<{
       <JobForm
         action={saveJobAction.bind(null, job.id)}
         submitLabel="Save changes"
+        skills={skills}
         record={{
           title: job.title,
           companyName: job.companyName,

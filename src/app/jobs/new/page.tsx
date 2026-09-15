@@ -1,9 +1,15 @@
+import { deps, requireProfile } from "@/app/current-profile";
 import { Column } from "@/components/Column";
 import { LogoPicker } from "@/components/LogoPicker";
+import { listSkills } from "@/modules/profile";
 import { saveJobAction } from "../actions";
 import { JobForm, jobFormId } from "../JobForm";
 
-export default function NewJobPage() {
+export const dynamic = "force-dynamic";
+
+export default async function NewJobPage() {
+  const profile = await requireProfile();
+  const skills = await listSkills(deps(), profile.id);
   return (
     <Column
       control={<LogoPicker formId={jobFormId} current={null} />}
@@ -13,7 +19,11 @@ export default function NewJobPage() {
       parentTitle="Jobs"
       width="detail"
     >
-      <JobForm action={saveJobAction.bind(null, undefined)} submitLabel="Save job" />
+      <JobForm
+        action={saveJobAction.bind(null, undefined)}
+        submitLabel="Save job"
+        skills={skills}
+      />
     </Column>
   );
 }
