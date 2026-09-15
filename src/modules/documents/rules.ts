@@ -114,8 +114,90 @@ export function groundingCheck(
       }
     }
   }
-  if (type === "resume") warnings.push(...headingWarnings(content as ResumeContent, snapshot));
+  if (type === "resume") {
+    warnings.push(...headingWarnings(content as ResumeContent, snapshot));
+    warnings.push(...attributionWarnings(content as ResumeContent, snapshot));
+  }
   return warnings;
+}
+
+/**
+ * A bullet under an entry may cite only records that belong to that entry: the entry's own
+ * record, its achievements (for a role, also the achievements of its projects), the profile and
+ * skills. Achievements linked to nothing are allowed anywhere; the user chose not to place them.
+ * Found on the first real run, where a personal-project achievement appeared under an employer
+ * with every id valid and every number matching.
+ */
+function attributionWarnings(resume: ResumeContent, snapshot: Snapshot): GroundingWarning[] {
+  const anywhere = new Set<string>([snapshot.profile.id, ...snapshot.skills.map((s) => s.id)]);
+  for (const a of snapshot.achievements) {
+    if (a.employmentId === null && a.projectId === null) anywhere.add(a.id);
+  }
+  const warnings: GroundingWarning[] = [];
+  resume.sections.forEach((section, i) => {
+    const kind = section.kind;
+    if (kind === "skills") return;
+    section.entries.forEach((entry, j) => {
+      const allowed = allowedEvidence(kind, entry.heading, snapshot);
+      if (!allowed) return; // an unknown heading is already reported
+      entry.bullets.forEach((bullet, k) => {
+        for (const id of bullet.evidenceIds) {
+          if (anywhere.has(id) || allowed.has(id)) continue;
+          if (!snapshot.achievements.some((a) => a.id === id) && !isOwnedRecord(id, snapshot)) {
+            continue; // unknown ids are reported by the evidence check
+          }
+          warnings.push({
+            kind: "misattributed_evidence",
+            path: `sections.${i}.entries.${j}.bullets.${k}`,
+            message: `Evidence ${id} belongs to another role, project or institution than "${entry.heading}"`,
+          });
+        }
+      });
+    });
+  });
+  return warnings;
+}
+
+function isOwnedRecord(id: string, snapshot: Snapshot): boolean {
+  return (
+    snapshot.employment.some((e) => e.id === id) ||
+    snapshot.projects.some((p) => p.id === id) ||
+    snapshot.education.some((e) => e.id === id)
+  );
+}
+
+/** The ids an entry with this heading may cite, or null when the heading matches no record. */
+function allowedEvidence(
+  kind: "experience" | "projects" | "education",
+  heading: string,
+  snapshot: Snapshot,
+): Set<string> | null {
+  const h = normalize(heading);
+  const matches = (name: string) => {
+    const n = normalize(name);
+    return n === h || n.includes(h) || h.includes(n);
+  };
+  if (kind === "experience") {
+    const role = snapshot.employment.find((e) => matches(e.employerName));
+    if (!role) return null;
+    const projectIds = snapshot.projects.filter((p) => p.employmentId === role.id).map((p) => p.id);
+    const ids = new Set<string>([role.id, ...projectIds]);
+    for (const a of snapshot.achievements) {
+      if (a.employmentId === role.id || (a.projectId && projectIds.includes(a.projectId))) {
+        ids.add(a.id);
+      }
+    }
+    return ids;
+  }
+  if (kind === "projects") {
+    const project = snapshot.projects.find((p) => matches(p.name));
+    if (!project) return null;
+    const ids = new Set<string>([project.id]);
+    for (const a of snapshot.achievements) if (a.projectId === project.id) ids.add(a.id);
+    return ids;
+  }
+  const school = snapshot.education.find((e) => matches(e.institution));
+  return school ? new Set([school.id]) : null;
 }
 
 function headingWarnings(resume: ResumeContent, snapshot: Snapshot): GroundingWarning[] {

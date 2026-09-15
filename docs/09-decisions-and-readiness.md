@@ -31,7 +31,7 @@ Updated 2026-09-14. Accepted decisions below reflect the user's explicit instruc
   - One resume template and one cover-letter layout: single column, Letter, Helvetica built in, monochrome, sentence-case headings (DESIGN-DOCS.md).
   - Execution and recovery: a bounded application-owned runner (the action awaits the call; the run row is committed first) with a sweep that marks runs older than ten minutes as interrupted. No worker before Phase 3.
   - Review: text edited in place on the preview, each save a new immutable revision; Mark reviewed records the time; Ready stays a manual application status; submission stays manual.
-  - Grounding: a deterministic check after every generation (evidence ids exist, numbers appear in cited evidence) shown as warning chips; a synthetic evaluation set in `examples/generation` run by `pnpm eval` against a real provider, and by the fake adapter in CI.
+  - Grounding: a deterministic check after every generation (evidence ids exist, numbers appear in cited evidence, and since 2026-09-14 resume bullets cite only their own entry's records) shown as warning chips; a synthetic evaluation set in `examples/generation` run by `pnpm eval` against a real provider, and by the fake adapter in CI.
   - Observability: every model call writes a run record with provider, model, prompt name and version, tokens, latency, cost when reported and outcome, visible in a Runs column.
   - Profile gains a `links` list (LinkedIn, GitHub, website) with a migration, for the resume header.
 - A modular monolith with Profile first, Jobs and Applications in Phase 1a, Documents in Phase 1b (proposed 2026-09-13, implemented and accepted 2026-09-14).

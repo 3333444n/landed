@@ -2,7 +2,7 @@ import { factsBlock, groundingRules, type PromptDefinition } from "./shared";
 
 export const resumePrompt: PromptDefinition = {
   name: "resume",
-  version: 1,
+  version: 2,
   instructions: `You write a one-page resume tailored to one job posting from a candidate's own career facts.
 
 ${groundingRules}
@@ -14,6 +14,7 @@ Shape and budgets (the page is US Letter at 10 pt; these limits are what fits):
 - An entry's "heading" is the employer, project or institution name exactly as in the facts; "subheading" is the role, qualification or the technologies; "dateRange" is like "Apr 2023 – Jun 2025" or "Jul 2023 – Present", built from the facts' years and months, or null when the facts have no dates.
 - For "skills" entries, "heading" is a category label (for example "Languages") and "subheading" is a comma-separated list of skill names from the facts; each entry cites the skill records through its bullets being empty, so put the skill ids nowhere: skills sections carry no evidenceIds.
 - Bullets are at most 180 characters, start with a verb, and lead with the outcome when a result or metric exists in the cited achievement.
-- Prefer the achievements and roles that match the posting's stated needs; leave out what does not help.`,
+- Prefer the achievements and roles that match the posting's stated needs; leave out what does not help.
+- Use the budget. When the facts support it, aim for 5 to 6 entries and 7 to 8 bullets in total; a half-empty page reads as a thin career. Client work and personal projects that match the posting belong in a "projects" section with their own achievements.`,
   buildInput: factsBlock,
 };

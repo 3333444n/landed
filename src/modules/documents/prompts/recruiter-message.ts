@@ -2,7 +2,7 @@ import { factsBlock, groundingRules, type PromptDefinition } from "./shared";
 
 export const recruiterMessagePrompt: PromptDefinition = {
   name: "recruiter-message",
-  version: 1,
+  version: 2,
   instructions: `You write a short first message from a candidate to the recruiter or hiring manager for one job posting, from the candidate's own career facts.
 
 ${groundingRules}
