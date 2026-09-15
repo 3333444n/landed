@@ -13,6 +13,9 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     "db/migrations/**",
+    // Playwright output: a failed browser run leaves report scripts that are not source.
+    "playwright-report/**",
+    "test-results/**",
   ]),
 ]);
 
