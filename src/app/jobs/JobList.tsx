@@ -6,6 +6,7 @@ import { Chip } from "@/components/Chip";
 import { EmptyState } from "@/components/Column";
 import { matchesFilter, sortJobs } from "@/modules/applications/rules";
 import { readListParams } from "./list-params";
+import { LogoImage } from "./LogoImage";
 import { statusIcon } from "./status-icon";
 import type { JobRow } from "./list-jobs";
 
@@ -34,7 +35,7 @@ export function JobList({ rows }: { rows: JobRow[] }) {
           <li key={row.id}>
             <Card
               href={`/jobs/${row.id}`}
-              icon={<Icon />}
+              icon={row.logoHref ? <LogoImage src={row.logoHref} /> : <Icon />}
               title={row.title}
               subtitle={row.companyName}
               meta={[row.location ?? "", row.salary ?? "", row.summary].filter(Boolean)}

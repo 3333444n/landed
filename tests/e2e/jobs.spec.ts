@@ -78,6 +78,35 @@ test("a pasted job gets an application whose status the user moves by hand", asy
   await expect(page.getByRole("status")).toHaveText("Saved");
   await expect(page.getByRole("heading", { name: "Senior full-stack developer" })).toBeVisible();
 
+  // A logo chosen from the tile replaces the status icon on the list card; removing it brings it back
+  await expect(page.getByRole("list", { name: "Jobs" }).locator("img")).toHaveCount(0);
+  await page.getByLabel("Logo file").setInputFiles({
+    name: "logo.png",
+    mimeType: "image/png",
+    buffer: Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+      "base64",
+    ),
+  });
+  await page.getByRole("button", { name: "Save changes" }).click();
+  await expect(page.getByRole("status")).toHaveText("Saved");
+  const logo = page.getByRole("list", { name: "Jobs" }).locator("img");
+  await expect(logo).toHaveCount(1);
+  await expect
+    .poll(() => logo.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth))
+    .toBe(1);
+  const logoSrc = await logo.getAttribute("src");
+  const response = await page.request.get(`${logoSrc}`);
+  expect(response.status()).toBe(200);
+  expect(response.headers()["content-type"]).toBe("image/png");
+  expect(response.headers()["content-security-policy"]).toBe("sandbox");
+  expect((await page.request.get(`${logoSrc?.split("?")[0]}?k=00000000`)).status()).toBe(404);
+  await page.getByRole("button", { name: "Change logo" }).click();
+  await page.getByRole("menuitem", { name: "Remove logo" }).click();
+  await page.getByRole("button", { name: "Save changes" }).click();
+  await expect(page.getByRole("status")).toHaveText("Saved");
+  await expect(page.getByRole("list", { name: "Jobs" }).locator("img")).toHaveCount(0);
+
   // The company block is an empty state until Phase 2
   await page.goto(`${jobUrl}/company`);
   await expect(page.getByText("Company research arrives in Phase 2.")).toBeVisible();

@@ -9,7 +9,7 @@ import {
   type JobStatusFacts,
 } from "@/modules/applications";
 import { documentFactsForApplications, sweepInterruptedRuns } from "@/modules/documents";
-import { jobSummary, listJobs } from "@/modules/jobs";
+import { jobSummary, listJobs, logoHref } from "@/modules/jobs";
 import type { BaseDeps } from "@/modules/shared/service";
 
 export interface JobRow {
@@ -18,6 +18,8 @@ export interface JobRow {
   companyName: string;
   location: string | null;
   salary: string | null;
+  /** The stored logo's address; when present it replaces the status icon (DESIGN.md). */
+  logoHref: string | null;
   summary: string;
   createdAt: string;
   updatedAt: string;
@@ -55,6 +57,7 @@ export async function listJobRows(deps: BaseDeps, profileId: string): Promise<Jo
       companyName: job.companyName,
       location: job.location,
       salary: job.salary,
+      logoHref: logoHref(job),
       summary: jobSummary(job.rawDescription),
       createdAt: job.createdAt.toISOString(),
       updatedAt: job.updatedAt.toISOString(),

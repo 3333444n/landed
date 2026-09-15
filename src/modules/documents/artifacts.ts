@@ -3,10 +3,10 @@
  * under the artifact directory, and only then the metadata row is inserted. A row without a
  * file, or a file without a row, is reconciled by rendering again on the next download.
  */
-import { createHash } from "node:crypto";
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { Result } from "@/modules/shared/contracts";
+import { sha256, writeFileAtomically } from "@/modules/shared/files";
 import { mapDatabaseError, newId, notFound, now, type BaseDeps } from "@/modules/shared/service";
 import type { CoverLetterContent, ResumeContent } from "./contracts";
 import { letterHeaderFrom, renderCoverLetterPdf, renderResumePdf, templateVersion } from "./pdf";
@@ -70,11 +70,7 @@ export async function getOrRenderPdf(
         );
   const storageKey =
     existing?.storageKey ?? path.join(profileId, `${revisionId}-pdf-v${templateVersion}.pdf`);
-  const target = path.join(artifactDir, storageKey);
-  await mkdir(path.dirname(target), { recursive: true });
-  const temporary = `${target}.${newId(deps)}.tmp`;
-  await writeFile(temporary, bytes);
-  await rename(temporary, target);
+  await writeFileAtomically(path.join(artifactDir, storageKey), bytes);
 
   if (!existing) {
     try {
@@ -96,10 +92,6 @@ export async function getOrRenderPdf(
     }
   }
   return { ok: true, value: { bytes, filename, reused: false } };
-}
-
-function sha256(bytes: Buffer): string {
-  return createHash("sha256").update(bytes).digest("hex");
 }
 
 function slug(text: string): string {

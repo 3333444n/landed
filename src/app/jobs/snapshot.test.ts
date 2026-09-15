@@ -99,6 +99,8 @@ const sources = (): SnapshotSources => ({
     companyName: "Example Analytics",
     location: "Remote",
     salary: null,
+    logoStorageKey: null,
+    logoContentType: null,
     source: "pasted",
     sourceUrl: null,
     rawDescription: "Build internal reporting tools.",

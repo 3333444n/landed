@@ -15,7 +15,8 @@ import {
   getDocumentView,
   sweepInterruptedRuns,
 } from "@/modules/documents";
-import { getJob, jobSummary } from "@/modules/jobs";
+import { getJob, jobSummary, logoHref } from "@/modules/jobs";
+import { LogoImage } from "../LogoImage";
 import { deleteJobAction, saveApplicationAction } from "../actions";
 import { ApplicationStatusForm } from "../ApplicationStatusForm";
 import { documentIcons } from "./documents/icons";
@@ -39,6 +40,7 @@ export default async function JobLayout({
   const profile = await requireProfile();
   const job = await getJob(deps(), profile.id, id);
   if (!job) notFound();
+  const logo = logoHref(job);
   const application = await getApplicationForJob(deps(), profile.id, job.id);
   if (application) await sweepInterruptedRuns(deps(), profile.id);
   const views = application
@@ -53,7 +55,7 @@ export default async function JobLayout({
   return (
     <>
       <Column
-        icon={<Briefcase />}
+        icon={logo ? <LogoImage src={logo} /> : <Briefcase />}
         title={job.title}
         subtitle={job.companyName}
         parentHref="/jobs"
