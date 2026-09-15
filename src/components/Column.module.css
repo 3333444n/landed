@@ -10,7 +10,6 @@
   background:
     linear-gradient(var(--glass-panel), var(--glass-panel)) padding-box,
     var(--glass-edge) border-box;
-  box-shadow: var(--shadow-glass-inset);
 }
 
 /*
@@ -94,15 +93,30 @@
   }
 }
 
+/* A round glass button with a left arrow; its accessible name is the parent's title. */
 .back {
   align-self: flex-start;
-  font-size: 13px;
-  line-height: 16px;
-  font-weight: 500;
-  color: var(--accent);
-  min-height: 40px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  width: var(--size-control);
+  height: var(--size-control);
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  background:
+    linear-gradient(var(--glass-control), var(--glass-control)) padding-box,
+    var(--glass-edge) border-box;
+  color: var(--text-primary);
+  transition: background-color var(--duration-hover) var(--ease);
+}
+
+.back svg {
+  width: var(--size-icon);
+  height: var(--size-icon);
+}
+
+.back:hover {
+  --glass-control: var(--accent-soft);
 }
 
 .header {

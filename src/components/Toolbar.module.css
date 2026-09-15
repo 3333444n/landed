@@ -17,14 +17,17 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: var(--size-control);
+  height: var(--size-control);
+  border: 1px solid transparent;
   border-radius: var(--radius-full);
-  background: var(--bg-surface-raised);
+  background:
+    linear-gradient(var(--glass-control), var(--glass-control)) padding-box,
+    var(--glass-edge) border-box;
   color: var(--text-primary);
   transition: background-color var(--duration-hover) var(--ease);
 }
 
 .add:hover {
-  background: var(--accent-soft);
+  --glass-control: var(--accent-soft);
 }

@@ -1,3 +1,4 @@
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useId, type ReactNode } from "react";
 import styles from "./Column.module.css";
@@ -32,8 +33,13 @@ export function Column({
     <section className={`${styles.column} ${styles[width]}`} aria-labelledby={headingId}>
       <div className={styles.inner}>
         {parentHref && parentTitle ? (
-          <Link href={parentHref} className={styles.back}>
-            {parentTitle}
+          <Link
+            href={parentHref}
+            className={styles.back}
+            aria-label={parentTitle}
+            title={parentTitle}
+          >
+            <ArrowLeft aria-hidden="true" focusable="false" />
           </Link>
         ) : null}
         <div className={styles.header}>

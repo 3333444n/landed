@@ -25,15 +25,16 @@
   --glass-highlight: rgba(255, 255, 255, 0.35);
 
   /* Canvas gradient and layered glass (DESIGN.md "Glass material"). */
-  --bg-canvas-gradient: linear-gradient(165deg, #fafafc 0%, #ededf1 45%, #dcdce2 100%);
+  --glow: rgba(20, 184, 166, 0.22);
+  --bg-canvas-gradient:
+    radial-gradient(70% 55% at 100% 0%, var(--glow), transparent 70%),
+    radial-gradient(55% 45% at 0% 100%, var(--glow), transparent 70%);
   --glass-panel: rgba(255, 255, 255, 0.5);
-  --glass-card: rgba(255, 255, 255, 0.72);
+  --glass-card: rgba(255, 255, 255, 0.6);
   --glass-card-raised: rgba(0, 0, 0, 0.035);
   --glass-card-selected: rgba(232, 239, 255, 0.85);
   --glass-edge: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(0, 0, 0, 0.05));
-  --glass-glow: rgba(255, 255, 255, 0.6);
-  --shadow-glass-inset:
-    inset 0 1px 0 var(--glass-highlight), inset 0 16px 32px -16px var(--glass-glow);
+  --glass-control: rgba(255, 255, 255, 0.5);
   --icon-tile-bg: rgba(0, 0, 0, 0.05);
 
   --size-icon-tile: 36px;
@@ -89,13 +90,13 @@
     --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.4);
     --shadow-float: 0 12px 40px rgba(0, 0, 0, 0.5);
     --glass-highlight: rgba(255, 255, 255, 0.08);
-    --bg-canvas-gradient: linear-gradient(165deg, #1c1c21 0%, #101013 45%, #08080a 100%);
+    --glow: rgba(20, 184, 166, 0.4);
     --glass-panel: rgba(22, 22, 24, 0.62);
-    --glass-card: rgba(40, 40, 44, 0.6);
+    --glass-card: rgba(28, 28, 32, 0.72);
     --glass-card-raised: rgba(255, 255, 255, 0.06);
     --glass-card-selected: rgba(26, 36, 64, 0.8);
-    --glass-edge: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.02));
-    --glass-glow: rgba(255, 255, 255, 0.05);
+    --glass-edge: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.03));
+    --glass-control: rgba(255, 255, 255, 0.06);
     --icon-tile-bg: rgba(255, 255, 255, 0.08);
   }
 }
@@ -108,8 +109,8 @@
     --glass-card: var(--bg-surface);
     --glass-card-raised: var(--bg-surface-raised);
     --glass-card-selected: var(--accent-soft);
+    --glass-control: var(--bg-surface-raised);
     --glass-edge: linear-gradient(transparent, transparent);
-    --glass-glow: transparent;
   }
 }
 

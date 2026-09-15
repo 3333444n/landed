@@ -29,7 +29,6 @@
     background:
       linear-gradient(var(--glass-panel), var(--glass-panel)) padding-box,
       var(--glass-edge) border-box;
-    box-shadow: var(--shadow-glass-inset);
     border-radius: var(--radius-xl);
   }
 }

@@ -4,7 +4,7 @@ This file governs every user interface in Landed. Coding agents and contributors
 
 ## Philosophy
 
-Landed is a review tool. People read generated resumes, compare them with their own facts, and decide. The interface must stay out of the way: a quiet grey gradient canvas, translucent panels and cards with a soft top highlight, generous whitespace, one accent color, and typography that carries the hierarchy on its own.
+Landed is a review tool. People read generated resumes, compare them with their own facts, and decide. The interface must stay out of the way: a near-black (or off-white) canvas lit by a soft teal glow in two corners, flat translucent panels and cards with a thin gradient edge, generous whitespace, one accent color, and typography that carries the hierarchy on its own.
 
 The interface is a set of columns. Each column lists cards; opening a card opens the next column. The URL is the navigation stack, so every screen is reachable by address and the back link always exists.
 
@@ -17,8 +17,8 @@ Minimalism here means fewer elements, not smaller ones. Remove before you decora
 3. **No monospace, and no uppercase labels.** This includes `<code>`, `<kbd>`, and "terminal-style" tags. Status chips and labels use sentence case in the body typeface.
 4. **No borders.** A child separates from its container in exactly one of two ways: a tonal step (a different surface fill), or a 1px line in `line` when child and container share the same fill. Never both, and never a border around a tonally separated element. Inputs, cards, chips, buttons and columns have no border. Focus rings are outlines, not borders, and are exempt, and so is the 1px gradient edge of a glass surface, which is a highlight of the material, not a border (see Glass material).
 5. **No eyebrows.** No small label or category text sitting above a title. Hierarchy comes from size and weight of the title itself, and from spacing. If context is needed, it goes below the title as a subtitle.
-6. **No decorative gradients, no drop shadows on text, no icons as decoration.** The only gradients are the canvas and the glass edge highlight. An icon sits in an icon tile next to the word it stands for (sidebar items, About me cards, job cards by derived status, material cards) and is hidden from assistive technology, so an accessible name never changes because of an icon. The hamburger, the "+", Filter and Sort are the icon-only controls, and each has an accessible name.
-7. **Two grades of glass.** Layered glass (a translucent fill, a 1px gradient edge highlight and an inset top glow, no blur) is the material of cards, the sidebar panel and the detail column, because nothing scrolls beneath them. Floating glass (the same plus `backdrop-filter`) is reserved for the navigation drawer, sheets and popovers. List columns, forms, tables, inputs and text blocks have no glass of their own.
+6. **No decorative gradients, no drop shadows on text, no icons as decoration.** The only gradients are the canvas glow and the 1px glass edge; no element has a gradient fill. An icon sits in an icon tile next to the word it stands for (sidebar items, About me cards, job cards by derived status, material cards) and is hidden from assistive technology, so an accessible name never changes because of an icon. The hamburger, the "+", Filter and Sort are the icon-only controls, and each has an accessible name.
+7. **Two grades of glass.** Layered glass (a flat translucent fill and a 1px gradient edge highlight, no blur, nothing inside the fill) is the material of cards, the sidebar panel, the detail column and the round toolbar and back buttons, because nothing scrolls beneath them. Floating glass (the same plus `backdrop-filter`) is reserved for the navigation drawer, sheets and popovers. List columns, forms, tables, inputs and text blocks have no glass of their own.
 8. **Respect `prefers-reduced-transparency` and `prefers-reduced-motion`.** With reduced transparency, glass surfaces become opaque solids of the same hue. With reduced motion, remove blur transitions and springs.
 9. **Text on glass must meet WCAG AA (4.5:1) over the worst-case backdrop.** The drawer adds a solid tint layer behind its text so contrast never depends on what sits underneath.
 10. **Three tonal steps, used in order.** Canvas is the gradient page and the list columns. Surface is a card in a list column (`glass.card`), the sidebar and the detail column (`glass.panel`). Raised is a card or block inside the detail column (`glass.card.raised`), the fill of an input and the icon tile. Nothing nests deeper; if a design needs a fourth box, it needs a new column instead.
@@ -32,7 +32,8 @@ Neutral first. One accent. Semantic colours only for meaning, as chip tints and 
 | Token               | Light                    | Dark                     | Use                                              |
 | ------------------- | ------------------------ | ------------------------ | ------------------------------------------------ |
 | `bg.canvas`         | `#F5F5F7`                | `#0B0B0D`                | Base colour under the canvas gradient            |
-| `bg.canvas.gradient` | `165deg #FAFAFC, #EDEDF1 45%, #DCDCE2` | `165deg #1C1C21, #101013 45%, #08080A` | The page and the list columns |
+| `glow`              | `rgba(20,184,166,0.22)`  | `rgba(20,184,166,0.40)`  | Teal light source of the canvas gradient         |
+| `bg.canvas.gradient` | two radial glows, top right and bottom left, over `bg.canvas` | same | The page and the list columns |
 | `bg.surface`        | `#FFFFFF`                | `#161618`                | Cards in a list column, sidebar, detail column   |
 | `bg.surface.raised` | `#EFEFF2`                | `#242428`                | Cards and blocks inside the detail column, blocks inside a card, secondary buttons |
 | `bg.input`          | `#EFEFF2`                | `#242428`                | Input fill on a card; on canvas use `bg.surface` |
@@ -43,7 +44,7 @@ Neutral first. One accent. Semantic colours only for meaning, as chip tints and 
 | `glass.card.raised` | `rgba(0,0,0,0.035)`      | `rgba(255,255,255,0.06)` | Card fill inside the detail column               |
 | `glass.card.selected` | `rgba(232,239,255,0.85)` | `rgba(26,36,64,0.80)`  | Selected link card (translucent `accent.soft`)   |
 | `glass.edge`        | `180deg rgba(255,255,255,0.90) to rgba(0,0,0,0.05)` | `180deg rgba(255,255,255,0.14) to rgba(255,255,255,0.02)` | 1px edge highlight of a glass surface |
-| `glass.glow`        | `rgba(255,255,255,0.60)` | `rgba(255,255,255,0.05)` | Inset glow along the top of a glass surface      |
+| `glass.control`     | `rgba(255,255,255,0.50)` | `rgba(255,255,255,0.06)` | Round glass buttons (add, filter, sort, back)    |
 | `icon.tile.bg`      | `rgba(0,0,0,0.05)`       | `rgba(255,255,255,0.08)` | Icon tile fill                                   |
 | `line`              | `rgba(0,0,0,0.08)`       | `rgba(255,255,255,0.10)` | The only permitted line, between same-fill items |
 | `text.primary`      | `#111114`                | `#F5F5F7`                | Body and titles                                  |
@@ -55,7 +56,7 @@ Neutral first. One accent. Semantic colours only for meaning, as chip tints and 
 | `warning`           | `#B7791F`                | `#E3B04B`                | Needs review, expired posting, failed run        |
 | `danger`            | `#C5372C`                | `#F0655A`                | Errors, destructive confirmation only            |
 
-Rules: never use pure black or pure white for text. The canvas is never flat black or flat white; the gradient stays within the greys above. Accent is for actions, focus and the selected or active item, not for headings or decoration. Semantic colours appear as chip tints or as text, never as a card background. A rejected or withdrawn application is neutral, not red; red means something went wrong or something is about to be deleted.
+Rules: never use pure black or pure white for text. The canvas is `bg.canvas` lit by the teal glow; the glow is the only colour that is not a grey, the accent or a semantic tint, and it appears nowhere else. Accent is for actions, focus and the selected or active item, not for headings or decoration. Semantic colours appear as chip tints or as text, never as a card background. A rejected or withdrawn application is neutral, not red; red means something went wrong or something is about to be deleted.
 
 ### Typography
 
@@ -95,17 +96,16 @@ Cards: no shadow by default; the tonal step against canvas is enough. A card tha
 
 ### Glass material
 
-Layered glass, for cards and panels. A 1px transparent border gives the edge highlight its geometry; the fill sits in the padding box and the gradient edge in the border box, so it survives scrolling containers. No blur, because nothing moves beneath these surfaces.
+Layered glass, for cards, panels and round buttons. A 1px transparent border gives the edge highlight its geometry; the flat fill sits in the padding box and the gradient edge in the border box, so it survives scrolling containers. No blur, because nothing moves beneath these surfaces, and no shadow or gradient inside the fill.
 
 ```css
 .layered-glass {
-  --fill: var(--glass-card); /* or --glass-panel, --glass-card-raised */
+  --fill: var(--glass-card); /* or --glass-panel, --glass-card-raised, --glass-control */
   border: 1px solid transparent;
   border-radius: var(--radius-lg);
   background:
     linear-gradient(var(--fill), var(--fill)) padding-box,
     var(--glass-edge) border-box;
-  box-shadow: var(--shadow-glass-inset); /* inset 1px highlight plus the top glow */
 }
 ```
 
@@ -145,11 +145,11 @@ Durations: 150ms for hover and focus, 250ms for reveal and dismiss, 400ms for th
 
 **Columns.** The page is a row of columns on canvas. The path decides how many columns exist; the viewport decides how many are visible. Below 768px only the last column is visible. From 768px the last two columns are visible. From 1200px the sidebar is a third, persistent track on the left. A list column is a titled region of canvas with no fill, border or shadow. The detail column (the last one) and the sidebar are layered-glass panels: `glass.panel` fill, `radius.xl`, inset 16px from the viewport edge; on a phone the detail column fills the screen edge to edge. Widths: sidebar 220px; the two visible columns share the remaining width equally, and a form inside the detail column stays within 720px. Each column scrolls on its own.
 
-**Back link.** A column whose parent column is not visible shows a text link at the top with the parent's title, in `label` style and `accent`. The link goes to the parent path. Nothing else is a back control.
+**Back button.** A column whose parent column is not visible shows a 40px round glass button (`glass.control` fill, gradient edge) with a left-arrow glyph at the top; its accessible name and tooltip are the parent's title. It goes to the parent path. Nothing else is a back control.
 
 **Column header.** Title in `title.lg`, optional count in `text.secondary` after the title in the same size and weight 400, optional subtitle in `body.sm` `text.secondary` below. Then the toolbar, if any. Then the cards.
 
-**Toolbar.** One row. Filter and sort on the left as 40px round icon buttons (`bg.surface.raised`, sliders and arrows glyphs, accessible names "Filter" and "Sort") that open a popover menu of exclusive options with the current one marked; a non-default choice shows an 8px accent dot on the button. The add control on the right: a 40px circle in `bg.surface.raised` containing a plus, with an accessible name that says what is added ("Add achievement"). A list that cannot be filtered shows only the add control. The toolbar has no fill.
+**Toolbar.** One row. Filter and sort on the left as 40px round glass buttons (`glass.control` fill, gradient edge, sliders and arrows glyphs, accessible names "Filter" and "Sort") that open a popover menu of exclusive options with the current one marked; a non-default choice shows an 8px accent dot on the button. The add control on the right: a 40px round glass button containing a plus, with an accessible name that says what is added ("Add achievement"). A list that cannot be filtered shows only the add control. The toolbar has no fill.
 
 **Placeholder column.** When a list or hub is open and nothing in it is selected, the next column shows one sentence in `text.secondary` ("Select something on the left") from 768px, and does not exist below it.
 
@@ -159,7 +159,7 @@ Durations: 150ms for hover and focus, 250ms for reveal and dismiss, 400ms for th
 
 ## Components
 
-**Buttons.** Primary: accent background, white text, `radius.md`, 40px tall. Secondary: `bg.surface.raised` background, `text.primary`. Tertiary: text only. Destructive: `danger` text on secondary style, filled only inside a confirmation. No outline-style buttons. The add control is a round secondary button.
+**Buttons.** Primary: accent background, white text, `radius.md`, 40px tall. Secondary: `bg.surface.raised` background, `text.primary`. Tertiary: text only. Destructive: `danger` text on secondary style, filled only inside a confirmation. No outline-style buttons. Round icon buttons (add, filter, sort, back) are layered glass and turn `accent.soft` on hover.
 
 **Cards.** Layered glass (`glass.card` in a list column, `glass.card.raised` inside the detail column), `radius.lg`, no border, 24px padding. An optional icon tile sits at the left of the header. Title in `title.md`, optional subtitle in `body.sm` `text.secondary` below the title, optional metadata lines in `body.sm`, chips last. A card that opens the next column is one link covering the whole card, with the hover elevation above; the selected card, when its column is visible next to its detail, uses `accent.soft` fill. Actions such as delete live in the detail column, not on list cards. Blocks inside a card use `bg.surface.raised` and `radius.md`.
 
@@ -185,4 +185,4 @@ Contrast AA everywhere, including on glass over worst-case content. Focus visibl
 
 ## Don'ts
 
-Eyebrow labels. Monospace anything. Uppercase labels. Borders on anything tonally separated. Glass on glass. Blur on cards or panels. Gradients anywhere but the canvas and the glass edge. Icons without a word. Illustrations in empty states. More than one accent color. Square corners. Shadows on text. Collapsible cards. A fourth tonal step. Fills or shadows on list columns. Forms inside cards. Stacked or overlapping cards.
+Eyebrow labels. Monospace anything. Uppercase labels. Borders on anything tonally separated. Glass on glass. Blur on cards or panels. Gradient fills on any element; the only gradients are the canvas glow and the 1px glass edge. Icons without a word. Illustrations in empty states. More than one accent color. Square corners. Shadows on text. Collapsible cards. A fourth tonal step. Fills or shadows on list columns. Forms inside cards. Stacked or overlapping cards.

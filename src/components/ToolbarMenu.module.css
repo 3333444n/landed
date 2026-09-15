@@ -10,9 +10,11 @@
   justify-content: center;
   width: var(--size-control);
   height: var(--size-control);
-  border: 0;
+  border: 1px solid transparent;
   border-radius: var(--radius-full);
-  background: var(--bg-surface-raised);
+  background:
+    linear-gradient(var(--glass-control), var(--glass-control)) padding-box,
+    var(--glass-edge) border-box;
   color: var(--text-primary);
   cursor: pointer;
   transition: background-color var(--duration-hover) var(--ease);
@@ -25,7 +27,7 @@
 
 .trigger:hover,
 .trigger[aria-expanded="true"] {
-  background: var(--accent-soft);
+  --glass-control: var(--accent-soft);
 }
 
 /* A non-default choice shows as a dot so the state is visible while the button stays icon-only. */

@@ -1,7 +1,7 @@
 /*
- * Layered glass (DESIGN.md "Glass material"): a translucent fill in the padding box, a 1px
- * gradient edge highlight in the border box, and an inset glow along the top. No blur: nothing
- * scrolls beneath a card. A card inside a panel reads `--card-bg` from the column.
+ * Layered glass (DESIGN.md "Glass material"): a flat translucent fill in the padding box and a
+ * 1px gradient edge highlight in the border box. No blur and no gradient inside: nothing scrolls
+ * beneath a card. A card inside a panel reads `--card-bg` from the column.
  */
 .card {
   --card-fill: var(--card-bg, var(--glass-card));
@@ -12,7 +12,6 @@
   background:
     linear-gradient(var(--card-fill), var(--card-fill)) padding-box,
     var(--glass-edge) border-box;
-  box-shadow: var(--shadow-glass-inset);
   color: var(--text-primary);
 }
 
@@ -29,7 +28,7 @@
 
 .link:hover,
 .link:focus-visible {
-  box-shadow: var(--shadow-glass-inset), var(--shadow-hover);
+  box-shadow: var(--shadow-hover);
 }
 
 .selected {
