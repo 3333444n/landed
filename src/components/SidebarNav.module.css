@@ -2,18 +2,54 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
+  min-height: 100%;
 }
 
+/* The brand is the mark plus the wordmark, the one uppercase word in the interface (DESIGN.md). */
 .brand {
   display: flex;
   align-items: center;
+  gap: var(--space-2);
   height: 40px;
-  padding: 0 var(--space-3);
+  padding: 0 var(--space-2);
   margin-bottom: var(--space-4);
   font-size: 18px;
   line-height: 24px;
   font-weight: 600;
+  letter-spacing: 0.04em;
   color: var(--text-primary);
+}
+
+.mark {
+  width: 28px;
+  height: 28px;
+}
+
+/* One mark per scheme: the light one shows by default, the dark one in dark. */
+.markDark {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .markLight {
+    display: none;
+  }
+  :root:not([data-theme="light"]) .markDark {
+    display: block;
+  }
+}
+
+:root[data-theme="dark"] .markLight {
+  display: none;
+}
+
+:root[data-theme="dark"] .markDark {
+  display: block;
+}
+
+.footer {
+  margin-top: auto;
+  padding-top: var(--space-4);
 }
 
 .item {

@@ -14,13 +14,13 @@ Minimalism here means fewer elements, not smaller ones. Remove before you decora
 
 1. **Rounded corners everywhere.** No square corners on any surface, control, image, or input. Use the radius scale below; nested elements use a smaller radius than their container so the corners look concentric.
 2. **One grotesk typeface for everything.** No serif, no monospace, no display font. IDs, dates, numbers, and code-like values render in the same sans-serif family, optionally with tabular figures.
-3. **No monospace, and no uppercase labels.** This includes `<code>`, `<kbd>`, and "terminal-style" tags. Status chips and labels use sentence case in the body typeface.
+3. **No monospace, and no uppercase labels.** This includes `<code>`, `<kbd>`, and "terminal-style" tags. Status chips and labels use sentence case in the body typeface. The one uppercase word is the LANDED wordmark next to the mark in the sidebar.
 4. **No borders.** A child separates from its container in exactly one of two ways: a tonal step (a different surface fill), or a 1px line in `line` when child and container share the same fill. Never both, and never a border around a tonally separated element. Inputs, cards, chips, buttons and columns have no border. Focus rings are outlines, not borders, and are exempt, and so is the 1px gradient edge of a glass surface, which is a highlight of the material, not a border (see Glass material).
 5. **No eyebrows.** No small label or category text sitting above a title. Hierarchy comes from size and weight of the title itself, and from spacing. If context is needed, it goes below the title as a subtitle.
 6. **No decorative gradients, no drop shadows on text, no icons as decoration.** The only gradients are the canvas glow and the 1px glass edge; no element has a gradient fill. An icon sits in an icon tile next to the word it stands for (sidebar items, About me cards, job cards by derived status, material cards) and is hidden from assistive technology, so an accessible name never changes because of an icon. The hamburger, the "+", Filter and Sort are the icon-only controls, and each has an accessible name.
 7. **Two grades of glass.** Layered glass (a flat translucent fill and a 1px gradient edge highlight, no blur, nothing inside the fill) is the material of cards, the sidebar panel, the detail column and the round toolbar and back buttons, because nothing scrolls beneath them. Floating glass (the same plus `backdrop-filter`) is reserved for the navigation drawer, sheets and popovers. List columns, forms, tables, inputs and text blocks have no glass of their own.
 8. **Respect `prefers-reduced-transparency` and `prefers-reduced-motion`.** With reduced transparency, glass surfaces become opaque solids of the same hue. With reduced motion, remove blur transitions and springs.
-9. **Text on glass must meet WCAG AA (4.5:1) over the worst-case backdrop.** The drawer adds a solid tint layer behind its text so contrast never depends on what sits underneath.
+9. **Text on glass must meet WCAG AA (4.5:1) over the worst-case backdrop.** The drawer and popover fill is opaque enough (`bg.glass`) that contrast never depends on what sits underneath.
 10. **Three tonal steps, used in order.** Canvas is the gradient page and the list columns. Surface is a card in a list column (`glass.card`), the sidebar and the detail column (`glass.panel`). Raised is a card or block inside the detail column (`glass.card.raised`), the fill of an input and the icon tile. Nothing nests deeper; if a design needs a fourth box, it needs a new column instead.
 
 ## Tokens
@@ -37,8 +37,7 @@ Neutral first. One accent. Semantic colours only for meaning, as chip tints and 
 | `bg.surface`        | `#FFFFFF`                | `#161618`                | Cards in a list column, sidebar, detail column   |
 | `bg.surface.raised` | `#EFEFF2`                | `#242428`                | Cards and blocks inside the detail column, blocks inside a card, secondary buttons |
 | `bg.input`          | `#EFEFF2`                | `#242428`                | Input fill on a card; on canvas use `bg.surface` |
-| `bg.glass`          | `rgba(245,245,247,0.70)` | `rgba(22,22,24,0.70)`    | Drawer material, with `backdrop-filter`          |
-| `bg.glass.tint`     | `rgba(245,245,247,0.40)` | `rgba(22,22,24,0.40)`    | Solid tint behind text on glass                  |
+| `bg.glass`          | `rgba(245,245,247,0.80)` | `rgba(22,22,24,0.78)`    | Drawer and popover material, with `backdrop-filter` |
 | `glass.panel`       | `rgba(255,255,255,0.50)` | `rgba(22,22,24,0.62)`    | Sidebar and detail column fill                   |
 | `glass.card`        | `rgba(255,255,255,0.72)` | `rgba(40,40,44,0.60)`    | Card fill in a list column                       |
 | `glass.card.raised` | `rgba(0,0,0,0.035)`      | `rgba(255,255,255,0.06)` | Card fill inside the detail column               |
@@ -56,7 +55,7 @@ Neutral first. One accent. Semantic colours only for meaning, as chip tints and 
 | `warning`           | `#B7791F`                | `#E3B04B`                | Needs review, expired posting, failed run        |
 | `danger`            | `#C5372C`                | `#F0655A`                | Errors, destructive confirmation only            |
 
-Rules: never use pure black or pure white for text. The canvas is `bg.canvas` lit by the teal glow; the glow is the only colour that is not a grey, the accent or a semantic tint, and it appears nowhere else. Accent is for actions, focus and the selected or active item, not for headings or decoration. Semantic colours appear as chip tints or as text, never as a card background. A rejected or withdrawn application is neutral, not red; red means something went wrong or something is about to be deleted.
+Rules: never use pure black or pure white for text. Dark is the system preference or the person's choice (`data-theme` on the root); every token has both values, and nothing else may branch on the scheme except which mark and which toggle glyph show. The canvas is `bg.canvas` lit by the teal glow; the glow is the only colour that is not a grey, the accent or a semantic tint, and it appears nowhere else. Accent is for actions, focus and the selected or active item, not for headings or decoration. Semantic colours appear as chip tints or as text, never as a card background. A rejected or withdrawn application is neutral, not red; red means something went wrong or something is about to be deleted.
 
 ### Typography
 
@@ -72,7 +71,7 @@ Family: **Helvetica Neue** (grotesk), used as a system font through a plain CSS 
 | `body.sm`  | 13 / 18            | 400    | Helper text, metadata                       |
 | `label`    | 13 / 16            | 500    | Buttons, chips, form labels (sentence case) |
 
-Letter-spacing stays at the font default; tighten titles by at most `-0.01em`. Never letter-space uppercase text, because uppercase text does not exist in this UI except for proper acronyms.
+Letter-spacing stays at the font default; tighten titles by at most `-0.01em`. Uppercase text does not exist in this UI except for proper acronyms and the wordmark, which may open up to `0.04em`.
 
 ### Spacing and layout
 
@@ -124,8 +123,7 @@ Floating glass, for the drawer and popovers:
 ```css
 .glass {
   background: var(--bg-glass);
-  backdrop-filter: blur(20px) saturate(1.6);
-  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  backdrop-filter: blur(20px) saturate(1.6); /* never add the -webkit- prefix by hand: the build then keeps only the prefixed one */
   border-radius: var(--radius-xl);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.35),
@@ -135,7 +133,6 @@ Floating glass, for the drawer and popovers:
   .glass {
     background: var(--bg-surface);
     backdrop-filter: none;
-    -webkit-backdrop-filter: none;
   }
 }
 @supports not (backdrop-filter: blur(1px)) {
@@ -153,7 +150,7 @@ Durations: 150ms for hover and focus, 250ms for reveal and dismiss, 400ms for th
 
 ## Layout
 
-**Columns.** The page is a row of columns on canvas. The path decides how many columns exist; the viewport decides how many are visible. Below 768px only the last column is visible. From 768px the last two columns are visible. From 1200px the sidebar is a third, persistent track on the left. A list column is a titled region of canvas with no fill, border or shadow. The detail column (the last one) and the sidebar are layered-glass panels: `glass.panel` fill, `radius.xl`, inset 16px from the viewport edge; on a phone the detail column fills the screen edge to edge. Widths: sidebar 220px; the two visible columns share the remaining width equally, and a form inside the detail column stays within 720px. Each column scrolls on its own.
+**Columns.** The page is a row of columns on canvas. The path decides how many columns exist; the viewport decides how many are visible. Below 768px only the last column is visible. From 768px the last two columns are visible. From 1200px the sidebar is a third, persistent track on the left. A list column is a titled region of canvas with no fill, border or shadow. The detail column (the last one) and the sidebar are layered-glass panels: `glass.panel` fill, `radius.xl`, inset 16px from the viewport edge; on a phone the detail column fills the screen edge to edge. Widths: sidebar 220px; the two visible columns share the remaining width equally, and a form inside the detail column stays within 720px. Each column scrolls on its own, and scrollbars are hidden everywhere.
 
 **Back button.** A column whose parent column is not visible shows a 40px round glass button (`glass.control` fill, gradient edge) with a left-arrow glyph at the top; its accessible name and tooltip are the parent's title. It goes to the parent path. Nothing else is a back control.
 
@@ -163,9 +160,9 @@ Durations: 150ms for hover and focus, 250ms for reveal and dismiss, 400ms for th
 
 **Placeholder column.** When a list or hub is open and nothing in it is selected, the next column shows one sentence in `text.secondary` ("Select something on the left") from 768px, and does not exist below it.
 
-**Sidebar.** Glass panel, 220px, padding 24px. The brand at the top links to the overview. Items are 40px tall pills in `label` style with a small icon tile before the word; the active item uses `accent.soft` fill and `accent` text. At most five items.
+**Sidebar.** Glass panel, 220px, padding 24px. The brand at the top (the 28px mark from `public/logo`, white in dark and black in light, then LANDED) links to the overview. Items are 40px tall pills in `label` style with a small icon tile before the word; the active item uses `accent.soft` fill and `accent` text. At most five items. The theme switch sits at the bottom: a round glass button whose glyph (sun or moon) names the scheme a click would switch to; it sets `data-theme` on the root and remembers it in the browser, and without a saved choice the system preference applies.
 
-**Drawer.** Below 1200px the sidebar is hidden and a hamburger button sits at the top left of the first visible column, 40px, icon only, accessible name "Menu". It opens the same items as a glass drawer from the left with `radius.xl` on the right corners, a solid tint layer behind its text, and a scrim over the page. Escape and the scrim close it.
+**Drawer.** Below 1200px the sidebar is hidden and a hamburger button sits at the top left of the first visible column, 40px, icon only, accessible name "Menu". It opens the same items as a floating-glass panel from the left, inset 16px like the desktop sidebar with `radius.xl` on every corner and the gradient ring, blurring the page beneath it, with a scrim over the rest. Escape and the scrim close it. The blur lives on the inner panel, not on the element that slides, because Safari drops backdrop filters on transformed elements.
 
 ## Components
 

@@ -7,6 +7,14 @@
   box-sizing: border-box;
 }
 
+/* Scrollbars are hidden everywhere (DESIGN.md "Layout"); scrolling itself is unchanged. */
+* {
+  scrollbar-width: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}
+
 html {
   background: var(--bg-canvas);
   font-family: var(--font-sans);

@@ -9,8 +9,8 @@
   --bg-surface: #ffffff;
   --bg-surface-raised: #efeff2;
   --bg-input: #efeff2;
-  --bg-glass: rgba(245, 245, 247, 0.7);
-  --bg-glass-tint: rgba(245, 245, 247, 0.4);
+  --bg-glass: rgba(245, 245, 247, 0.8);
+
   --line: rgba(0, 0, 0, 0.08);
   --text-primary: #111114;
   --text-secondary: #5f5f66;
@@ -70,14 +70,18 @@
   --duration-drawer: 400ms;
 }
 
+/*
+ * Dark values apply with the system preference unless the person chose light, and always when
+ * they chose dark (the `data-theme` attribute set by ThemeToggle).
+ */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg-canvas: #0b0b0d;
     --bg-surface: #161618;
     --bg-surface-raised: #242428;
     --bg-input: #242428;
-    --bg-glass: rgba(22, 22, 24, 0.7);
-    --bg-glass-tint: rgba(22, 22, 24, 0.4);
+    --bg-glass: rgba(22, 22, 24, 0.78);
+
     --line: rgba(255, 255, 255, 0.1);
     --text-primary: #f5f5f7;
     --text-secondary: #a1a1aa;
@@ -99,6 +103,43 @@
     --glass-control: rgba(255, 255, 255, 0.06);
     --icon-tile-bg: rgba(255, 255, 255, 0.08);
   }
+}
+
+:root[data-theme="dark"] {
+  --bg-canvas: #0b0b0d;
+  --bg-surface: #161618;
+  --bg-surface-raised: #242428;
+  --bg-input: #242428;
+  --bg-glass: rgba(22, 22, 24, 0.78);
+
+  --line: rgba(255, 255, 255, 0.1);
+  --text-primary: #f5f5f7;
+  --text-secondary: #a1a1aa;
+  --text-tertiary: #6e6e76;
+  --accent: #5b8dff;
+  --accent-soft: #1a2440;
+  --success: #4cc47e;
+  --warning: #e3b04b;
+  --danger: #f0655a;
+  --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-float: 0 12px 40px rgba(0, 0, 0, 0.5);
+  --glass-highlight: rgba(255, 255, 255, 0.08);
+  --glow: rgba(20, 184, 166, 0.4);
+  --glass-panel: rgba(22, 22, 24, 0.62);
+  --glass-card: rgba(28, 28, 32, 0.72);
+  --glass-card-raised: rgba(255, 255, 255, 0.06);
+  --glass-card-selected: rgba(26, 36, 64, 0.8);
+  --glass-edge: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.03));
+  --glass-control: rgba(255, 255, 255, 0.06);
+  --icon-tile-bg: rgba(255, 255, 255, 0.08);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 /* Reduced transparency: every glass surface becomes the opaque surface of the same hue. */
