@@ -8,22 +8,22 @@ The [contributor quickstart](docs/07-quickstart-contract.md#contributor-path-tes
 
 ## Checks
 
-CI runs these on every pull request; run them locally first:
+The policy, in the maintainer's words: during implementation, run the smallest relevant test suite for rapid feedback. As the change crosses module boundaries, run the corresponding integration tests. For UI changes, manually exercise the changed journey and add or update appropriate automated coverage. Before opening a PR, run the repository's complete required local verification suite. If any required test cannot be run, explicitly state why in the PR. Determine testing scope from the behavioural blast radius, not merely the files changed.
 
-```sh
-pnpm format:check
-pnpm lint
-pnpm typecheck
-pnpm test              # unit tests
-pnpm test:integration  # needs PostgreSQL (pnpm db:up) and .env.test
-pnpm test:e2e          # browser journey, same requirements
-pnpm build
-pnpm db:generate       # must report no schema changes; otherwise commit the new migration
-```
+Three scripts implement the levels:
 
-Paid model credentials are never required for standard checks: `.env.test` selects the fake model adapter (`LANDED_MODEL_PROVIDER=fake`), which answers from `examples/generation/fixtures`. The only command that calls a real provider is the optional `pnpm eval`, which is never part of CI and runs the synthetic cases in `examples/generation/cases` against the provider configured in `.env` and prints grounding warnings, tokens, latency and cost; run it when you change a prompt or add a provider, and paste its table into the pull request.
+| Script | Runs | Needs | When |
+|---|---|---|---|
+| `pnpm check` | `format:check`, `lint`, `typecheck`, `test` (unit) | nothing but Node | constantly while coding; seconds |
+| `pnpm verify` | `check` + `test:integration` + `scripts/check-migrations.sh` | `pnpm db:up` and `.env.test` | when a change touches persistence, a Server Action, a route, or a module's public surface; a minute or two |
+| `pnpm verify:full` | `verify` + `build` + `CI=true test:e2e` (the journeys against the production build, as CI runs them) | the above plus Playwright's Chromium | before opening any pull request; several minutes |
 
-The packaged installation is `Dockerfile`, `compose.release.yml`, `db/migrate.mjs`, `scripts/landed.sh`, `scripts/landed.ps1` and `.env.release.example`. CI does not build the image; a change to any of these files must re-run the checks listed under "Required verification" in [doc 07](docs/07-quickstart-contract.md) (fresh `start`, restart, backup and restore, factory reset) and state the results in the pull request.
+Pick the level from the blast radius. A pure rule or a component: `check`. Anything that reads or writes the database, a Server Action, a route, or a module's public surface: `verify`. Anything a user journey touches, a layout, a migration, a dependency bump, packaging: `verify:full`. When a required level cannot run (no Docker, no browser), say so in the PR's Testing section instead of skipping silently.
+
+CI runs the same steps on every pull request (`.github/workflows/ci.yml` calls the same migration script). Two checks stay outside the scripts:
+
+- `pnpm eval` calls the real provider configured in `.env` with the synthetic cases in `examples/generation/cases` and prints grounding warnings, tokens, latency and cost. It spends money, is never part of CI, and is required only when you change a prompt, a document schema or a provider; paste its table into the pull request. Every other check runs with the fake model adapter (`LANDED_MODEL_PROVIDER=fake` in `.env.test`), which answers from `examples/generation/fixtures`, so no key is ever needed.
+- The packaged installation is `Dockerfile`, `compose.release.yml`, `db/migrate.mjs`, `scripts/landed.sh`, `scripts/landed.ps1` and `.env.release.example`. CI does not build the image; a change to any of these files must re-run the checks listed under "Required verification" in [doc 07](docs/07-quickstart-contract.md) (fresh `start`, restart, backup and restore, factory reset) and state the results in the pull request.
 
 ## Commits and pull requests
 
