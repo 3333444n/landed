@@ -4,7 +4,7 @@ This file governs every user interface in Landed. Coding agents and contributors
 
 ## Philosophy
 
-Landed is a review tool. People read generated resumes, compare them with their own facts, and decide. The interface must stay out of the way: a near-black (or off-white) canvas lit by a soft teal glow in two corners, flat translucent panels and cards with a thin gradient edge, generous whitespace, one accent color, and typography that carries the hierarchy on its own.
+Landed is a review tool. People read generated resumes, compare them with their own facts, and decide. The interface must stay out of the way: a near-black (or off-white) canvas lit by a soft glow in two corners in the accent's hue, flat translucent panels and cards with a thin gradient edge, generous whitespace, one accent color, and typography that carries the hierarchy on its own.
 
 The interface is a set of columns. Each column lists cards; opening a card opens the next column. The URL is the navigation stack, so every screen is reachable by address and the back link always exists.
 
@@ -29,35 +29,35 @@ Minimalism here means fewer elements, not smaller ones. Remove before you decora
 
 Neutral first. One accent. Semantic colours only for meaning, as chip tints and text.
 
-Colour has three layers in the code. `src/app/palettes.css` holds the palettes: each is one block that gives every colour a light (`--l-*`) and a dark (`--d-*`) value. `src/app/tokens.css` picks the light or the dark value into the semantic tokens below according to the scheme, and holds everything that is not a colour. Components use only the semantic tokens. To try a palette, copy the slate block, name it with a new `data-palette` value, change the values, and open the app with `?palette=<name>` (remembered in the browser; `?palette=` returns to slate). Every palette keeps near-black and near-white neutrals; only the accent, the selection tint and the glow carry its hue. Three palettes exist: `slate` (default, the values below, blue and teal), `violet` (lavender accent, violet glow) and `earth` (clay accent, sand selection, warm glow, with warm-tinted neutrals), the last two under evaluation.
+Colour has three layers in the code. `src/app/palettes.css` holds the palettes: each is one block that gives every colour a light (`--l-*`) and a dark (`--d-*`) value. `src/app/tokens.css` picks the light or the dark value into the semantic tokens below according to the scheme, and holds everything that is not a colour. Components use only the semantic tokens. To try a palette, copy the forest block, name it with a new `data-palette` value, change the values, and open the app with `?palette=<name>` (remembered in the browser; `?palette=` returns to the default). Every palette keeps near-black and near-white neutrals with at most a faint cast of its hue; the accent, the selection tint and the glow carry the colour, and the accent and the glow share one hue. Four palettes exist, each built from a six-step scale: `forest` (default), `ocean`, `steel` and `dusk`; the values live in `palettes.css`, and the table below names the semantic tokens and their uses.
 
-| Token               | Light                    | Dark                     | Use                                              |
-| ------------------- | ------------------------ | ------------------------ | ------------------------------------------------ |
-| `bg.canvas`         | `#F5F5F7`                | `#0B0B0D`                | Base colour under the canvas gradient            |
-| `glow`              | `rgba(20,184,166,0.22)`  | `rgba(20,184,166,0.40)`  | Teal light source of the canvas gradient         |
-| `bg.canvas.gradient` | two radial glows, top right and bottom left, over `bg.canvas` | same | The page and the list columns |
-| `bg.surface`        | `#FFFFFF`                | `#161618`                | Cards in a list column, sidebar, detail column   |
-| `bg.surface.raised` | `#EFEFF2`                | `#242428`                | Cards and blocks inside the detail column, blocks inside a card, secondary buttons |
-| `bg.input`          | `#EFEFF2`                | `#242428`                | Input fill on a card; on canvas use `bg.surface` |
-| `bg.glass`          | `rgba(245,245,247,0.80)` | `rgba(22,22,24,0.78)`    | Drawer and popover material, with `backdrop-filter` |
-| `glass.panel`       | `rgba(255,255,255,0.50)` | `rgba(22,22,24,0.62)`    | Sidebar and detail column fill                   |
-| `glass.card`        | `rgba(255,255,255,0.72)` | `rgba(40,40,44,0.60)`    | Card fill in a list column                       |
-| `glass.card.raised` | `rgba(0,0,0,0.035)`      | `rgba(255,255,255,0.06)` | Card fill inside the detail column               |
-| `glass.card.selected` | `rgba(232,239,255,0.85)` | `rgba(26,36,64,0.80)`  | Selected link card (translucent `accent.soft`)   |
-| `glass.edge`        | `180deg rgba(255,255,255,0.90) to rgba(0,0,0,0.05)` | `180deg rgba(255,255,255,0.14) to rgba(255,255,255,0.02)` | 1px edge highlight of a glass surface |
-| `glass.control`     | `rgba(255,255,255,0.50)` | `rgba(255,255,255,0.06)` | Round glass buttons (add, filter, sort, back)    |
-| `icon.tile.bg`      | `rgba(0,0,0,0.05)`       | `rgba(255,255,255,0.08)` | Icon tile fill                                   |
-| `line`              | `rgba(0,0,0,0.08)`       | `rgba(255,255,255,0.10)` | The only permitted line, between same-fill items |
-| `text.primary`      | `#111114`                | `#F5F5F7`                | Body and titles                                  |
-| `text.secondary`    | `#5F5F66`                | `#A1A1AA`                | Subtitles, helper text                           |
-| `text.tertiary`     | `#8E8E96`                | `#6E6E76`                | Placeholders, timestamps                         |
-| `accent`            | `#2F6FED`                | `#5B8DFF`                | Primary actions, links, focus rings, active item |
-| `accent.soft`       | `#E8EFFF`                | `#1A2440`                | Accent chips, selected card, active nav item     |
-| `success`           | `#1F8A4C`                | `#4CC47E`                | Reviewed, ready, applied, interviewing, offer    |
-| `warning`           | `#B7791F`                | `#E3B04B`                | Needs review, expired posting, failed run        |
-| `danger`            | `#C5372C`                | `#F0655A`                | Errors, destructive confirmation only            |
+| Token | Use |
+| --- | --- |
+| `bg.canvas` | Base colour under the canvas gradient |
+| `glow` | Teal light source of the canvas gradient |
+| `bg.canvas.gradient` | The page and the list columns |
+| `bg.surface` | Cards in a list column, sidebar, detail column |
+| `bg.surface.raised` | Cards and blocks inside the detail column, blocks inside a card, secondary buttons |
+| `bg.input` | Input fill on a card; on canvas use `bg.surface` |
+| `bg.glass` | Drawer and popover material, with `backdrop-filter` |
+| `glass.panel` | Sidebar and detail column fill |
+| `glass.card` | Card fill in a list column |
+| `glass.card.raised` | Card fill inside the detail column |
+| `glass.card.selected` | Selected link card (translucent `accent.soft`) |
+| `glass.edge` | 1px edge highlight of a glass surface |
+| `glass.control` | Round glass buttons (add, filter, sort, back) |
+| `icon.tile.bg` | Icon tile fill |
+| `line` | The only permitted line, between same-fill items |
+| `text.primary` | Body and titles |
+| `text.secondary` | Subtitles, helper text |
+| `text.tertiary` | Placeholders, timestamps |
+| `accent` | Primary actions, links, focus rings, active item |
+| `accent.soft` | Accent chips, selected card, active nav item |
+| `success` | Reviewed, ready, applied, interviewing, offer |
+| `warning` | Needs review, expired posting, failed run |
+| `danger` | Errors, destructive confirmation only |
 
-Rules: never use pure black or pure white for text. Dark is the system preference or the person's choice (`data-theme` on the root); every token has both values, and nothing else may branch on the scheme except which mark and which toggle glyph show. The canvas is `bg.canvas` lit by the teal glow; the glow is the only colour that is not a grey, the accent or a semantic tint, and it appears nowhere else. Accent is for actions, focus and the selected or active item, not for headings or decoration. Semantic colours appear as chip tints or as text, never as a card background. A rejected or withdrawn application is neutral, not red; red means something went wrong or something is about to be deleted.
+Rules: never use pure black or pure white for text. Dark is the system preference or the person's choice (`data-theme` on the root); every token has both values, and nothing else may branch on the scheme except which mark and which toggle glyph show. The canvas is `bg.canvas` lit by the palette's glow; the glow is the only colour that is not a neutral, the accent or a semantic tint, and it appears nowhere else. Accent is for actions, focus and the selected or active item, not for headings or decoration. Semantic colours appear as chip tints or as text, never as a card background. A rejected or withdrawn application is neutral, not red; red means something went wrong or something is about to be deleted.
 
 ### Typography
 

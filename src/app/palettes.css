@@ -1,58 +1,60 @@
 /*
  * Palette layer (DESIGN.md "Tokens"): every colour a palette owns, as a light (`--l-*`) and a
  * dark (`--d-*`) value. Nothing here is used by a component directly; tokens.css picks the
- * light or dark value into the semantic tokens. To try another palette, copy a block, give it a
- * new `data-palette` name and change the values; switch with `?palette=<name>` in the address.
+ * light or dark value into the semantic tokens. Every palette keeps near-black and near-white
+ * neutrals with at most a faint cast of its hue; the accent, the selection tint and the glow
+ * carry the colour. To try another palette, copy a block, give it a new `data-palette` name and
+ * change the values; switch with `?palette=<name>` in the address. The first block is the default.
  */
 
-/* Slate (default): neutral greys, blue accent, teal glow. */
+/* Forest (default): from #051F20, #0B2B26, #163832, #235347, #8EB69B, #DAF1DE. */
 :root,
-:root[data-palette="slate"] {
-  --l-canvas: #f5f5f7;
+:root[data-palette="forest"] {
+  --l-canvas: #f3f7f4;
   --l-surface: #ffffff;
-  --l-raised: #efeff2;
-  --l-input: #efeff2;
-  --l-line: rgba(0, 0, 0, 0.08);
-  --l-text-primary: #111114;
-  --l-text-secondary: #5f5f66;
-  --l-text-tertiary: #8e8e96;
-  --l-accent: #2f6fed;
-  --l-accent-soft: #e8efff;
+  --l-raised: #e9f0eb;
+  --l-input: #e9f0eb;
+  --l-line: rgba(11, 43, 38, 0.1);
+  --l-text-primary: #0b1a17;
+  --l-text-secondary: #4f5f59;
+  --l-text-tertiary: #8a968f;
+  --l-accent: #235347;
+  --l-accent-soft: #daf1de;
   --l-success: #1f8a4c;
   --l-warning: #b7791f;
   --l-danger: #c5372c;
-  --l-glow: rgba(20, 184, 166, 0.22);
-  --l-glass: rgba(245, 245, 247, 0.8);
+  --l-glow: rgba(142, 182, 155, 0.42);
+  --l-glass: rgba(255, 255, 255, 0.8);
   --l-glass-panel: rgba(255, 255, 255, 0.5);
   --l-glass-card: rgba(255, 255, 255, 0.6);
-  --l-glass-card-raised: rgba(0, 0, 0, 0.035);
-  --l-glass-card-selected: rgba(232, 239, 255, 0.85);
+  --l-glass-card-raised: rgba(11, 43, 38, 0.045);
+  --l-glass-card-selected: rgba(218, 241, 222, 0.75);
   --l-glass-control: rgba(255, 255, 255, 0.5);
-  --l-glass-edge: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(0, 0, 0, 0.05));
+  --l-glass-edge: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(11, 43, 38, 0.06));
   --l-glass-highlight: rgba(255, 255, 255, 0.35);
-  --l-icon-tile: rgba(0, 0, 0, 0.05);
-  --l-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.06);
-  --l-shadow-float: 0 12px 40px rgba(0, 0, 0, 0.1);
+  --l-icon-tile: rgba(11, 43, 38, 0.06);
+  --l-shadow-hover: 0 8px 24px rgba(11, 43, 38, 0.08);
+  --l-shadow-float: 0 12px 40px rgba(11, 43, 38, 0.12);
 
-  --d-canvas: #0b0b0d;
-  --d-surface: #161618;
-  --d-raised: #242428;
-  --d-input: #242428;
+  --d-canvas: #0a0d0c;
+  --d-surface: #141917;
+  --d-raised: #202826;
+  --d-input: #202826;
   --d-line: rgba(255, 255, 255, 0.1);
-  --d-text-primary: #f5f5f7;
-  --d-text-secondary: #a1a1aa;
-  --d-text-tertiary: #6e6e76;
-  --d-accent: #5b8dff;
-  --d-accent-soft: #1a2440;
+  --d-text-primary: #e9f3ec;
+  --d-text-secondary: #a3b0a8;
+  --d-text-tertiary: #6f7d75;
+  --d-accent: #8eb69b;
+  --d-accent-soft: #163832;
   --d-success: #4cc47e;
   --d-warning: #e3b04b;
   --d-danger: #f0655a;
-  --d-glow: rgba(20, 184, 166, 0.4);
-  --d-glass: rgba(22, 22, 24, 0.78);
-  --d-glass-panel: rgba(22, 22, 24, 0.62);
-  --d-glass-card: rgba(28, 28, 32, 0.72);
+  --d-glow: rgba(35, 83, 71, 0.6);
+  --d-glass: rgba(20, 25, 23, 0.78);
+  --d-glass-panel: rgba(20, 25, 23, 0.62);
+  --d-glass-card: rgba(26, 32, 30, 0.72);
   --d-glass-card-raised: rgba(255, 255, 255, 0.06);
-  --d-glass-card-selected: rgba(26, 36, 64, 0.8);
+  --d-glass-card-selected: rgba(22, 56, 50, 0.85);
   --d-glass-control: rgba(255, 255, 255, 0.06);
   --d-glass-edge: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.03));
   --d-glass-highlight: rgba(255, 255, 255, 0.08);
@@ -61,56 +63,53 @@
   --d-shadow-float: 0 12px 40px rgba(0, 0, 0, 0.5);
 }
 
-/*
- * Violet: the same near-black and near-white neutrals as slate; only the accent, the selection
- * and the glow carry the hue. Under evaluation.
- */
-:root[data-palette="violet"] {
-  --l-canvas: #f6f5f8;
+/* Ocean: from #00002A, #1A3F75, #4E6A9C, #A4BBD3, #DCE7F2. The dark accent is a lighter step of #4E6A9C so it reads on near-black. */
+:root[data-palette="ocean"] {
+  --l-canvas: #f3f5f9;
   --l-surface: #ffffff;
-  --l-raised: #efeef2;
-  --l-input: #efeef2;
-  --l-line: rgba(0, 0, 0, 0.08);
-  --l-text-primary: #111114;
-  --l-text-secondary: #5f5f66;
-  --l-text-tertiary: #8e8e96;
-  --l-accent: #8232e9;
-  --l-accent-soft: #f4ecff;
+  --l-raised: #e8edf5;
+  --l-input: #e8edf5;
+  --l-line: rgba(0, 0, 42, 0.1);
+  --l-text-primary: #0b0f1f;
+  --l-text-secondary: #4f5768;
+  --l-text-tertiary: #8a91a3;
+  --l-accent: #1a3f75;
+  --l-accent-soft: #dce7f2;
   --l-success: #1f8a4c;
   --l-warning: #b7791f;
   --l-danger: #c5372c;
-  --l-glow: rgba(158, 106, 225, 0.26);
-  --l-glass: rgba(246, 245, 248, 0.8);
+  --l-glow: rgba(164, 187, 211, 0.45);
+  --l-glass: rgba(255, 255, 255, 0.8);
   --l-glass-panel: rgba(255, 255, 255, 0.5);
   --l-glass-card: rgba(255, 255, 255, 0.6);
-  --l-glass-card-raised: rgba(0, 0, 0, 0.035);
-  --l-glass-card-selected: rgba(244, 236, 255, 0.85);
+  --l-glass-card-raised: rgba(0, 0, 42, 0.045);
+  --l-glass-card-selected: rgba(220, 231, 242, 0.8);
   --l-glass-control: rgba(255, 255, 255, 0.5);
-  --l-glass-edge: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(0, 0, 0, 0.05));
+  --l-glass-edge: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(0, 0, 42, 0.06));
   --l-glass-highlight: rgba(255, 255, 255, 0.35);
-  --l-icon-tile: rgba(0, 0, 0, 0.05);
-  --l-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.06);
-  --l-shadow-float: 0 12px 40px rgba(0, 0, 0, 0.1);
+  --l-icon-tile: rgba(0, 0, 42, 0.06);
+  --l-shadow-hover: 0 8px 24px rgba(0, 0, 42, 0.08);
+  --l-shadow-float: 0 12px 40px rgba(0, 0, 42, 0.12);
 
-  --d-canvas: #0c0b0e;
-  --d-surface: #161618;
-  --d-raised: #242428;
-  --d-input: #242428;
+  --d-canvas: #0a0b12;
+  --d-surface: #14161f;
+  --d-raised: #20232e;
+  --d-input: #20232e;
   --d-line: rgba(255, 255, 255, 0.1);
-  --d-text-primary: #f5f5f7;
-  --d-text-secondary: #a1a1aa;
-  --d-text-tertiary: #6e6e76;
-  --d-accent: #9e6ae1;
-  --d-accent-soft: #241a38;
+  --d-text-primary: #eaeef6;
+  --d-text-secondary: #a3a9ba;
+  --d-text-tertiary: #6f7688;
+  --d-accent: #8daad8;
+  --d-accent-soft: #151f36;
   --d-success: #4cc47e;
   --d-warning: #e3b04b;
   --d-danger: #f0655a;
-  --d-glow: rgba(130, 50, 233, 0.4);
-  --d-glass: rgba(22, 22, 24, 0.78);
-  --d-glass-panel: rgba(22, 22, 24, 0.62);
-  --d-glass-card: rgba(28, 28, 32, 0.72);
+  --d-glow: rgba(26, 63, 117, 0.6);
+  --d-glass: rgba(20, 22, 31, 0.78);
+  --d-glass-panel: rgba(20, 22, 31, 0.62);
+  --d-glass-card: rgba(26, 29, 40, 0.72);
   --d-glass-card-raised: rgba(255, 255, 255, 0.06);
-  --d-glass-card-selected: rgba(36, 26, 56, 0.8);
+  --d-glass-card-selected: rgba(21, 31, 54, 0.85);
   --d-glass-control: rgba(255, 255, 255, 0.06);
   --d-glass-edge: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.03));
   --d-glass-highlight: rgba(255, 255, 255, 0.08);
@@ -119,56 +118,108 @@
   --d-shadow-float: 0 12px 40px rgba(0, 0, 0, 0.5);
 }
 
-/*
- * Earth: warm near-black and near-white neutrals with a clay accent (#A8836C on dark, #77574A
- * on light), a sand selection tint and a warm glow, from a six-step brown scale. Under evaluation.
- */
-:root[data-palette="earth"] {
-  --l-canvas: #f9f5ee;
+/* Steel: from #2E3A44, #4C5F6B, #7E939C, #B0C2C6, #DDE4E1, #F6F4EE. */
+:root[data-palette="steel"] {
+  --l-canvas: #f6f4ee;
   --l-surface: #ffffff;
-  --l-raised: #f1ebe2;
-  --l-input: #f1ebe2;
-  --l-line: rgba(74, 58, 52, 0.1);
-  --l-text-primary: #1d1715;
-  --l-text-secondary: #6b5f58;
-  --l-text-tertiary: #9a8d84;
-  --l-accent: #77574a;
-  --l-accent-soft: #ebd7be;
+  --l-raised: #e9ece9;
+  --l-input: #e9ece9;
+  --l-line: rgba(46, 58, 68, 0.1);
+  --l-text-primary: #171c21;
+  --l-text-secondary: #4c5f6b;
+  --l-text-tertiary: #7e939c;
+  --l-accent: #4c5f6b;
+  --l-accent-soft: #dde4e1;
   --l-success: #1f8a4c;
   --l-warning: #b7791f;
   --l-danger: #c5372c;
-  --l-glow: rgba(208, 174, 146, 0.4);
-  --l-glass: rgba(249, 245, 238, 0.8);
+  --l-glow: rgba(176, 194, 198, 0.5);
+  --l-glass: rgba(255, 255, 255, 0.8);
   --l-glass-panel: rgba(255, 255, 255, 0.5);
   --l-glass-card: rgba(255, 255, 255, 0.6);
-  --l-glass-card-raised: rgba(74, 58, 52, 0.045);
-  --l-glass-card-selected: rgba(235, 215, 190, 0.7);
+  --l-glass-card-raised: rgba(46, 58, 68, 0.045);
+  --l-glass-card-selected: rgba(221, 228, 225, 0.85);
   --l-glass-control: rgba(255, 255, 255, 0.5);
-  --l-glass-edge: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(74, 58, 52, 0.06));
+  --l-glass-edge: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(46, 58, 68, 0.06));
   --l-glass-highlight: rgba(255, 255, 255, 0.35);
-  --l-icon-tile: rgba(74, 58, 52, 0.06);
-  --l-shadow-hover: 0 8px 24px rgba(74, 58, 52, 0.08);
-  --l-shadow-float: 0 12px 40px rgba(74, 58, 52, 0.12);
+  --l-icon-tile: rgba(46, 58, 68, 0.06);
+  --l-shadow-hover: 0 8px 24px rgba(46, 58, 68, 0.08);
+  --l-shadow-float: 0 12px 40px rgba(46, 58, 68, 0.12);
 
-  --d-canvas: #0e0c0b;
-  --d-surface: #191614;
-  --d-raised: #272220;
-  --d-input: #272220;
+  --d-canvas: #0c0e10;
+  --d-surface: #161a1d;
+  --d-raised: #22282c;
+  --d-input: #22282c;
   --d-line: rgba(255, 255, 255, 0.1);
-  --d-text-primary: #f9f2e4;
-  --d-text-secondary: #b3a89e;
-  --d-text-tertiary: #7a6f67;
-  --d-accent: #a8836c;
-  --d-accent-soft: #2f2622;
+  --d-text-primary: #eef0ee;
+  --d-text-secondary: #a8b3b8;
+  --d-text-tertiary: #6f7c83;
+  --d-accent: #9fb3ba;
+  --d-accent-soft: #1f272c;
   --d-success: #4cc47e;
   --d-warning: #e3b04b;
   --d-danger: #f0655a;
-  --d-glow: rgba(119, 87, 74, 0.5);
-  --d-glass: rgba(25, 22, 20, 0.78);
-  --d-glass-panel: rgba(25, 22, 20, 0.62);
-  --d-glass-card: rgba(32, 28, 26, 0.72);
+  --d-glow: rgba(76, 95, 107, 0.6);
+  --d-glass: rgba(22, 26, 29, 0.78);
+  --d-glass-panel: rgba(22, 26, 29, 0.62);
+  --d-glass-card: rgba(28, 33, 37, 0.72);
   --d-glass-card-raised: rgba(255, 255, 255, 0.06);
-  --d-glass-card-selected: rgba(47, 38, 34, 0.85);
+  --d-glass-card-selected: rgba(31, 39, 44, 0.85);
+  --d-glass-control: rgba(255, 255, 255, 0.06);
+  --d-glass-edge: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.03));
+  --d-glass-highlight: rgba(255, 255, 255, 0.08);
+  --d-icon-tile: rgba(255, 255, 255, 0.08);
+  --d-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --d-shadow-float: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* Dusk: from #190019, #2B124C, #522B5B, #854F6C, #DFB6B2, #FBE4D8. */
+:root[data-palette="dusk"] {
+  --l-canvas: #faf5f4;
+  --l-surface: #ffffff;
+  --l-raised: #f1e9ea;
+  --l-input: #f1e9ea;
+  --l-line: rgba(25, 0, 25, 0.1);
+  --l-text-primary: #1a0f1a;
+  --l-text-secondary: #5c4a58;
+  --l-text-tertiary: #957f8f;
+  --l-accent: #854f6c;
+  --l-accent-soft: #fbe4d8;
+  --l-success: #1f8a4c;
+  --l-warning: #b7791f;
+  --l-danger: #c5372c;
+  --l-glow: rgba(223, 182, 178, 0.5);
+  --l-glass: rgba(255, 255, 255, 0.8);
+  --l-glass-panel: rgba(255, 255, 255, 0.5);
+  --l-glass-card: rgba(255, 255, 255, 0.6);
+  --l-glass-card-raised: rgba(25, 0, 25, 0.045);
+  --l-glass-card-selected: rgba(251, 228, 216, 0.8);
+  --l-glass-control: rgba(255, 255, 255, 0.5);
+  --l-glass-edge: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(25, 0, 25, 0.06));
+  --l-glass-highlight: rgba(255, 255, 255, 0.35);
+  --l-icon-tile: rgba(25, 0, 25, 0.06);
+  --l-shadow-hover: 0 8px 24px rgba(25, 0, 25, 0.08);
+  --l-shadow-float: 0 12px 40px rgba(25, 0, 25, 0.12);
+
+  --d-canvas: #0e090f;
+  --d-surface: #17121a;
+  --d-raised: #241c27;
+  --d-input: #241c27;
+  --d-line: rgba(255, 255, 255, 0.1);
+  --d-text-primary: #f5ecee;
+  --d-text-secondary: #b1a3ad;
+  --d-text-tertiary: #7a6b76;
+  --d-accent: #dfb6b2;
+  --d-accent-soft: #2b1233;
+  --d-success: #4cc47e;
+  --d-warning: #e3b04b;
+  --d-danger: #f0655a;
+  --d-glow: rgba(82, 43, 91, 0.65);
+  --d-glass: rgba(23, 18, 26, 0.78);
+  --d-glass-panel: rgba(23, 18, 26, 0.62);
+  --d-glass-card: rgba(29, 23, 33, 0.72);
+  --d-glass-card-raised: rgba(255, 255, 255, 0.06);
+  --d-glass-card-selected: rgba(43, 18, 51, 0.85);
   --d-glass-control: rgba(255, 255, 255, 0.06);
   --d-glass-edge: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.03));
   --d-glass-highlight: rgba(255, 255, 255, 0.08);
