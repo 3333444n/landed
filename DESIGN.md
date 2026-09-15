@@ -183,6 +183,8 @@ Durations: 150ms for hover and focus, 250ms for reveal and dismiss, 400ms for th
 
 **Chips and status.** `radius.full`, `accent.soft` or the semantic tint mixed at about 15% into `bg.surface`, `label` style, sentence case: "Needs review", "Applied", "Interviewing". No outline. Never uppercase. The word carries the meaning; the tint is secondary.
 
+**Word cloud.** A raised card on the job column and the Job description column titled "Frequent words": the posting's most frequent words in a centered wrapping row, so the biggest sit in the middle. Four steps by frequency, its own small scale: 13/400, 15/400, 18/500, 22/500, all in the body typeface, lowercase as tokenized. A word that is one of the profile's skills uses the accent chip pattern (`accent` text on `accent.soft`, `radius.full`); every other word is plain `text.secondary` text. The tint means "in your skills" and nothing else; assistive technology reads the count and the match as text after the word. Fewer than three words: no card.
+
 **Tables.** No vertical rules. Row separation by a 1px `line` between rows of the same fill. Header in `label` style, sentence case. Numeric columns right-aligned with tabular figures.
 
 **Review view (resume, cover letter).** Two columns: generated text in the main column in `body.lg`, supporting evidence in the next column. Each generated bullet reveals its cited evidence on hover or focus. Unsupported claims get a `warning` chip, never a red background.

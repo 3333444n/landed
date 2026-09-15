@@ -96,7 +96,7 @@ src/
     jobs/                same shape; postings
     applications/        same shape; pursuits and the derived job status rule
     documents/           same shape plus prompts/ (versioned prompt builders), pdf/ (templates) and artifacts.ts
-  components/            shared presentation components (Shell, SidebarNav, ThemeToggle, Drawer, Column, Toolbar, ToolbarMenu, Card, IconTile, Field, AutoGrowTextarea, ...)
+  components/            shared presentation components (Shell, SidebarNav, ThemeToggle, Drawer, Column, Toolbar, ToolbarMenu, Card, IconTile, WordCloud, Field, AutoGrowTextarea, ...)
   infrastructure/        database pool, configuration, model/ (adapter interface, AI SDK class, fake, factory), fetch/ (guarded image fetch, ADR 007)
 db/migrations/           generated SQL migrations and drizzle-kit journal
 db/migrate.mjs           migration runner used inside the release image (production dependencies only)

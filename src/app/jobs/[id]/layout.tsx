@@ -7,6 +7,7 @@ import { Card, CardList } from "@/components/Card";
 import { Chip } from "@/components/Chip";
 import { Column } from "@/components/Column";
 import { ConfirmDelete } from "@/components/ConfirmDelete";
+import { WordCloud } from "@/components/WordCloud";
 import { getApplicationForJob } from "@/modules/applications";
 import {
   documentSlugs,
@@ -15,7 +16,8 @@ import {
   getDocumentView,
   sweepInterruptedRuns,
 } from "@/modules/documents";
-import { getJob, jobSummary, logoHref } from "@/modules/jobs";
+import { buildWordCloud, getJob, jobSummary, logoHref } from "@/modules/jobs";
+import { listSkills } from "@/modules/profile";
 import { LogoImage } from "../LogoImage";
 import { deleteJobAction, saveApplicationAction } from "../actions";
 import { ApplicationStatusForm } from "../ApplicationStatusForm";
@@ -41,7 +43,11 @@ export default async function JobLayout({
   const job = await getJob(deps(), profile.id, id);
   if (!job) notFound();
   const logo = logoHref(job);
-  const application = await getApplicationForJob(deps(), profile.id, job.id);
+  const [application, skills] = await Promise.all([
+    getApplicationForJob(deps(), profile.id, job.id),
+    listSkills(deps(), profile.id),
+  ]);
+  const cloud = buildWordCloud(job.rawDescription, skills);
   if (application) await sweepInterruptedRuns(deps(), profile.id);
   const views = application
     ? await Promise.all(
@@ -81,6 +87,7 @@ export default async function JobLayout({
             }
           />
         ) : null}
+        <WordCloud items={cloud} />
         <CardList label="Materials">
           <li>
             <Card

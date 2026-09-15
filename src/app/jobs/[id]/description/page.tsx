@@ -2,7 +2,9 @@ import { notFound } from "next/navigation";
 import { deps, requireProfile } from "@/app/current-profile";
 import { Column } from "@/components/Column";
 import { LogoPicker } from "@/components/LogoPicker";
-import { getJob, logoHref } from "@/modules/jobs";
+import { WordCloud } from "@/components/WordCloud";
+import { buildWordCloud, getJob, logoHref } from "@/modules/jobs";
+import { listSkills } from "@/modules/profile";
 import { saveJobAction } from "../../actions";
 import { JobForm, jobFormId } from "../../JobForm";
 
@@ -13,6 +15,8 @@ export default async function JobDescriptionPage({ params }: { params: Promise<{
   const profile = await requireProfile();
   const job = await getJob(deps(), profile.id, id);
   if (!job) notFound();
+  const skills = await listSkills(deps(), profile.id);
+  const cloud = buildWordCloud(job.rawDescription, skills);
 
   return (
     <Column
@@ -23,6 +27,7 @@ export default async function JobDescriptionPage({ params }: { params: Promise<{
       parentTitle={job.title}
       width="detail"
     >
+      <WordCloud items={cloud} />
       <JobForm
         action={saveJobAction.bind(null, job.id)}
         submitLabel="Save changes"
