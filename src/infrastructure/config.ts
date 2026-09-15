@@ -2,15 +2,22 @@ import { z } from "zod";
 
 const blank = (v: unknown) => (typeof v === "string" && v.trim() === "" ? undefined : v);
 
-/** Providers the adapter factory knows (ADR 006). `fake` answers from fixtures and needs no key. */
+/**
+ * Providers the adapter factory knows (ADR 006). `openrouter` is the OpenAI-compatible path with
+ * its base URL filled in, so a user types three lines instead of four. `fake` answers from
+ * fixtures and needs no key.
+ */
 export const modelProviders = [
   "anthropic",
   "openai",
+  "openrouter",
   "gateway",
   "openai_compatible",
   "fake",
 ] as const;
 export type ModelProvider = (typeof modelProviders)[number];
+
+export const openRouterBaseUrl = "https://openrouter.ai/api/v1";
 
 const envSchema = z.object({
   DATABASE_URL: z
@@ -79,12 +86,16 @@ export function modelConfig(config: Config): ModelConfig {
     problems.push("LANDED_MODEL_BASE_URL is required for openai_compatible");
   }
   if (problems.length > 0) return { kind: "invalid", problems };
+  const baseUrl =
+    provider === "openrouter"
+      ? (config.LANDED_MODEL_BASE_URL ?? openRouterBaseUrl)
+      : (config.LANDED_MODEL_BASE_URL ?? null);
   return {
     kind: "configured",
     provider,
     model: config.LANDED_MODEL!,
     apiKey: config.LANDED_MODEL_API_KEY ?? null,
-    baseUrl: config.LANDED_MODEL_BASE_URL ?? null,
+    baseUrl,
   };
 }
 

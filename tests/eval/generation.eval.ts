@@ -3,8 +3,9 @@
  * provider configured in .env and reports grounding warnings, tokens, latency and cost. It runs
  * through vitest because that is the one runner here that handles TypeScript, path aliases and
  * ESM-only dependencies alike, but it is not a unit test: it spends real money and is excluded
- * from `pnpm test` and CI. `pnpm eval [case ...]` runs it; a case fails only when the answer
- * failed schema validation. Optional filter: EVAL_CASES=fit,mismatch.
+ * from `pnpm test` and CI. `pnpm eval` runs it; a case fails when the provider rejected the call
+ * or the answer failed schema validation, so a schema a provider cannot compile shows up here
+ * rather than in someone's Runs column. Optional filter: EVAL_CASES=fit,mismatch.
  */
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
@@ -166,8 +167,7 @@ describe.each(caseNames)("case %s", (name) => {
       });
       if (!outcome.ok) {
         rows.push({ case: name, document: type, outcome: `${outcome.kind}: ${outcome.message}` });
-        expect(outcome.kind, `${name}/${type}: ${outcome.message}`).not.toBe("validation");
-        return;
+        expect.fail(`${name}/${type}: ${outcome.kind} failure, ${outcome.message}`);
       }
       const warnings = groundingCheck(type, outcome.value, snapshot);
       const byKind: Record<string, number> = {};
