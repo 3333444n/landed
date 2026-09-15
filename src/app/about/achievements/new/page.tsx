@@ -1,3 +1,4 @@
+import { Plus } from "lucide-react";
 import { deps, requireProfile } from "@/app/current-profile";
 import { Column } from "@/components/Column";
 import { listEmployment, listProjects, listSkills } from "@/modules/profile";
@@ -16,6 +17,7 @@ export default async function NewAchievementPage() {
 
   return (
     <Column
+      icon={<Plus />}
       title="New achievement"
       parentHref="/about/achievements"
       parentTitle="Achievements"

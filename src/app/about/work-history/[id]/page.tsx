@@ -1,3 +1,4 @@
+import { Briefcase } from "lucide-react";
 import { notFound } from "next/navigation";
 import { deps, requireProfile } from "@/app/current-profile";
 import { Column } from "@/components/Column";
@@ -16,6 +17,7 @@ export default async function EditRolePage({ params }: { params: Promise<{ id: s
 
   return (
     <Column
+      icon={<Briefcase />}
       title={role.role}
       subtitle={role.employerName}
       parentHref="/about/work-history"

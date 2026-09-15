@@ -1,3 +1,4 @@
+import { FolderKanban } from "lucide-react";
 import { notFound } from "next/navigation";
 import { deps, requireProfile } from "@/app/current-profile";
 import { Column } from "@/components/Column";
@@ -18,7 +19,13 @@ export default async function EditProjectPage({ params }: { params: Promise<{ id
   if (!project) notFound();
 
   return (
-    <Column title={project.name} parentHref="/about/projects" parentTitle="Projects" width="detail">
+    <Column
+      icon={<FolderKanban />}
+      title={project.name}
+      parentHref="/about/projects"
+      parentTitle="Projects"
+      width="detail"
+    >
       <ProjectForm
         action={saveProjectAction.bind(null, project.id)}
         submitLabel="Save changes"

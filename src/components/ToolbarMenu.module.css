@@ -10,14 +10,30 @@
   justify-content: center;
   width: var(--size-control);
   height: var(--size-control);
-  border: 1px solid transparent;
+  border: 0;
   border-radius: var(--radius-full);
-  background:
-    linear-gradient(var(--glass-control), var(--glass-control)) padding-box,
-    var(--glass-edge) border-box;
+  background: var(--glass-control);
   color: var(--text-primary);
   cursor: pointer;
   transition: background-color var(--duration-hover) var(--ease);
+}
+
+.trigger::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--glass-edge);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
 .trigger svg {

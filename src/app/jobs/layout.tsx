@@ -1,3 +1,4 @@
+import { Briefcase } from "lucide-react";
 import { Suspense, type ReactNode } from "react";
 import { deps, requireProfile } from "@/app/current-profile";
 import { Column, EmptyState } from "@/components/Column";
@@ -19,6 +20,7 @@ export default async function JobsLayout({ children }: { children: ReactNode }) 
   return (
     <>
       <Column
+        icon={<Briefcase />}
         title="Jobs"
         count={rows.length}
         subtitle="Postings you are pursuing, and later the ones found for you."

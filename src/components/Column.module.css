@@ -6,10 +6,27 @@
 .detail:last-child,
 .detail:has(+ .placeholder:last-child) {
   --card-bg: var(--glass-card-raised);
-  border: 1px solid transparent;
-  background:
-    linear-gradient(var(--glass-panel), var(--glass-panel)) padding-box,
-    var(--glass-edge) border-box;
+  background: var(--glass-panel);
+}
+
+/* The panel's gradient edge; the column clips and its inner scrolls, so the ring stays put. */
+.detail:last-child::before,
+.detail:has(+ .placeholder:last-child)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--glass-edge);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
 /*
@@ -18,12 +35,12 @@
  * visible one. Columns are siblings inside the Columns shell.
  */
 .column {
+  position: relative;
   display: none;
   flex-direction: column;
   min-width: 0;
   height: 100%;
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  overflow: hidden;
 }
 
 .column:last-child,
@@ -43,6 +60,15 @@
   padding: var(--space-4);
   padding-top: var(--space-16);
   width: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* The inner is the scroller, so its children keep their size instead of shrinking to fit. */
+.inner > * {
+  flex-shrink: 0;
 }
 
 .list,
@@ -99,15 +125,31 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  position: relative;
   width: var(--size-control);
   height: var(--size-control);
-  border: 1px solid transparent;
   border-radius: var(--radius-full);
-  background:
-    linear-gradient(var(--glass-control), var(--glass-control)) padding-box,
-    var(--glass-edge) border-box;
+  background: var(--glass-control);
   color: var(--text-primary);
   transition: background-color var(--duration-hover) var(--ease);
+}
+
+.back::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--glass-edge);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
 .back svg {
@@ -121,8 +163,15 @@
 
 .header {
   display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.titles {
+  display: flex;
   flex-direction: column;
   gap: var(--space-1);
+  min-width: 0;
 }
 
 .title {

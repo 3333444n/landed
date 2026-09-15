@@ -1,23 +1,39 @@
 /*
- * Layered glass (DESIGN.md "Glass material"): a flat translucent fill in the padding box and a
- * 1px gradient edge highlight in the border box. No blur and no gradient inside: nothing scrolls
- * beneath a card. A card inside a panel reads `--card-bg` from the column.
+ * Layered glass (DESIGN.md "Glass material"): a flat translucent fill and a 1px gradient edge
+ * drawn by a masked pseudo-element, so nothing but the ring carries the gradient. No blur:
+ * nothing scrolls beneath a card. A card inside a panel reads `--card-bg` from the column.
  */
 .card {
   --card-fill: var(--card-bg, var(--glass-card));
+  position: relative;
   display: block;
-  border: 1px solid transparent;
   border-radius: var(--radius-lg);
-  padding: calc(var(--space-6) - 1px);
-  background:
-    linear-gradient(var(--card-fill), var(--card-fill)) padding-box,
-    var(--glass-edge) border-box;
+  padding: var(--space-6);
+  background: var(--card-fill);
   color: var(--text-primary);
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--glass-edge);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
 @media (max-width: 640px) {
   .card {
-    padding: calc(var(--space-4) - 1px);
+    padding: var(--space-4);
   }
 }
 

@@ -1,3 +1,4 @@
+import { ListChecks } from "lucide-react";
 import { deps } from "@/app/current-profile";
 import { Column, EmptyState } from "@/components/Column";
 import { contentUnits, getRun, type DocumentType, type Snapshot } from "@/modules/documents";
@@ -14,6 +15,7 @@ export async function EvidenceColumn({ jobId, type }: { jobId: string; type: Doc
 
   return (
     <Column
+      icon={<ListChecks />}
       title="Evidence"
       subtitle={`${label} for ${job.title}`}
       parentHref={href}

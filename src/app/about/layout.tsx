@@ -68,7 +68,11 @@ export default async function AboutLayout({ children }: { children: ReactNode })
 
   return (
     <>
-      <Column title="About me" subtitle="Your career facts, in your own words.">
+      <Column
+        icon={<UserRound />}
+        title="About me"
+        subtitle="Your career facts, in your own words."
+      >
         <CardList label="About me">
           {cards.map((card) => (
             <li key={card.href}>

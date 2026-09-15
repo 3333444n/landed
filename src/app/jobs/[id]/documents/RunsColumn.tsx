@@ -1,3 +1,4 @@
+import { Activity } from "lucide-react";
 import { deps } from "@/app/current-profile";
 import { Column, EmptyState } from "@/components/Column";
 import { failureLabels, listRunsForDocument, type DocumentType } from "@/modules/documents";
@@ -12,6 +13,7 @@ export async function RunsColumn({ jobId, type }: { jobId: string; type: Documen
 
   return (
     <Column
+      icon={<Activity />}
       title="Runs"
       subtitle={`${label} for ${job.title}`}
       parentHref={href}

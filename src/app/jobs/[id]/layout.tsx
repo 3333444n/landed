@@ -1,3 +1,4 @@
+import { Briefcase } from "lucide-react";
 import { Building2, FileText } from "lucide-react";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
@@ -52,6 +53,7 @@ export default async function JobLayout({
   return (
     <>
       <Column
+        icon={<Briefcase />}
         title={job.title}
         subtitle={job.companyName}
         parentHref="/jobs"

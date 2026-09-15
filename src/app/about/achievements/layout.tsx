@@ -1,3 +1,4 @@
+import { Award } from "lucide-react";
 import type { ReactNode } from "react";
 import { deps, requireProfile } from "@/app/current-profile";
 import { Card, CardList } from "@/components/Card";
@@ -23,6 +24,7 @@ export default async function AchievementsLayout({ children }: { children: React
   return (
     <>
       <Column
+        icon={<Award />}
         title="Achievements"
         count={achievements.length}
         subtitle="Factual statements, each backed by a source you can point to."
@@ -49,6 +51,7 @@ export default async function AchievementsLayout({ children }: { children: React
               return (
                 <li key={a.id}>
                   <Card
+                    icon={<Award />}
                     href={`/about/achievements/${a.id}`}
                     title={a.statement}
                     subtitle={context}

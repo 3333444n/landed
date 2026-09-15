@@ -1,3 +1,4 @@
+import { Building2 } from "lucide-react";
 import { notFound } from "next/navigation";
 import { deps, requireProfile } from "@/app/current-profile";
 import { Column, EmptyState } from "@/components/Column";
@@ -14,6 +15,7 @@ export default async function JobCompanyPage({ params }: { params: Promise<{ id:
 
   return (
     <Column
+      icon={<Building2 />}
       title={job.companyName}
       parentHref={`/jobs/${job.id}`}
       parentTitle={job.title}

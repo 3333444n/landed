@@ -1,3 +1,4 @@
+import { Lightbulb } from "lucide-react";
 import type { ReactNode } from "react";
 import { deps, requireProfile } from "@/app/current-profile";
 import { Card, CardList } from "@/components/Card";
@@ -14,6 +15,7 @@ export default async function SkillsLayout({ children }: { children: ReactNode }
   return (
     <>
       <Column
+        icon={<Lightbulb />}
         title="Skills"
         count={skills.length}
         subtitle="Named capabilities you can point achievements at."
@@ -28,6 +30,7 @@ export default async function SkillsLayout({ children }: { children: ReactNode }
             {skills.map((skill) => (
               <li key={skill.id}>
                 <Card
+                  icon={<Lightbulb />}
                   href={`/about/skills/${skill.id}`}
                   title={skill.displayName}
                   subtitle={skill.category ?? undefined}

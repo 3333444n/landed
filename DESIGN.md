@@ -96,16 +96,26 @@ Cards: no shadow by default; the tonal step against canvas is enough. A card tha
 
 ### Glass material
 
-Layered glass, for cards, panels and round buttons. A 1px transparent border gives the edge highlight its geometry; the flat fill sits in the padding box and the gradient edge in the border box, so it survives scrolling containers. No blur, because nothing moves beneath these surfaces, and no shadow or gradient inside the fill.
+Layered glass, for cards, panels and round buttons. The fill is one flat translucent colour. The edge is a `::before` ring: the gradient fills the pseudo-element and a mask keeps only its outer 1px, so no gradient ever sits under the fill. A surface that scrolls puts the scrolling on an inner element and keeps `position: relative` and `overflow: hidden` itself, so the ring stays in place. No blur, because nothing moves beneath these surfaces, and no shadow or gradient inside the fill.
 
 ```css
 .layered-glass {
-  --fill: var(--glass-card); /* or --glass-panel, --glass-card-raised, --glass-control */
-  border: 1px solid transparent;
+  position: relative;
   border-radius: var(--radius-lg);
-  background:
-    linear-gradient(var(--fill), var(--fill)) padding-box,
-    var(--glass-edge) border-box;
+  background: var(--glass-card); /* or --glass-panel, --glass-card-raised, --glass-control */
+}
+.layered-glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--glass-edge);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
 }
 ```
 
@@ -147,7 +157,7 @@ Durations: 150ms for hover and focus, 250ms for reveal and dismiss, 400ms for th
 
 **Back button.** A column whose parent column is not visible shows a 40px round glass button (`glass.control` fill, gradient edge) with a left-arrow glyph at the top; its accessible name and tooltip are the parent's title. It goes to the parent path. Nothing else is a back control.
 
-**Column header.** Title in `title.lg`, optional count in `text.secondary` after the title in the same size and weight 400, optional subtitle in `body.sm` `text.secondary` below. Then the toolbar, if any. Then the cards.
+**Column header.** An icon tile for the column's kind (the section's icon for a list or a record, a plus for a new-record form, the document's icon for a review column), then the title in `title.lg`, optional count in `text.secondary` after the title in the same size and weight 400, optional subtitle in `body.sm` `text.secondary` below. Then the toolbar, if any. Then the cards.
 
 **Toolbar.** One row. Filter and sort on the left as 40px round glass buttons (`glass.control` fill, gradient edge, sliders and arrows glyphs, accessible names "Filter" and "Sort") that open a popover menu of exclusive options with the current one marked; a non-default choice shows an 8px accent dot on the button. The add control on the right: a 40px round glass button containing a plus, with an accessible name that says what is added ("Add achievement"). A list that cannot be filtered shows only the add control. The toolbar has no fill.
 
@@ -165,7 +175,7 @@ Durations: 150ms for hover and focus, 250ms for reveal and dismiss, 400ms for th
 
 **Inputs.** `bg.input` fill, no border, `radius.md`, 40px tall, focus ring 2px accent with 2px offset. Labels above in `label` style, sentence case. Helper and error text below in `body.sm`. Textareas share the fill and radius and grow with their content; `rows` is only the minimum, so long text never scrolls inside a short box. Selects and checkboxes use the same fill; the checkbox is 18px with `radius.sm` and the accent as its checked color.
 
-**Icon tile.** A rounded raised square (`icon.tile.bg`, 36px with `radius.md`, or 28px with `radius.sm` in the sidebar) holding one 18px (16px) stroke icon from Lucide in `text.primary`. It is always `aria-hidden`; the word next to it carries the meaning. Where an icon would mean nothing, there is no tile.
+**Icon tile.** A rounded raised square (`icon.tile.bg`, 36px with `radius.md`, or 28px with `radius.sm` in the sidebar) holding one 18px (16px) stroke icon from Lucide in `text.primary`. It sits before column titles, on hub, record, job and material cards and on sidebar items. It is always `aria-hidden`; the word next to it carries the meaning. One icon per kind of thing: briefcase for work history and jobs, graduation cap for education, folder for projects, bulb for skills, award for achievements, person for the profile, and the job card's icon follows its status.
 
 **Popover.** Floating glass, `radius.xl`, 8px padding, opening below its button. Items are 40px rows in `label` style with `radius.md`; the current one is in `accent` with a check glyph. Escape closes it and returns focus; a click outside closes it.
 

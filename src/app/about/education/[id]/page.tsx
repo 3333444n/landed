@@ -1,3 +1,4 @@
+import { GraduationCap } from "lucide-react";
 import { notFound } from "next/navigation";
 import { deps, requireProfile } from "@/app/current-profile";
 import { Column } from "@/components/Column";
@@ -16,6 +17,7 @@ export default async function EditEducationPage({ params }: { params: Promise<{ 
 
   return (
     <Column
+      icon={<GraduationCap />}
       title={record.institution}
       subtitle={[record.qualification, record.subject].filter(Boolean).join(", ") || undefined}
       parentHref="/about/education"

@@ -8,6 +8,7 @@ import { failureLabels, getRun, type DocumentType } from "@/modules/documents";
 import { editUnitAction, generateDocumentAction, markReviewedAction } from "../document-actions";
 import { ActionButton } from "./ActionButton";
 import { DocumentPreview } from "./DocumentPreview";
+import { documentIcons } from "./icons";
 import { loadDocument } from "./load";
 import { evidenceLabels, runSummary } from "./summary";
 import styles from "./documents.module.css";
@@ -25,9 +26,11 @@ export async function DocumentColumn({ jobId, type }: { jobId: string; type: Doc
     ? await getRun(deps(), profile.id, revision.generationRunId)
     : view.latestRun;
   const evidence = run ? evidenceLabels(run.snapshot) : {};
+  const Icon = documentIcons[type];
 
   return (
     <Column
+      icon={<Icon />}
       title={label}
       subtitle={`${job.title} · ${runSummary(view)}`}
       parentHref={`/jobs/${job.id}`}
