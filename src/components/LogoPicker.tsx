@@ -19,6 +19,8 @@ export function LogoPicker({ formId, current }: { formId: string; current: strin
   const [preview, setPreview] = useState<string | null>(null);
   const [address, setAddress] = useState("");
   const [removed, setRemoved] = useState(false);
+  /** The pasted address failed to load in the browser; the tile falls back to the link icon. */
+  const [addressFailed, setAddressFailed] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const file = useRef<HTMLInputElement>(null);
@@ -26,6 +28,7 @@ export function LogoPicker({ formId, current }: { formId: string; current: strin
   const menuId = useId();
   const addressId = useId();
 
+  const addressPreview = !removed && !addressFailed && /^https?:\/\/\S+$/.test(address.trim());
   const shown = preview ?? (removed ? null : current);
   const hasLogo = !!shown || (!!address && !removed);
   const name = hasLogo ? "Change logo" : "Add logo";
@@ -72,6 +75,7 @@ export function LogoPicker({ formId, current }: { formId: string; current: strin
     setPreview(URL.createObjectURL(chosen));
     setRemoved(false);
     setAddress("");
+    setAddressFailed(false);
   };
 
   const remove = () => {
@@ -98,7 +102,10 @@ export function LogoPicker({ formId, current }: { formId: string; current: strin
           setOpen((value) => !value);
         }}
       >
-        {shown ? (
+        {addressPreview ? (
+          // eslint-disable-next-line @next/next/no-img-element -- a preview of the address the person just pasted; the stored copy is fetched on save
+          <img src={address.trim()} alt="" onError={() => setAddressFailed(true)} />
+        ) : shown ? (
           <LogoImage src={shown} />
         ) : address && !removed ? (
           <Link aria-hidden="true" focusable="false" />
@@ -159,6 +166,7 @@ export function LogoPicker({ formId, current }: { formId: string; current: strin
           value={address}
           onChange={(event) => {
             setAddress(event.target.value);
+            setAddressFailed(false);
             if (event.target.value) setRemoved(false);
           }}
           onKeyDown={(event) => {
