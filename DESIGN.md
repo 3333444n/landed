@@ -17,7 +17,7 @@ Minimalism here means fewer elements, not smaller ones. Remove before you decora
 3. **No monospace, and no uppercase labels.** This includes `<code>`, `<kbd>`, and "terminal-style" tags. Status chips and labels use sentence case in the body typeface. The one uppercase word is the LANDED wordmark next to the mark in the sidebar.
 4. **No borders.** A child separates from its container in exactly one of two ways: a tonal step (a different surface fill), or a 1px line in `line` when child and container share the same fill. Never both, and never a border around a tonally separated element. Inputs, cards, chips, buttons and columns have no border. Focus rings are outlines, not borders, and are exempt, and so is the 1px gradient edge of a glass surface, which is a highlight of the material, not a border (see Glass material).
 5. **No eyebrows.** No small label or category text sitting above a title. Hierarchy comes from size and weight of the title itself, and from spacing. If context is needed, it goes below the title as a subtitle.
-6. **No decorative gradients, no drop shadows on text, no icons as decoration.** The only gradients are the canvas glow and the 1px glass edge; no element has a gradient fill. An icon sits in an icon tile next to the word it stands for (sidebar items, About me cards, job cards by derived status, material cards) and is hidden from assistive technology, so an accessible name never changes because of an icon. The hamburger, the "+", Filter and Sort are the icon-only controls, and each has an accessible name.
+6. **No decorative gradients, no drop shadows on text, no icons as decoration.** The only gradients are the canvas glow and the 1px glass edge; no element has a gradient fill. An icon sits in an icon tile next to the word it stands for (column titles, sidebar items, About me cards, record cards, job cards by derived status, material cards) and is hidden from assistive technology, so an accessible name never changes because of an icon. The hamburger, the drawer's close button, the back button, the "+", Filter, Sort and the theme switch are the icon-only controls, and each has an accessible name.
 7. **Two grades of glass.** Layered glass (a flat translucent fill and a 1px gradient edge highlight, no blur, nothing inside the fill) is the material of cards, the sidebar panel, the detail column and the round toolbar and back buttons, because nothing scrolls beneath them. Floating glass (the same plus `backdrop-filter`) is reserved for the navigation drawer, sheets and popovers. List columns, forms, tables, inputs and text blocks have no glass of their own.
 8. **Respect `prefers-reduced-transparency` and `prefers-reduced-motion`.** With reduced transparency, glass surfaces become opaque solids of the same hue. With reduced motion, remove blur transitions and springs.
 9. **Text on glass must meet WCAG AA (4.5:1) over the worst-case backdrop.** The drawer and popover fill is opaque enough (`bg.glass`) that contrast never depends on what sits underneath.
@@ -29,12 +29,12 @@ Minimalism here means fewer elements, not smaller ones. Remove before you decora
 
 Neutral first. One accent. Semantic colours only for meaning, as chip tints and text.
 
-Colour has three layers in the code. `src/app/palettes.css` holds the palettes: each is one block that gives every colour a light (`--l-*`) and a dark (`--d-*`) value. `src/app/tokens.css` picks the light or the dark value into the semantic tokens below according to the scheme, and holds everything that is not a colour. Components use only the semantic tokens. To try a palette, copy the forest block, name it with a new `data-palette` value, change the values, and open the app with `?palette=<name>` (remembered in the browser; `?palette=` returns to the default). Every palette keeps near-black and near-white neutrals with at most a faint cast of its hue; the accent, the selection tint and the glow carry the colour, and the accent and the glow share one hue. Four palettes exist, each built from a six-step scale: `forest` (default), `ocean`, `steel` and `dusk`; the values live in `palettes.css`, and the table below names the semantic tokens and their uses.
+Colour has three layers in the code. `src/app/palettes.css` holds the palettes: each is one block that gives every colour a light (`--l-*`) and a dark (`--d-*`) value. `src/app/tokens.css` picks the light or the dark value into the semantic tokens below according to the scheme, and holds everything that is not a colour. Components use only the semantic tokens. To try a palette, copy the steel block, name it with a new `data-palette` value, change the values, and open the app with `?palette=<name>` (remembered in the browser; `?palette=` returns to the default). Every palette keeps near-black and near-white neutrals with at most a faint cast of its hue; the accent, the selection tint and the glow carry the colour, and the accent and the glow share one hue. Four palettes exist, each built from a six-step scale: `steel` (default), `forest`, `ocean` and `dusk`; the values live in `palettes.css`, and the table below names the semantic tokens and their uses.
 
 | Token | Use |
 | --- | --- |
 | `bg.canvas` | Base colour under the canvas gradient |
-| `glow` | Teal light source of the canvas gradient |
+| `glow` | Light source of the canvas gradient, in the accent's hue |
 | `bg.canvas.gradient` | The page and the list columns |
 | `bg.surface` | Cards in a list column, sidebar, detail column |
 | `bg.surface.raised` | Cards and blocks inside the detail column, blocks inside a card, secondary buttons |
@@ -52,6 +52,7 @@ Colour has three layers in the code. `src/app/palettes.css` holds the palettes: 
 | `text.secondary` | Subtitles, helper text |
 | `text.tertiary` | Placeholders, timestamps |
 | `accent` | Primary actions, links, focus rings, active item |
+| `accent.contrast` | Text on an `accent` fill (white in light, near-black in dark, because the dark accents are pale) |
 | `accent.soft` | Accent chips, selected card, active nav item |
 | `success` | Reviewed, ready, applied, interviewing, offer |
 | `warning` | Needs review, expired posting, failed run |
@@ -168,7 +169,7 @@ Durations: 150ms for hover and focus, 250ms for reveal and dismiss, 400ms for th
 
 ## Components
 
-**Buttons.** Primary: accent background, white text, `radius.md`, 40px tall. Secondary: `bg.surface.raised` background, `text.primary`. Tertiary: text only. Destructive: `danger` text on secondary style, filled only inside a confirmation. No outline-style buttons. Round icon buttons (add, filter, sort, back) are layered glass and turn `accent.soft` on hover.
+**Buttons.** Primary: `accent` background, `accent.contrast` text, `radius.md`, 40px tall. Secondary: `bg.surface.raised` background, `text.primary`. Tertiary: text only. Destructive: `danger` text on secondary style, filled only inside a confirmation. No outline-style buttons. Round icon buttons (add, filter, sort, back) are layered glass and turn `accent.soft` on hover.
 
 **Cards.** Layered glass (`glass.card` in a list column, `glass.card.raised` inside the detail column), `radius.lg`, no border, 24px padding. An optional icon tile sits at the left of the header. Title in `title.md`, optional subtitle in `body.sm` `text.secondary` below the title, optional metadata lines in `body.sm`, chips last. A card that opens the next column is one link covering the whole card, with the hover elevation above; the selected card, when its column is visible next to its detail, uses `accent.soft` fill. Actions such as delete live in the detail column, not on list cards. Blocks inside a card use `bg.surface.raised` and `radius.md`.
 

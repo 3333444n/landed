@@ -17,7 +17,7 @@ pnpm db:migrate                 # applies db/migrations to the landed database
 pnpm dev                        # http://localhost:3000
 ```
 
-The first visit asks for your name and creates the single profile of this installation. Career facts live under About me in the sidebar; pasted postings and their applications live under Jobs. Data lives in the Docker volume `landed_pgdata`, outside the source checkout. `pnpm db:down` stops the database and keeps the volume.
+The first visit asks for your name and creates the single profile of this installation. Career facts live under About me in the sidebar; pasted postings and their applications live under Jobs. The button at the bottom of the sidebar switches between light and dark; without a choice the system preference applies. Data lives in the Docker volume `landed_pgdata`, outside the source checkout. `pnpm db:down` stops the database and keeps the volume.
 
 Generating documents (Phase 1b) needs either a model provider or nothing at all. With nothing configured, each document offers Paste back: the app shows the prompt, you run it in any assistant you already use and paste the JSON answer back. To let the app call a provider itself, pick one row of the table below, set its values in `.env` (the same blocks are commented in `.env.example`), then restart `pnpm dev`. The Settings column in the app shows what is configured without revealing the key, and lists the same blocks when nothing is configured.
 

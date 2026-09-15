@@ -20,7 +20,7 @@
 
 .primary {
   background: var(--accent);
-  color: #ffffff;
+  color: var(--accent-contrast);
 }
 
 .secondary {

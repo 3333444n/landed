@@ -86,14 +86,17 @@ src/
                          generate-document.ts and snapshot.ts (composition)
     settings/model/      Model setup column (configuration status, no key)
     form-state.ts        shared action result shape and form helpers
-    tokens.css           design tokens from DESIGN.md (the only place values live)
+    palettes.css         the palettes (every colour as a light and a dark value; steel is the default)
+    tokens.css           semantic tokens from DESIGN.md: colours picked from the palette by scheme, plus sizes, radii, spacing, type, motion
+    icon.png, apple-icon.png
+                         the favicon and touch icon generated from the mark in public/logo
   modules/
     shared/              contracts.ts (Result, ModuleError, field helpers), service.ts (BaseDeps, error mapping)
     profile/             schema.ts, contracts.ts, rules.ts, repository.ts, service.ts, index.ts
     jobs/                same shape; postings
     applications/        same shape; pursuits and the derived job status rule
     documents/           same shape plus prompts/ (versioned prompt builders), pdf/ (templates) and artifacts.ts
-  components/            shared presentation components (Shell, Column, Toolbar, Card, Field, ...)
+  components/            shared presentation components (Shell, SidebarNav, ThemeToggle, Drawer, Column, Toolbar, ToolbarMenu, Card, IconTile, Field, AutoGrowTextarea, ...)
   infrastructure/        database pool, configuration, model/ (adapter interface, AI SDK class, fake, factory)
 db/migrations/           generated SQL migrations and drizzle-kit journal
 db/migrate.mjs           migration runner used inside the release image (production dependencies only)

@@ -10,7 +10,7 @@ The Phase 0 interface was a set of flat pages with a floating top navigation and
 
 The path is the only navigation state. Each route segment contributes one column through its `layout.tsx`, followed by `children`; fragments keep the columns as siblings inside one shell, and CSS shows the last column on a phone, the last two from 768px, and adds a persistent sidebar from 1200px (a hamburger drawer below that). A column whose parent is hidden shows a back link to the parent path. Creating a record is a `new` route; selecting a record is its `[id]` route; filters and sort, when they arrive, are search parameters. No client-side navigation store exists.
 
-Visual rules moved into DESIGN.md at the same time: no borders (a 1px line only between items that share a fill), three tonal steps (canvas for list columns, surface for cards, the sidebar and the detail column, raised for inputs and blocks inside the detail column), and semantic tints reserved for status chips.
+Visual rules moved into DESIGN.md at the same time: no borders (a 1px line only between items that share a fill), three tonal steps (canvas for list columns, surface for cards, the sidebar and the detail column, raised for inputs and blocks inside the detail column), and semantic tints reserved for status chips. The material changed later the same day (layered glass, a glowing canvas, icon tiles, palettes); the columns, the tonal steps and the no-border rule stayed, and DESIGN.md is the current statement of both.
 
 The job status shown in the Jobs list is derived at render time from job availability, application status and run state (doc 05), never stored, so the single list the maintainer wants does not merge the lifecycles the architecture keeps separate.
 
