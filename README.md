@@ -16,12 +16,12 @@ Tailoring an application by hand takes an hour per job, and the shortcuts are ba
 | Area | What you get |
 |---|---|
 | Career facts | Profile, work history, education, projects, skills and achievements, edited in the browser and stored in PostgreSQL on your computer |
-| Jobs | Paste a posting; each one gets an application with a status you set by hand (preparing, ready, applied, interviewing, offer, rejected, withdrawn, accepted), notes, filters and sorting |
+| Jobs | Paste a posting with its salary and the company's logo (an image file or an image address); each one gets an application with a status you set by hand (preparing, ready, applied, interviewing, offer, rejected, withdrawn, accepted), notes, filters and sorting. A word cloud shows which words the posting repeats and which of them are already among your skills |
 | Documents | Per job, a generated resume, cover letter and recruiter message. Each bullet cites your records; numbers that do not appear in the cited evidence are flagged. Edit any line in place; every edit is a saved revision |
 | PDFs | One-page resume and cover letter, monochrome, sentence case, built from the reviewed text |
 | Model access | Bring an API key for OpenRouter, Anthropic, OpenAI, the Vercel AI Gateway or any OpenAI-compatible server (Ollama and similar), or use no key at all: paste-back mode shows you the prompt, you run it in whatever assistant you already have and paste the answer back through the same checks |
 | Runs | Every model call is recorded with model, prompt version, tokens, latency and cost, visible next to the document |
-| Data safety | Backup and restore of the database and the PDFs; keys live only in your environment file; nothing is sent anywhere until you configure a provider |
+| Data safety | Backup and restore of the database, the PDFs and the logos; keys live only in your environment file; nothing is sent anywhere until you configure a provider or paste an image address |
 
 Status: **Phase 1b complete (2026-09-14)**. Everything in the table is implemented, tested and installable with Docker on macOS; Windows and Linux are untested. What is not built yet: importing a posting from a link, scoring how well you match, company research, automatic discovery of jobs, and interview tracking. See [product scope and phases](docs/01-product-and-phases.md) for the roadmap and [decisions and readiness](docs/09-decisions-and-readiness.md) for the honest list of known gaps.
 

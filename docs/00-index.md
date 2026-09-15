@@ -1,12 +1,12 @@
 # 00 — Documentation index
 
-Status: Phase 0 complete (career data entry, packaged Docker installation, column interface since 2026-09-14); Phase 1a complete (manual jobs and application tracking, 2026-09-14); Phase 1b complete (generated materials, review, PDFs, model access, 2026-09-14); Phases 2 to 4 are design. Updated 2026-09-14.
+Status: Phase 0 complete (career data entry, packaged Docker installation, column interface since 2026-09-14); Phase 1a complete (manual jobs and application tracking, 2026-09-14); Phase 1b complete (generated materials, review, PDFs, model access, 2026-09-14); Phase 1c additions to the paste flow complete (salary, company logo, word cloud, 2026-09-14); Phases 2 to 4 are design. Updated 2026-09-14.
 
 Numbers establish reading order, not software release versions. Accepted choices are distinguished from proposals, and each document says which parts are implemented; a diagram describes the intended structure, and its labels say which phase each part belongs to.
 
 | Document | Question answered | Status |
 |---|---|---|
-| [01 — Product and phases](01-product-and-phases.md) | What can users accomplish, and when? | Phases 0, 1a and 1b complete; Phases 2 to 4 proposed |
+| [01 — Product and phases](01-product-and-phases.md) | What can users accomplish, and when? | Phases 0, 1a, 1b and the 1c additions complete; Phases 2 to 4 proposed |
 | [02 — Domain model](02-domain-model.md) | What do the product's concepts mean? | Vocabulary through Phase 1b in use; Phase 2 to 4 concepts proposed |
 | [03 — System and modules](03-system-and-modules.md) | Where does code run, and who owns behavior? | Profile, Jobs and Applications modules, column interface and packaged runtime implemented; Documents module, model adapter and PDF rendering implemented |
 | [04 — Data model](04-data-model.md) | How does PostgreSQL represent those concepts? | Phase 0, 1a and 1b schemas migrated |

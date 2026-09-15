@@ -18,7 +18,7 @@ flowchart LR
     app -->|"read / write"| files[("Local files<br/>backups and PDF artifacts")]
     migrate["migrate task (one-shot)<br/>applies db/migrations, then exits"] -.->|"before web starts"| db
   end
-  app -.->|"outbound HTTPS, only with a provider configured"| providers["External providers<br/>models (ADR 006, implemented), later job sources"]
+  app -.->|"outbound HTTPS: the configured provider,<br/>or an image address the user pastes (ADR 007)"| providers["External providers<br/>models (ADR 006, implemented), logo images (ADR 007, implemented), later job sources"]
 ```
 
 This is a logical runtime view: PostgreSQL is a process/container with its own volume, and the `migrate` task is a Compose service that runs once per `start` rather than a product component. The diagram abstracts volumes and networks.
@@ -91,12 +91,12 @@ src/
     icon.png, apple-icon.png
                          the favicon and touch icon generated from the mark in public/logo
   modules/
-    shared/              contracts.ts (Result, ModuleError, field helpers), service.ts (BaseDeps, error mapping)
+    shared/              contracts.ts (Result, ModuleError, field helpers), service.ts (BaseDeps, error mapping), files.ts (checksum, atomic write, quiet unlink)
     profile/             schema.ts, contracts.ts, rules.ts, repository.ts, service.ts, index.ts
-    jobs/                same shape; postings
+    jobs/                same shape plus logo.ts (logo files under the artifact directory, row after file) and stopwords.ts (word cloud)
     applications/        same shape; pursuits and the derived job status rule
     documents/           same shape plus prompts/ (versioned prompt builders), pdf/ (templates) and artifacts.ts
-  components/            shared presentation components (Shell, SidebarNav, ThemeToggle, Drawer, Column, Toolbar, ToolbarMenu, Card, IconTile, WordCloud, Field, AutoGrowTextarea, ...)
+  components/            shared presentation components (Shell, SidebarNav, ThemeToggle, Drawer, Column, Toolbar, ToolbarMenu, Card, IconTile, LogoPicker, WordCloud, Field, AutoGrowTextarea, ...)
   infrastructure/        database pool, configuration, model/ (adapter interface, AI SDK class, fake, factory), fetch/ (guarded image fetch, ADR 007)
 db/migrations/           generated SQL migrations and drizzle-kit journal
 db/migrate.mjs           migration runner used inside the release image (production dependencies only)
