@@ -1,6 +1,6 @@
 # 07 — Quickstart
 
-Status: contributor path and ordinary-user path implemented and tested on macOS (2026-09-13); Windows and Linux untested. Updated 2026-09-13.
+Status: contributor path and ordinary-user path implemented and tested on macOS (2026-09-13); Windows and Linux untested. Model configuration for Phase 1b described (2026-09-14). Updated 2026-09-14.
 
 ## Contributor path (tested)
 
@@ -19,7 +19,9 @@ pnpm dev                        # http://localhost:3000
 
 The first visit asks for your name and creates the single profile of this installation. Career facts live under About me in the sidebar; pasted postings and their applications live under Jobs. Data lives in the Docker volume `landed_pgdata`, outside the source checkout. `pnpm db:down` stops the database and keeps the volume.
 
-Tests use a second database, `landed_test`, created automatically when the volume is first initialised. Apply migrations to it once, then run the checks listed in [CONTRIBUTING](../CONTRIBUTING.md):
+Generating documents (Phase 1b) needs either a model provider or nothing at all. With nothing configured, each document offers Paste back: the app shows the prompt, you run it in any assistant you already use and paste the JSON answer back. To let the app call a provider itself, set `LANDED_MODEL_PROVIDER`, `LANDED_MODEL` and `LANDED_MODEL_API_KEY` in `.env` (and `LANDED_MODEL_BASE_URL` for an OpenAI-compatible endpoint such as OpenRouter or a local Ollama), as commented in `.env.example`, then restart `pnpm dev`. The Settings column in the app shows what is configured without revealing the key. The key never leaves the environment file: it is not stored in the database, not included in backups and not logged. Which company receives your facts is the provider you chose; with the Vercel AI Gateway or OpenRouter, that service relays them to the model's operator.
+
+Tests use a second database, `landed_test`, created automatically when the volume is first initialised, and the fake model adapter (`LANDED_MODEL_PROVIDER=fake` in `.env.test`), so no key is ever needed for the checks. Apply migrations to it once, then run the checks listed in [CONTRIBUTING](../CONTRIBUTING.md):
 
 ```sh
 DATABASE_URL=postgres://landed:landed@localhost:5432/landed_test pnpm db:migrate
@@ -40,7 +42,7 @@ Troubleshooting: "Docker daemon not running" means start Docker Desktop; "port 5
 
 ## Ordinary user path (tested on macOS with Docker Desktop, 2026-09-13)
 
-Prerequisites: Docker Desktop (macOS, Windows) or Docker Engine with the Compose v2 plugin (Linux), and about 1 GB of free disk for the images and your data. No Node, PostgreSQL, paid AI account, or agent CLI. Docker is a substantial prerequisite; this is not a double-click install.
+Prerequisites: Docker Desktop (macOS, Windows) or Docker Engine with the Compose v2 plugin (Linux), and about 1 GB of free disk for the images and your data. No Node, PostgreSQL or agent CLI. A paid AI account is optional: without one, documents are generated through paste-back (below). Docker is a substantial prerequisite; this is not a double-click install.
 
 ```sh
 git clone https://github.com/3333444n/landed.git   # or download and unpack a release bundle
@@ -52,7 +54,9 @@ The first `start` takes a few minutes: it creates `.env.release` with a random d
 
 Other commands: `stop` (stops the containers, keeps your data), `status`, `logs [service]`, `backup`, `restore <file>`.
 
-How data is stored: PostgreSQL writes to the Docker named volume `landed-release_pgdata`, outside the source checkout. It survives `stop`, `start`, container restarts, image rebuilds and upgrades. Only the web port is published, and only on 127.0.0.1 of your computer; the database has no host port and is reachable only by the application inside the Compose network ([compose.release.yml](../compose.release.yml)). `.env.release` holds the generated credentials and is ignored by Git; keep it, because the database volume was initialised with that password.
+Model provider (Phase 1b, optional): `.env.release` contains commented `LANDED_MODEL_*` lines. Fill in the provider (`anthropic`, `openai`, `gateway` for the Vercel AI Gateway, or `openai_compatible` with a base URL for OpenRouter, Ollama and similar), the model name and your API key, then run `start` again; the web service reads them on restart. Leave them empty to use Paste back on every document instead: the app shows the prompt, you run it in any assistant and paste the answer back, and nothing about your facts leaves your computer except what you paste yourself. The key stays in `.env.release`, which is ignored by Git and never copied into the database or a backup. A local model server on this computer is reached from inside Docker as `http://host.docker.internal:11434/v1`, not `localhost`.
+
+How data is stored: PostgreSQL writes to the Docker named volume `landed-release_pgdata`, outside the source checkout, and generated PDFs (Phase 1b) to the volume `landed-release_artifacts`. Both survive `stop`, `start`, container restarts, image rebuilds and upgrades. Only the web port is published, and only on 127.0.0.1 of your computer; the database has no host port and is reachable only by the application inside the Compose network ([compose.release.yml](../compose.release.yml)). `.env.release` holds the generated credentials and your optional model key and is ignored by Git; keep it, because the database volume was initialised with that password.
 
 Upgrade: `git pull` (or unpack the new bundle over the old folder, keeping `.env.release`), then `sh scripts/landed.sh start` again. It rebuilds the image and the `migrate` task applies any new migrations before the new server starts. The PostgreSQL image is pinned to a minor version in `compose.release.yml`; a major-version change (17 to 18) will ship with an explicit backup/restore procedure, never a floating tag.
 
@@ -70,6 +74,7 @@ Factory reset (separate, deliberate; deletes all your data): take a backup if yo
 ```sh
 sh scripts/landed.sh stop
 docker volume rm landed-release_pgdata
+docker volume rm landed-release_artifacts   # generated PDFs (Phase 1b); absent on older installations
 rm .env.release          # optional; the next start generates a new password
 sh scripts/landed.sh start
 ```
@@ -100,7 +105,7 @@ Verified on macOS (Apple Silicon, Docker Desktop, 2026-09-13) unless marked othe
 - Helpful troubleshooting for Docker not running, occupied port, failed download, permission failure, database unavailable, migration failure, and low disk space: written above; the Docker-not-running, port-in-use and migration-failure cases were exercised, the others are documented from Docker's own messages.
 - Pin supported versions and explain upgrade steps: images pinned (`node:22.23-bookworm-slim`, `postgres:17.11`); the PostgreSQL major-version procedure is still to be written when a major bump is planned.
 - Verify release images on intended CPU architectures and document tested macOS, Windows, and Linux setups: tested on macOS arm64 only. Windows (`scripts/landed.ps1`), Linux and x86-64 are untested.
-- Phase 0 works offline after installation; example data and tests require no provider key: verified (the containers make no outbound requests; Next.js telemetry is disabled in the image).
+- Phase 0 and 1a work offline after installation; example data and tests require no provider key: verified (the containers make no outbound requests; Next.js telemetry is disabled in the image). From Phase 1b the web service calls only the provider configured in `.env.release`, and nothing when none is configured.
 
 Store runtime data in volumes outside the source checkout. Ignore files are a second guard, not backup or access control. Release bundles include only an explicit allowlist of application assets; never package the entire workspace with personal files.
 

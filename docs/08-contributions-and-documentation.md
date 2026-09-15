@@ -8,7 +8,7 @@ In place: README with truthful feature status and a link to the tested quickstar
 
 Commits follow `<type>(<scope>): <description>` with the types listed in CONTRIBUTING; pull requests use the What/Why/How/Testing template in `.github/`.
 
-Bug reports specify version/environment, reproduction steps, expected/actual behavior, and sanitized evidence. Encourage documentation fixes and `good first issue` tasks. Require no paid credentials to run standard checks. A tiny fictional profile is the current example (`examples/demo-profile.json`, used as values by the tests); a loader for it does not exist, and the schema and loader must agree before seed data is declared runnable.
+Bug reports specify version/environment, reproduction steps, expected/actual behavior, and sanitized evidence. Encourage documentation fixes and `good first issue` tasks. Require no paid credentials to run standard checks: the model adapter has a fake implementation selected by `LANDED_MODEL_PROVIDER=fake`, and only the optional `pnpm eval` calls a real provider. A tiny fictional profile is the current example (`examples/demo-profile.json`, used as values by the tests); a loader for it does not exist, and the schema and loader must agree before seed data is declared runnable.
 
 Examples do not include real names/contact details from the maintainer. Do not require a contributor to complete their real profile to run tests. Design easy seams for adding a template or a source adapter later, but do not build a plugin marketplace now.
 
@@ -21,7 +21,7 @@ Examples do not include real names/contact details from the maintainer. Do not r
 5. Integration changes update document 06 and the supported setup path.
 6. Installation changes update document 07 and its clean-install checks.
 7. Scope/decision changes update documents 01/09 and create or supersede an ADR when significant.
-8. Visual changes update DESIGN.md at the repository root; the UI and the file must never disagree.
+8. Visual changes update DESIGN.md at the repository root; the UI and the file must never disagree. Changes to the produced PDFs or the recruiter text update DESIGN-DOCS.md the same way.
 
 The pull-request template asks what was tested; reviewers ask which documents/diagrams are affected, or why none are. Link checking can later be automated; semantic correctness still requires review. No timer can infer that a design diagram remains correct after arbitrary code changes.
 

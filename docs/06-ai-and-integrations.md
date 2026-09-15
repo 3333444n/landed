@@ -1,6 +1,6 @@
 # 06 — AI, harnesses, and retrieval
 
-Status: future design; no AI dependency in Phase 0. Updated 2026-09-13.
+Status: model access path accepted for Phase 1b ([ADR 006](adr/006-model-access-path.md)); agentic research, discovery and retrieval remain future design. Updated 2026-09-14.
 
 ## Distinguish the moving parts
 
@@ -12,33 +12,33 @@ Status: future design; no AI dependency in Phase 0. Updated 2026-09-13.
 - RAG retrieves relevant external-to-the-model information and includes it in generation input. It does not require an agent or vector search.
 - LangChain supplies model/tool/agent abstractions. LangGraph supplies stateful orchestration capabilities. They are not synonyms and need not both be dependencies.
 
-## First generation implementation
+## First generation implementation (Phase 1b, ADR 006)
 
-Use plain TypeScript functions, schema validation, explicit prompts, and one supported model adapter. Separate evidence selection, generation, validation, persistence, and PDF rendering. Begin with deterministic selection or a bounded evidence-selection call when all facts cannot reasonably be supplied. Grounding does not require embeddings.
+Plain TypeScript functions, Zod schemas, explicit versioned prompts, and one adapter interface in `src/infrastructure/model/`: an AI SDK class holding the configured provider client, a fake adapter that answers from fixtures, and a factory that reads the environment. Providers: Anthropic and OpenAI directly, the Vercel AI Gateway (one key, any model), and any OpenAI-compatible endpoint by base URL (OpenRouter, Ollama, Groq, LM Studio). The provider and key live in the environment file only. Each of the three documents is a workflow, not an agent: build the snapshot, call once with a schema, validate, check grounding, save. The whole profile goes into the snapshot; deterministic selection can come when postings or profiles outgrow the context.
+
+Paste-back is the same workflow with a person as the model: the app shows the prompt and the snapshot, the user runs it anywhere and pastes the JSON back, and the answer passes the same validation and grounding check. It needs no key and works from a phone.
+
+Grounding is enforced after generation by the application, not by the prompt: every unit must cite evidence ids that exist in the snapshot, and any number in the text must appear in the cited records. Violations are warnings for the user, shown as chips in the review view. Every call writes a run record (provider, model, prompt name and version, tokens, latency, cost when reported, outcome); the Runs column shows them. Quality is measured on a synthetic evaluation set in `examples/generation` run by `pnpm eval`; the documentation names the providers it has actually been run against.
 
 When agentic research arrives, a small bounded tool loop is a useful baseline: give allowed tools and current state to a model, validate its tool request, execute the approved operation, record the observation, repeat until complete or the step/time budget is exhausted. Avoid rebuilding a general orchestration framework. Reconsider LangGraph when checkpointing, branching, resumable human approval, recovery, or state persistence becomes costly to maintain. The user's preference for LangGraph/LangChain is recorded as a future direction, not permission to add both to Phase 0.
 
 ## Existing harness integration
 
-Claude Code supports programmatic invocation and structured output. A harness adapter is plausible for people already using it. It is not automatically the easiest default for new users: installing/authenticating a CLI, runtime permissions, supported billing/auth paths, subprocess lifecycle, and host/container connectivity all need a supported recipe.
+ADR 006 evaluated the three directions and chose the app calling a provider, with paste-back as the zero-setup alternative. The reasons, in short: for a new user one key is less setup than installing and authenticating a harness; the app can own the prompt version, the frozen snapshot, validation and the run record only when it makes the call; and the packaged installation runs in a container while a harness runs on the host, so an MCP transport would be HTTP with authentication from day one. A harness adapter (the app invoking Claude Code or Codex in non-interactive mode) remains plausible for people who already use one, but it cannot run inside the release container and depends on the provider's terms for programmatic use of a chat subscription, which were not verified. Do not read a user's CLI credential store, and do not assume a chat subscription is an API credential. Setup text explains which company receives the user's facts for each provider.
 
-Recommended choices for the Phase 1b evaluation:
-1. App calls one model provider directly: simplest app-owned generation path; users supply supported credentials.
-2. Optional host-side harness bridge: reuses an installed runtime through documented mechanisms; explicit connection setup and permission boundaries.
-3. Optional local-model endpoint: local inference but model downloads, memory/hardware needs, and quality expectations add setup cost.
+A local model is not a separate path: Ollama and similar servers are reached as an OpenAI-compatible endpoint. Structured-output quality on small local models is not guaranteed; the evaluation set is the way to find out.
 
-Choose one verified initial path. Do not advertise all three as supported until tested. Do not read/copy a user's CLI credential store into containers or assume a chat subscription grants an interchangeable API credential. User-facing setup should explain which component receives their facts.
-
-Future MCP is another adapter to application operations, not direct SQL access. A CLI controlling the app via MCP and an app invoking a CLI harness are opposite integration directions; choose deliberately. Authentication and transport capability must be checked for the actual client before promising remote ChatGPT/Claude control.
+Future MCP is another adapter to application operations, not direct SQL access, and would enforce the same validation and grounding on the way in. A harness controlling the app via MCP and the app invoking a harness are opposite integration directions; ADR 006 chose deliberately. A locally running installation is reachable from claude.ai or a phone app only when exposed to the internet with authentication, which documents 03 and 09 keep as a separate design.
 
 ## Input and tool boundaries
 
 Job postings/web pages are data, not instructions. Keep them separate from trusted instructions. Use bounded tools for fetch/search and application operations, not unrestricted shell/database access. Preserve sources and retrieval dates; do not invent inaccessible company/recruiter information. External URL fetching must reject private-network targets, validate redirect destinations, and impose size/time limits when Phase 2 enables it.
 
-Generated claims cite input snapshot entries, but valid IDs alone do not establish factual support. Compare claims with facts, evaluate unsupported additions, and require user review before submission. Automatic Phase 3 generation produces unreviewed drafts only.
+Generated claims cite input snapshot entries, but valid IDs alone do not establish factual support; the Phase 1b grounding check also compares numbers in the text with the cited records, and the user reviews every document before it is used. Pasted postings are placed in the prompt inside a labelled data block and never in the instructions. Automatic Phase 3 generation produces unreviewed drafts only.
 
 ## Sources
 
+- [Vercel AI SDK](https://ai-sdk.dev/docs) and its [OpenAI-compatible provider](https://ai-sdk.dev/providers/openai-compatible-providers)
 - [Claude Code programmatic use](https://code.claude.com/docs/en/headless)
 - [LangGraph JavaScript overview](https://docs.langchain.com/oss/javascript/langgraph/overview)
 - [pgvector](https://github.com/pgvector/pgvector)

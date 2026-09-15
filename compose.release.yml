@@ -53,6 +53,15 @@ services:
       # binds the host side to 127.0.0.1, so only this computer can open the app.
       HOSTNAME: 0.0.0.0
       PORT: "3000"
+      # Optional model provider (ADR 006). Empty values mean paste-back mode only. The key is
+      # read from .env.release here and nowhere else.
+      LANDED_MODEL_PROVIDER: ${LANDED_MODEL_PROVIDER:-}
+      LANDED_MODEL: ${LANDED_MODEL:-}
+      LANDED_MODEL_API_KEY: ${LANDED_MODEL_API_KEY:-}
+      LANDED_MODEL_BASE_URL: ${LANDED_MODEL_BASE_URL:-}
+      LANDED_ARTIFACT_DIR: /app/artifacts
+    volumes:
+      - artifacts:/app/artifacts
     ports:
       - "127.0.0.1:${LANDED_PORT:-3000}:3000"
     depends_on:
@@ -78,3 +87,5 @@ volumes:
   # Personal data lives here, outside the source checkout. `landed.sh stop` never removes it;
   # a factory reset is the separate, deliberate `docker volume rm landed-release_pgdata`.
   pgdata:
+  # Generated PDFs (Phase 1b); metadata lives in the database, the files here.
+  artifacts:
