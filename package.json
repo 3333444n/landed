@@ -26,7 +26,10 @@
     "db:migrate:prod": "node db/migrate.mjs",
     "db:backup": "sh scripts/db-backup.sh",
     "db:restore": "sh scripts/db-restore.sh",
-    "eval": "vitest run --project eval"
+    "eval": "vitest run --project eval",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test",
+    "verify": "pnpm check && pnpm test:integration && sh scripts/check-migrations.sh",
+    "verify:full": "pnpm verify && pnpm build && CI=true pnpm test:e2e"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "4.0.53",

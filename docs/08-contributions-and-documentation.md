@@ -8,6 +8,8 @@ In place: README with truthful feature status and a link to the tested quickstar
 
 Commits follow `<type>(<scope>): <description>` with the types listed in CONTRIBUTING; pull requests use the What/Why/How/Testing template in `.github/`.
 
+Testing scope follows the blast radius of a change, not the list of files touched (CONTRIBUTING "Checks"): `pnpm check` (format, lint, types, unit tests; no database) while coding, `pnpm verify` (adds the integration tests and the migration drift script) when persistence, a Server Action, a route or a module's public surface changes, and `pnpm verify:full` (adds the build and the browser journeys against the production build) before any pull request. A pull request states which level ran and names anything required that could not.
+
 Bug reports specify version/environment, reproduction steps, expected/actual behavior, and sanitized evidence. Encourage documentation fixes and `good first issue` tasks. Require no paid credentials to run standard checks: the model adapter has a fake implementation selected by `LANDED_MODEL_PROVIDER=fake`, and only the optional `pnpm eval` calls a real provider. A tiny fictional profile is the current example (`examples/demo-profile.json`, used as values by the tests); a loader for it does not exist, and the schema and loader must agree before seed data is declared runnable.
 
 Examples do not include real names/contact details from the maintainer. Do not require a contributor to complete their real profile to run tests. Design easy seams for adding a template or a source adapter later, but do not build a plugin marketplace now.

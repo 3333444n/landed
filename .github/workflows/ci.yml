@@ -64,15 +64,7 @@ jobs:
       - name: Integration tests
         run: pnpm test:integration
       - name: Migration drift check
-        run: |
-          pnpm db:generate
-          if [ -n "$(git status --porcelain db/migrations)" ]; then
-            echo "::error::db/migrations is out of date with the schema. Run 'pnpm db:generate' and commit the result."
-            git status --porcelain db/migrations
-            git diff -- db/migrations
-            git ls-files --others --exclude-standard db/migrations | xargs -r -I{} sh -c 'echo "--- {}"; cat "{}"'
-            exit 1
-          fi
+        run: sh scripts/check-migrations.sh
       - name: Build
         run: pnpm build
       - name: Install Playwright browsers
