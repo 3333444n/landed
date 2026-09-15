@@ -112,6 +112,28 @@ describe("jobs", () => {
     expect((await getApplicationForJob(deps(), demo.profileId, job.id))?.status).toBe("preparing");
   });
 
+  it("keeps the salary as typed and writes null when it is blank", async () => {
+    const job = unwrap(
+      await pursueJob(deps(), demo.profileId, {
+        id: demo.jobId,
+        ...demo,
+        salary: " $90k to $110k a year ",
+      }),
+    );
+    expect(job.salary).toBe("$90k to $110k a year");
+    expect((await getJob(deps(), demo.profileId, job.id))?.salary).toBe("$90k to $110k a year");
+
+    const cleared = unwrap(
+      await saveJob(
+        deps(),
+        demo.profileId,
+        { ...demo, salary: "", expectedUpdatedAt: job.updatedAt.toISOString() },
+        job.id,
+      ),
+    );
+    expect(cleared.salary).toBeNull();
+  });
+
   it("deleting a job removes its application", async () => {
     const job = unwrap(await pursueJob(deps(), demo.profileId, { id: demo.jobId, ...demo }));
     unwrap(await deleteJob(deps(), demo.profileId, job.id));

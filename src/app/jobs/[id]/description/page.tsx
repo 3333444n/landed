@@ -30,6 +30,7 @@ export default async function JobDescriptionPage({ params }: { params: Promise<{
           title: job.title,
           companyName: job.companyName,
           location: job.location ?? "",
+          salary: job.salary ?? "",
           sourceUrl: job.sourceUrl ?? "",
           rawDescription: job.rawDescription,
           availability: job.availability,

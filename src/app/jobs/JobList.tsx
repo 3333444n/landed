@@ -37,7 +37,7 @@ export function JobList({ rows }: { rows: JobRow[] }) {
               icon={<Icon />}
               title={row.title}
               subtitle={row.companyName}
-              meta={[row.location ?? "", row.summary].filter(Boolean)}
+              meta={[row.location ?? "", row.salary ?? "", row.summary].filter(Boolean)}
               chips={
                 <>
                   <Chip tone={row.derived.chip.tone}>{row.derived.chip.label}</Chip>

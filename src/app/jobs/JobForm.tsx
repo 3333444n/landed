@@ -87,6 +87,13 @@ function Fields({
         errors={errors.location}
       />
       <Field
+        label="Salary"
+        name="salary"
+        helper="As the posting states it, any currency or period. Optional."
+        defaultValue={values.salary}
+        errors={errors.salary}
+      />
+      <Field
         label="Posting URL"
         name="sourceUrl"
         type="url"

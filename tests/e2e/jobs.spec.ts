@@ -6,6 +6,7 @@ const demo = {
   title: "Full-stack developer",
   companyName: "Example Analytics",
   location: "Remote",
+  salary: "$90k to $110k a year",
   rawDescription:
     "Example Analytics is looking for a full-stack developer to build internal reporting tools.\n\nYou will work with PostgreSQL and TypeScript.",
 };
@@ -24,6 +25,7 @@ test("a pasted job gets an application whose status the user moves by hand", asy
   await page.getByLabel("Title").fill(demo.title);
   await page.getByLabel("Company").fill(demo.companyName);
   await page.getByLabel("Location").fill(demo.location);
+  await page.getByLabel("Salary").fill(demo.salary);
   await page.getByLabel("Description").fill(demo.rawDescription);
   await page.getByRole("button", { name: "Save job" }).click();
 
@@ -33,6 +35,7 @@ test("a pasted job gets an application whose status the user moves by hand", asy
   const list = page.getByRole("list", { name: "Jobs" });
   await expect(list.getByRole("heading", { name: demo.title })).toBeVisible();
   await expect(list.getByText(demo.companyName, { exact: true })).toBeVisible();
+  await expect(list.getByText(demo.salary, { exact: true })).toBeVisible();
   await expect(list.getByText("Preparing", { exact: true })).toBeVisible();
   const materials = page.getByRole("list", { name: "Materials" });
   await expect(materials.getByText("Not started")).toHaveCount(3);
