@@ -11,7 +11,7 @@ The documents are conservative on purpose. A recruiter spends seconds on a resum
 3. **Monochrome.** Black text on white, one tone: no greys for dates, contact lines or rules. No colour, no tints, no icons, no photos, no charts, no rating bars for skills.
 4. **Uppercase section headings, sentence case everywhere else.** Section headings are the one uppercase element ("EXPERIENCE"), set by the renderer from sentence-case content so the text stays "Experience" for parsers and the preview. Entry headings, role titles and labels are sentence case. No letter-spacing tricks.
 5. **Rules, not boxes.** A section heading sits on a 2 pt line. No borders around blocks, no background fills, no columns of unequal width, no tables for layout.
-6. **Plain structure for parsers.** Reading order is a single column from top to bottom: header, then sections. Dates are on the same line as the role, right-aligned, in a form a parser reads ("Aug 2019 – May 2023", "Jul 2023 – Present"). Bullets use a real bullet character with a hanging indent.
+6. **Plain structure for parsers.** Reading order is a single column from top to bottom: header, then sections. Dates are on the same line as the employer, right-aligned, and a role's location on the same line as the role, right-aligned, in a form a parser reads ("Aug 2019 – May 2023", "Jul 2023 – Present"). Bullets use a real bullet character with a hanging indent.
 7. **Facts only.** Every bullet in a generated document traces to an evidence record in the input snapshot. The renderer never adds text; it renders what was reviewed.
 
 ## Page
@@ -33,7 +33,7 @@ The documents are conservative on purpose. A recruiter spends seconds on a resum
 | Contact line | 9.5 pt | regular | One line: phone, email, links, separated by " · ". Phone, email, location, LinkedIn, GitHub, in that order, when present; no other link. Must print on one line |
 | Section heading | 12 pt | bold | Uppercase, 2 pt rule below, 10 pt space above, 4 pt below the rule (both gaps scale with the page fill) |
 | Entry heading (employer, institution, project) | 10.5 pt | bold | Date range right-aligned on the same line, bold, 10 pt, text colour |
-| Entry subheading (role, qualification, technologies) | 10 pt | regular | Optional; directly under the heading |
+| Entry subheading (role, qualification, technologies) | 10 pt | regular | Optional; directly under the heading. A role's location right-aligned on the same line at 9 pt |
 | Body | 10 pt | regular | Summary, subheadings, skills lines |
 | Bullets | 10 pt | regular | Bullet "•", hanging indent 10 pt, one printed line each (530 pt), 1 pt between bullets, 4 pt between entries; no hyphenation |
 | Skills lines | 10 pt | regular | Label in bold followed by a comma-separated list: "Languages: TypeScript, Go" |

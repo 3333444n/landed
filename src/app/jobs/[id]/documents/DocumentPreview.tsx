@@ -78,7 +78,14 @@ function ResumePreview({ ctx, content }: { ctx: Ctx; content: ResumeContent }) {
                     <span className={styles.dateRange}>{entry.dateRange}</span>
                   ) : null}
                 </div>
-                {entry.subheading ? <p className={styles.subheading}>{entry.subheading}</p> : null}
+                {entry.subheading || entry.location ? (
+                  <div className={styles.entryHead}>
+                    <p className={styles.subheading}>{entry.subheading}</p>
+                    {entry.location ? (
+                      <span className={styles.dateRange}>{entry.location}</span>
+                    ) : null}
+                  </div>
+                ) : null}
                 {entryWarnings.length > 0 ? (
                   <div className={styles.chips}>
                     {entryWarnings.map((w, k) => (

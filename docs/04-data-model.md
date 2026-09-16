@@ -31,7 +31,7 @@ Primary keys are UUIDs minted by the application (the form generates the id befo
 | Table | Key fields / content |
 |---|---|
 | profiles | id; display_name (required), headline, summary, email, phone, location, preferences JSONB; links JSONB (Phase 1b: up to five `{label, url}` entries such as LinkedIn and GitHub, for the resume header) |
-| employment | id, profile_id; employer_name, role (both required), start_year/start_month, end_year/end_month, is_current, description |
+| employment | id, profile_id; employer_name, role (both required), location, start_year/start_month, end_year/end_month, is_current, description |
 | education | id, profile_id; institution (required), qualification, subject, start/end year and month, status (`in_progress`, `completed`, `incomplete`), description |
 | projects | id, profile_id, employment_id nullable; name (required), description, url, start/end year and month |
 | achievements | id, profile_id, employment_id nullable, project_id nullable; statement (required), problem, action, result, metric, source_note, source_url, reviewed |

@@ -17,6 +17,7 @@
           "heading": "Example Workshop",
           "subheading": "Software developer",
           "dateRange": "Apr 2023 – Jun 2025",
+          "location": null,
           "bullets": [
             {
               "text": "Reduced weekly report preparation from 4 hours to 1 with a PostgreSQL-backed reporting tool.",
@@ -34,6 +35,7 @@
           "heading": "Community Tool Library",
           "subheading": "Volunteer project for tracking borrowed tools",
           "dateRange": null,
+          "location": null,
           "bullets": [
             {
               "text": "Implemented keyboard-accessible forms for recording tool loans.",
@@ -55,6 +57,7 @@
           "heading": "Example Learning Institute",
           "subheading": "Web development certificate, Software development",
           "dateRange": "Jan 2022 – Sep 2022",
+          "location": null,
           "bullets": []
         }
       ]
@@ -67,6 +70,7 @@
           "heading": "Technical",
           "subheading": "PostgreSQL, Web accessibility",
           "dateRange": null,
+          "location": null,
           "bullets": []
         }
       ]

@@ -69,6 +69,8 @@ export type ResumeSectionKind = (typeof resumeSectionKinds)[number];
 const resumeEntry = z.object({
   heading: z.string().trim().min(1).max(80),
   subheading: z.string().trim().max(160).nullable(),
+  /** Where the role was held, printed at the end of the subheading line. */
+  location: z.string().trim().max(60).nullable(),
   dateRange: z.string().trim().max(40).nullable(),
   bullets: z.array(bullet).max(4),
 });
@@ -221,6 +223,7 @@ export const snapshot = z.object({
       id: z.string(),
       employerName: z.string(),
       role: z.string(),
+      location: z.string().nullable(),
       ...monthDates,
       isCurrent: z.boolean(),
       description: z.string().nullable(),

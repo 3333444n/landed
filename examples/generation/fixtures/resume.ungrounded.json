@@ -13,6 +13,7 @@
           "heading": "Globex Corporation",
           "subheading": "Principal engineer",
           "dateRange": "2019 – 2025",
+          "location": null,
           "bullets": [
             { "text": "Shipped a reporting platform used by 4,000 analysts.", "evidenceIds": ["99999999-0000-4000-8000-000000000009"] },
             { "text": "Mentored junior developers.", "evidenceIds": [] }

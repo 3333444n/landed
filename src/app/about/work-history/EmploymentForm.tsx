@@ -80,6 +80,14 @@ function Fields({
         errors={errors.role}
         required
       />
+      <Field
+        label="Location"
+        name="location"
+        placeholder="Lisbon, Portugal"
+        defaultValue={values.location}
+        helper="City and country, or Remote. Printed beside the role on the resume."
+        errors={errors.location}
+      />
       <MonthDateFields values={values} errors={errors} />
       <Checkbox
         label="I currently work here"

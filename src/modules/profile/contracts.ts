@@ -80,6 +80,7 @@ export const employmentInput = z.object({
   expectedUpdatedAt,
   employerName: requiredText("Enter the employer"),
   role: requiredText("Enter your role"),
+  location: optionalText,
   ...monthDates,
   isCurrent: checkbox,
   description: optionalText,

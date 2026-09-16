@@ -30,7 +30,7 @@ const minimalResume = (
     {
       kind: "experience",
       title: "Work experience",
-      entries: [{ heading, subheading: null, dateRange: null, bullets: [bullet] }],
+      entries: [{ heading, subheading: null, location: null, dateRange: null, bullets: [bullet] }],
     },
   ],
 });

@@ -29,6 +29,7 @@ The JSON schema a provider receives is not the Zod schema verbatim. Providers co
 | 2026-09-14 | `openrouter` | `google/gemini-3.1-flash-lite` | 9 of 9 answers valid, no grounding warnings, cost reported (about $0.011 for the set), 1.4 to 3.1 s per call |
 | 2026-09-14 | `openrouter` | `google/gemini-3.1-flash-lite` | prompts v2 (attribution rule, resume budget): 9 of 9 valid, no warnings, $0.011 |
 | 2026-09-16 | `openrouter` | `google/gemini-3.1-flash-lite` | resume prompt v3 (budgets in printed lines, full-width bullets, fixed contact line): 9 of 9 valid, no warnings, $0.012 |
+| 2026-09-16 | `openrouter` | `google/gemini-3.1-flash-lite` | resume prompt v4 (role location on the entry): 9 of 9 valid, no warnings, $0.012 |
 
 Providers not in this table are wired up but unverified; run `pnpm eval` against them and add the row in the pull request.
 
