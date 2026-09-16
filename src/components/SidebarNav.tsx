@@ -11,7 +11,7 @@ import styles from "./SidebarNav.module.css";
 const items = [
   { href: "/about", label: "About me", icon: UserRound },
   { href: "/jobs", label: "Jobs", icon: Briefcase },
-  { href: "/settings/model", label: "Settings", icon: Settings },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 /** The brand, at most five items and the theme switch; shared by the sidebar and the drawer. */
