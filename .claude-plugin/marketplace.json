@@ -1,0 +1,12 @@
+{
+  "name": "landed",
+  "owner": { "name": "3333444n", "url": "https://github.com/3333444n" },
+  "description": "Plugins for Landed, the local job-search application: connect your assistant and teach it the workflow.",
+  "plugins": [
+    {
+      "name": "landed",
+      "source": "./plugins/landed",
+      "description": "The Landed workflow skill plus the connection to your local Landed installation."
+    }
+  ]
+}
