@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { describeModelConfig, loadConfig, modelConfig } from "./config";
+import {
+  allowedHosts,
+  assistantConfig,
+  describeModelConfig,
+  loadConfig,
+  modelConfig,
+} from "./config";
 
 // Cast: Next's ambient types make NODE_ENV a required property of ProcessEnv.
 const env = (extra: Record<string, string> = {}) =>
@@ -146,5 +152,37 @@ describe("describeModelConfig", () => {
       }),
     ).toMatchObject({ keyHint: null });
     expect(describeModelConfig({ kind: "fake" })).toEqual({ kind: "fake" });
+  });
+});
+
+describe("assistantConfig", () => {
+  it("is unconfigured when the token is missing or blank", () => {
+    expect(assistantConfig(loadConfig(env()))).toEqual({ kind: "unconfigured" });
+    expect(assistantConfig(loadConfig(env({ LANDED_MCP_TOKEN: "   " })))).toEqual({
+      kind: "unconfigured",
+    });
+  });
+  it("refuses a short token", () => {
+    expect(() => loadConfig(env({ LANDED_MCP_TOKEN: "short" }))).toThrow(
+      /LANDED_MCP_TOKEN must be at least 24 characters/,
+    );
+  });
+  it("is configured with the token and a hint of its last four characters", () => {
+    const token = "abcdefghijklmnopqrstuvwxyz0123";
+    expect(assistantConfig(loadConfig(env({ LANDED_MCP_TOKEN: ` ${token} ` })))).toEqual({
+      kind: "configured",
+      token,
+      tokenHint: "0123",
+    });
+  });
+});
+
+describe("allowedHosts", () => {
+  it("splits the comma list and drops blanks", () => {
+    expect(allowedHosts(undefined)).toEqual([]);
+    expect(allowedHosts(" landed.lan, ,box.example ")).toEqual(["landed.lan", "box.example"]);
+    expect(loadConfig(env({ LANDED_ALLOWED_HOSTS: "a.example" })).LANDED_ALLOWED_HOSTS).toBe(
+      "a.example",
+    );
   });
 });

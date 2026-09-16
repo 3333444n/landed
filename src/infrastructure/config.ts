@@ -43,6 +43,21 @@ const envSchema = z.object({
       .optional(),
   ),
   LANDED_ARTIFACT_DIR: z.preprocess(blank, z.string().trim().default("./artifacts")),
+  /**
+   * The bearer token an assistant presents on /mcp (ADR 008). Long enough that guessing it is
+   * hopeless; the packaged install mints one, contributors paste any random string.
+   */
+  LANDED_MCP_TOKEN: z.preprocess(
+    blank,
+    z
+      .string()
+      .trim()
+      .min(24, "LANDED_MCP_TOKEN must be at least 24 characters")
+      .max(200)
+      .optional(),
+  ),
+  /** Extra hostnames the host guard accepts besides localhost, for a later remote design. */
+  LANDED_ALLOWED_HOSTS: z.preprocess(blank, z.string().trim().max(2000).optional()),
 });
 
 export type Config = z.infer<typeof envSchema>;
@@ -121,4 +136,25 @@ export function describeModelConfig(config: ModelConfig): ModelStatus {
     keyHint: config.apiKey ? config.apiKey.slice(-4) : null,
     baseUrl: config.baseUrl,
   };
+}
+
+/**
+ * The assistant endpoint's configuration. `configured` carries the token for the route's bearer
+ * check; the Settings column shows only the hint, as the Model setup column does for the key.
+ */
+export type AssistantConfig =
+  { kind: "unconfigured" } | { kind: "configured"; token: string; tokenHint: string };
+
+export function assistantConfig(config: Config): AssistantConfig {
+  const token = config.LANDED_MCP_TOKEN;
+  if (!token) return { kind: "unconfigured" };
+  return { kind: "configured", token, tokenHint: token.slice(-4) };
+}
+
+/** The comma-separated hostname list as an array; blank entries dropped. */
+export function allowedHosts(value: string | undefined): string[] {
+  return (value ?? "")
+    .split(",")
+    .map((h) => h.trim())
+    .filter(Boolean);
 }
