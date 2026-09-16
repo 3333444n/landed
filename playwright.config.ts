@@ -36,6 +36,8 @@ export default defineConfig({
       DATABASE_URL: testDatabaseUrl(),
       LANDED_MODEL_PROVIDER: "fake",
       LANDED_ARTIFACT_DIR: "./artifacts-test",
+      // Any string of at least 24 characters; assistant.spec.ts presents it on /mcp.
+      LANDED_MCP_TOKEN: "test-token-test-token-test-token",
     },
     timeout: 120_000,
   },
