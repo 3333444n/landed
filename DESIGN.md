@@ -13,8 +13,8 @@ Minimalism here means fewer elements, not smaller ones. Remove before you decora
 ## Hard rules
 
 1. **Rounded corners everywhere.** No square corners on any surface, control, image, or input. Use the radius scale below; nested elements use a smaller radius than their container so the corners look concentric.
-2. **One grotesk typeface for everything.** No serif, no monospace, no display font. IDs, dates, numbers, and code-like values render in the same sans-serif family, optionally with tabular figures.
-3. **No monospace, and no uppercase labels.** This includes `<code>`, `<kbd>`, and "terminal-style" tags. Status chips and labels use sentence case in the body typeface. The one uppercase word is the LANDED wordmark next to the mark in the sidebar.
+2. **One grotesk typeface for everything.** No serif, no monospace, no display font. IDs, dates, numbers, and code-like values render in the same sans-serif family, optionally with tabular figures. The single exception, decided 2026-09-16: a preformatted command block inside a read-only `Field` (the copyable blocks on Connect your assistant) may use the monospace stack `--font-mono`, through the field's `mono` modifier, and nothing else may.
+3. **No monospace elsewhere, and no uppercase labels.** This includes `<code>`, `<kbd>`, and "terminal-style" tags. Status chips and labels use sentence case in the body typeface. The one uppercase word is the LANDED wordmark next to the mark in the sidebar.
 4. **No borders.** A child separates from its container in exactly one of two ways: a tonal step (a different surface fill), or a 1px line in `line` when child and container share the same fill. Never both, and never a border around a tonally separated element. Inputs, cards, chips, buttons and columns have no border. Focus rings are outlines, not borders, and are exempt, and so is the 1px gradient edge of a glass surface, which is a highlight of the material, not a border (see Glass material).
 5. **No eyebrows.** No small label or category text sitting above a title. Hierarchy comes from size and weight of the title itself, and from spacing. If context is needed, it goes below the title as a subtitle.
 6. **No decorative gradients, no drop shadows on text, no icons as decoration.** The only gradients are the canvas glow and the 1px glass edge; no element has a gradient fill. An icon sits in an icon tile next to the word it stands for (column titles, sidebar items, About me cards, record cards, job cards by derived status, material cards) and is hidden from assistive technology, so an accessible name never changes because of an icon. The hamburger, the drawer's close button, the back button, the "+", Filter, Sort and the theme switch are the icon-only controls, and each has an accessible name.
@@ -63,6 +63,8 @@ Rules: never use pure black or pure white for text. Dark is the system preferenc
 ### Typography
 
 Family: **Helvetica Neue** (grotesk), used as a system font through a plain CSS stack, no web font download: `"Helvetica Neue", Helvetica, Inter, "SF Pro Text", Arial, sans-serif`. Enable `font-feature-settings: "tnum"` on numeric columns.
+
+Monospace exists in exactly one place (2026-09-16): a preformatted command block that the person copies into a terminal or a configuration file, rendered in a read-only multiline `Field` with its `mono` modifier, in the stack `--font-mono` (`ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace`, 13/20). Prose, labels, ids, dates, numbers and everything else stay in the grotesk.
 
 | Style      | Size / line height | Weight | Use                                         |
 | ---------- | ------------------ | ------ | ------------------------------------------- |
@@ -199,4 +201,4 @@ Contrast AA everywhere, including on glass over worst-case content. Focus visibl
 
 ## Don'ts
 
-Eyebrow labels. Monospace anything. Uppercase labels. Borders on anything tonally separated. Glass on glass. Blur on cards or panels. Gradient fills on any element; the only gradients are the canvas glow and the 1px glass edge. Icons without a word. Illustrations in empty states. More than one accent color. Square corners. Shadows on text. Collapsible cards. A fourth tonal step. Fills or shadows on list columns. Forms inside cards. Stacked or overlapping cards.
+Eyebrow labels. Monospace anything except a preformatted command block in a read-only Field. Uppercase labels. Borders on anything tonally separated. Glass on glass. Blur on cards or panels. Gradient fills on any element; the only gradients are the canvas glow and the 1px glass edge. Icons without a word. Illustrations in empty states. More than one accent color. Square corners. Shadows on text. Collapsible cards. A fourth tonal step. Fills or shadows on list columns. Forms inside cards. Stacked or overlapping cards.

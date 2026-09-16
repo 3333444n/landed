@@ -4,7 +4,7 @@ import { Column } from "@/components/Column";
 import { Field } from "@/components/Field";
 import { preparePasteBack } from "../../generate-document";
 import { pasteBackAction } from "../document-actions";
-import { CopyButton } from "./CopyButton";
+import { CopyButton } from "@/components/CopyButton";
 import { loadDocument } from "./load";
 import { PasteBackForm } from "./PasteBackForm";
 import styles from "./documents.module.css";

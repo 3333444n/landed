@@ -30,6 +30,13 @@ textarea.control {
   field-sizing: content;
 }
 
+/* The one monospace exception: a preformatted command block in a read-only textarea. */
+textarea.mono {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 20px;
+}
+
 .control::placeholder {
   color: var(--text-tertiary);
 }
