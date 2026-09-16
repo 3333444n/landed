@@ -29,6 +29,7 @@ import * as repo from "./repository";
 import {
   documentFacts,
   groundingCheck,
+  layoutCheck,
   isInterrupted,
   withUnitText,
   type DocumentFacts,
@@ -242,7 +243,10 @@ export async function editUnit(
       const snapshot = current.generationRunId
         ? (await repo.findRun(tx, profileId, current.generationRunId))?.snapshot
         : await snapshotForDocument(tx, profileId, current.documentId);
-      const warnings = snapshot ? groundingCheck(type, checked.data, snapshot) : [];
+      const warnings = [
+        ...(snapshot ? groundingCheck(type, checked.data, snapshot) : []),
+        ...layoutCheck(type, checked.data),
+      ];
       const at = now(deps);
       const created = await repo.insertRevision(tx, {
         id: newId(deps),
@@ -341,7 +345,7 @@ async function saveRevision(
     return { ok: true, value: { run: failed!, revision: null } };
   }
   const content: DocumentContent = checked.data;
-  const warnings = groundingCheck(type, content, run.snapshot);
+  const warnings = [...groundingCheck(type, content, run.snapshot), ...layoutCheck(type, content)];
   try {
     return await deps.db.transaction(async (tx) => {
       const document =

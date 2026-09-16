@@ -15,6 +15,7 @@ import type {
   RunMode,
   Snapshot,
 } from "./contracts";
+import { lineCount, textWidth } from "./helvetica";
 
 export interface Unit extends ContentUnit {
   path: string;
@@ -225,6 +226,64 @@ function headingWarnings(resume: ResumeContent, snapshot: Snapshot): GroundingWa
 
 function normalize(s: string): string {
   return s.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+/**
+ * The resume's printed lines (DESIGN-DOCS.md): Letter minus 0.5 in margins at 10 pt Helvetica;
+ * bullets also lose their 10 pt hanging indent; the contact line is 9.5 pt; the summary may take
+ * three lines.
+ */
+export const resumeLine = {
+  text: 540,
+  bullet: 530,
+  fontSize: 10,
+  bulletFontSize: 10,
+  contactFontSize: 9.5,
+  summaryLines: 3,
+} as const;
+
+/**
+ * Layout check: the contact line, every bullet, entry subheading and skills line must print on
+ * one line, and the summary on at most three, or the page budget no longer guarantees one page. Measured with the
+ * built-in font's own metrics, so the warning is exact rather than a character count.
+ */
+export function layoutCheck(type: DocumentType, content: DocumentContent): GroundingWarning[] {
+  if (type !== "resume") return [];
+  const resume = content as ResumeContent;
+  const warnings: GroundingWarning[] = [];
+  const size = resumeLine.fontSize;
+  const wraps = (path: string, message: string) =>
+    warnings.push({ kind: "wraps_line", path, message });
+  if (
+    resume.header.contact.length > 0 &&
+    textWidth(resume.header.contact.join(" · "), resumeLine.contactFontSize) > resumeLine.text
+  ) {
+    wraps("header", "The contact line wraps; drop an entry");
+  }
+  if (
+    resume.summary &&
+    lineCount(resume.summary.text, resumeLine.text, size) > resumeLine.summaryLines
+  ) {
+    wraps("summary", `The summary runs past ${resumeLine.summaryLines} lines`);
+  }
+  resume.sections.forEach((section, i) =>
+    section.entries.forEach((entry, j) => {
+      const entryPath = `sections.${i}.entries.${j}`;
+      if (section.kind === "skills") {
+        const width =
+          textWidth(`${entry.heading}: `, size, "bold") + textWidth(entry.subheading ?? "", size);
+        if (width > resumeLine.text) wraps(entryPath, "The skills line wraps");
+      } else if (entry.subheading && textWidth(entry.subheading, size) > resumeLine.text) {
+        wraps(entryPath, "The subheading wraps");
+      }
+      entry.bullets.forEach((bullet, k) => {
+        if (textWidth(bullet.text, resumeLine.bulletFontSize) > resumeLine.bullet) {
+          wraps(`${entryPath}.bullets.${k}`, "The bullet wraps to a second line");
+        }
+      });
+    }),
+  );
+  return warnings;
 }
 
 /** A copy of the content with one unit's text replaced; unknown paths return null. */

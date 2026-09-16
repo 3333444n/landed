@@ -14,7 +14,7 @@ export { templateVersion };
  * How far the gaps between blocks may stretch to fill the page. Above this the content is too
  * thin for one page and the remaining space stays empty; the fix is more content, not air.
  */
-export const spacingBounds = { min: 1, max: 2 } as const;
+export const spacingBounds = { min: 1, max: 2.4 } as const;
 
 export interface FittedResume {
   pdf: Buffer;
