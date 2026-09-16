@@ -49,6 +49,11 @@ function blocks(url: string, token: string): { title: string; note: string; text
         2,
       ),
     },
+    {
+      title: "Teach it the workflow",
+      note: "Optional. The connection above gives your assistant Landed's tools; the workflow tells it the order to use them in, the fit check before drafting and the rules for a draft. Claude Code installs it as a plugin (it asks for the address and the token from the block above); Codex finds it by itself when run inside the Landed checkout, or link it into your user skills with the last line.",
+      text: `claude plugin marketplace add 3333444n/landed\nclaude plugin install landed@landed\nmkdir -p ~/.agents/skills && ln -s "$PWD/.agents/skills/landed" ~/.agents/skills/landed`,
+    },
   ];
 }
 
