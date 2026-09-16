@@ -40,14 +40,19 @@ export type FailureKind = (typeof failureKinds)[number];
 export const failureLabels: Record<FailureKind, string> = {
   provider: "The provider call failed",
   validation: "The answer did not match the document schema",
-  pasted_invalid: "The pasted answer was not valid",
+  pasted_invalid: "The submitted answer was not valid",
   interrupted: "Interrupted before it finished",
 };
 
-export const runModes = ["adapter", "pasted"] as const;
+/**
+ * Who wrote the answer: the configured adapter, a person pasting it back, or the user's own
+ * assistant through the /mcp endpoint. The two non-adapter modes open a queued run and finish it
+ * when the answer arrives.
+ */
+export const runModes = ["adapter", "pasted", "assistant"] as const;
 export type RunMode = (typeof runModes)[number];
 
-export const revisionSources = ["generated", "pasted", "edited"] as const;
+export const revisionSources = ["generated", "pasted", "assistant", "edited"] as const;
 export type RevisionSource = (typeof revisionSources)[number];
 
 // Content schemas

@@ -1,10 +1,21 @@
 import { Activity } from "lucide-react";
 import { deps } from "@/app/current-profile";
 import { Column, EmptyState } from "@/components/Column";
-import { failureLabels, listRunsForDocument, type DocumentType } from "@/modules/documents";
+import {
+  failureLabels,
+  listRunsForDocument,
+  type DocumentType,
+  type RunMode,
+} from "@/modules/documents";
 import { loadDocument } from "./load";
 import { formatCost } from "./summary";
 import styles from "./documents.module.css";
+
+const modeLabels: Record<RunMode, string> = {
+  adapter: "Adapter",
+  pasted: "Pasted",
+  assistant: "Assistant",
+};
 
 /** Every model call for this document: the observability view (ADR 006). */
 export async function RunsColumn({ jobId, type }: { jobId: string; type: DocumentType }) {
@@ -42,7 +53,7 @@ export async function RunsColumn({ jobId, type }: { jobId: string; type: Documen
               {runs.map((run) => (
                 <tr key={run.id}>
                   <td>{run.createdAt.toLocaleString("en")}</td>
-                  <td>{run.mode === "pasted" ? "Pasted" : "Adapter"}</td>
+                  <td>{modeLabels[run.mode]}</td>
                   <td>
                     {run.provider}
                     <br />

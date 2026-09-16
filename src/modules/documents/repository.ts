@@ -109,8 +109,11 @@ export async function failStaleRuns(
   return rows.length;
 }
 
-/** Opening Paste back again supersedes earlier unanswered prompts for the same document. */
-export async function cancelQueuedPastedRuns(
+/**
+ * A new brief from either surface (paste-back or the assistant) supersedes earlier unanswered
+ * ones for the same document. Adapter runs never sit in `queued`, so no mode filter is needed.
+ */
+export async function cancelQueuedRuns(
   db: DbHandle,
   profileId: string,
   applicationId: string,
@@ -125,7 +128,6 @@ export async function cancelQueuedPastedRuns(
         eq(generationRuns.profileId, profileId),
         eq(generationRuns.applicationId, applicationId),
         eq(generationRuns.documentType, documentType),
-        eq(generationRuns.mode, "pasted"),
         eq(generationRuns.state, "queued"),
       ),
     )

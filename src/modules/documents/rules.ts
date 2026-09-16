@@ -350,10 +350,10 @@ export function documentFacts(
   runs: { state: DocumentRunState; createdAt: Date; mode?: RunMode }[],
   latestRevisions: { reviewedAt: Date | null }[],
 ): DocumentFacts {
-  // A queued paste-back run is a prompt waiting for a person, not work in progress: it must not
-  // show as "Crafting documents".
+  // A queued paste-back or assistant run is a brief waiting for an answer, not work in progress:
+  // it must not show as "Crafting documents".
   const latest = runs
-    .filter((r) => !(r.mode === "pasted" && r.state === "queued"))
+    .filter((r) => !(r.mode !== "adapter" && r.state === "queued"))
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0];
   return {
     latestRunState: latest?.state ?? null,
