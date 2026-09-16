@@ -6,11 +6,11 @@ The documents are conservative on purpose. A recruiter spends seconds on a resum
 
 ## Hard rules
 
-1. **One page.** The resume is exactly one US Letter page. The cover letter fits one page. The content schema carries the budgets that make this possible: per section, up to 4 work entries with 4 bullets, 3 projects with 2, 2 education entries with 1, 3 skills lines; across the resume, at most 6 entries and 8 bullets, each bullet at most 180 characters (measured: 6 entries with 9 bullets of 180 characters still fit; 10 do not). The renderer does not shrink text to fit, and a render test proves the page count at the full budget.
+1. **One page, filled.** The resume is exactly one US Letter page and ends at the bottom margin. The content schema carries the budgets that make this possible: per section, up to 4 work entries with 4 bullets, 3 projects with 2, 2 education entries with 1, 3 skills lines; across the resume, at most 6 entries and 8 bullets, each bullet at most 180 characters (measured: 6 entries with 9 bullets of 180 characters still fit; 10 do not). The renderer never shrinks text to fit; a render test proves the page count at the full budget. To fill the page it stretches the gaps between blocks (section, entry and bullet spacing, never a font size or a line height) to the largest scale that still yields one page, found by bisection over renders, up to twice the base gaps. Content thinner than that leaves the rest of the page empty: the fix is more content, not more air.
 2. **One typeface, built into PDF.** Helvetica, in regular, bold and oblique, as embedded standard fonts. No font download, no fallback stack, no second family.
 3. **Monochrome.** Near-black text on white. No colour, no tints, no icons, no photos, no charts, no rating bars for skills.
-4. **Sentence case everywhere.** Section headings, role titles and labels are sentence case ("Work experience", not "WORK EXPERIENCE"). No letter-spacing tricks.
-5. **Rules, not boxes.** A section heading may sit on a 1px line. No borders around blocks, no background fills, no columns of unequal width, no tables for layout.
+4. **Uppercase section headings, sentence case everywhere else.** Section headings are the one uppercase element ("EXPERIENCE"), set by the renderer from sentence-case content so the text stays "Experience" for parsers and the preview. Entry headings, role titles and labels are sentence case. No letter-spacing tricks.
+5. **Rules, not boxes.** A section heading sits on a 1.5 pt line. No borders around blocks, no background fills, no columns of unequal width, no tables for layout.
 6. **Plain structure for parsers.** Reading order is a single column from top to bottom: header, then sections. Dates are on the same line as the role, right-aligned, in a form a parser reads ("Aug 2019 – May 2023", "Jul 2023 – Present"). Bullets use a real bullet character with a hanging indent.
 7. **Facts only.** Every bullet in a generated document traces to an evidence record in the input snapshot. The renderer never adds text; it renders what was reviewed.
 
@@ -22,26 +22,26 @@ The documents are conservative on purpose. A recruiter spends seconds on a resum
 | Margins | 0.6 in (43 pt) on all sides |
 | Text colour | `#111111` |
 | Secondary text (dates, contact line) | `#444444` |
-| Rules | `#999999`, 1 pt |
+| Rules | `#999999`, 1.5 pt |
 | Line height | 1.3 |
 
 ## Type scale
 
 | Element | Size | Weight | Notes |
 | --- | --- | --- | --- |
-| Name | 20 pt | bold | First line of the page |
+| Name | 24 pt | bold | First line of the page |
 | Contact line | 9.5 pt | regular | One line: phone, email, links, separated by " · ". Secondary colour |
-| Section heading | 11 pt | bold | Sentence case, 1 pt rule below, 10 pt space above, 4 pt below the rule |
-| Entry heading (employer, institution, project) | 10.5 pt | bold | Date range right-aligned on the same line in secondary colour, 9.5 pt |
+| Section heading | 12 pt | bold | Uppercase, 1.5 pt rule below, 12 pt space above, 4 pt below the rule (both gaps scale with the page fill) |
+| Entry heading (employer, institution, project) | 10.5 pt | bold | Date range right-aligned on the same line, bold, 10 pt, text colour |
 | Entry subheading (role, qualification, technologies) | 10 pt | regular | Optional; directly under the heading |
-| Body and bullets | 10 pt | regular | Bullet "•", hanging indent 10 pt, 2 pt between bullets |
+| Body and bullets | 10 pt | regular | Bullet "•", hanging indent 10 pt, 2 pt between bullets, 5 pt between entries; no hyphenation |
 | Skills lines | 10 pt | regular | Label in bold followed by a comma-separated list: "Languages: TypeScript, Go" |
 
 Cover letter: same page and type scale; the sender's name and contact line as a header, the date and the greeting, two to four paragraphs of body text at 10.5 pt with 8 pt between paragraphs, then the closing and the name. No letterhead graphics.
 
 ## Resume layout
 
-Order of sections, each present only when the reviewed content has entries: header (name, optional headline, contact line), optional summary (at most three lines), work experience, projects, education, skills. Generation may reorder work experience, projects and education to put the strongest evidence first, within the budgets in the content schema. Reference: a classic single-column engineering resume with a name and contact block, sectioned by rules, dates flush right.
+Order of sections, each present only when the reviewed content has entries: header (name, optional headline, contact line), optional summary (at most three lines, under a "Summary" heading the renderer supplies), work experience, projects, education, skills. Generation may reorder work experience, projects and education to put the strongest evidence first, within the budgets in the content schema. Reference: a classic single-column engineering resume with a name and contact block, sectioned by rules, dates flush right.
 
 ## Recruiter message
 
@@ -49,4 +49,4 @@ Plain text, copied rather than rendered: a subject line and a body of at most 90
 
 ## Don'ts
 
-Uppercase headings. A second typeface or font download. Colour of any kind. Two-column layouts, sidebars, skill bars, icons, photos, logos. Text shrunk to fit. Anything generated that the user did not review.
+Uppercase anywhere but section headings. Hyphenated line ends. A second typeface or font download. Colour of any kind. Two-column layouts, sidebars, skill bars, icons, photos, logos. Text shrunk to fit. Anything generated that the user did not review.

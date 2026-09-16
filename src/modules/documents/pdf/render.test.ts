@@ -2,7 +2,14 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { demoSnapshot } from "../../../../tests/helpers/demo-snapshot";
 import { coverLetterContent, resumeContent, resumeTotals } from "../contracts";
-import { letterHeaderFrom, pdfPageCount, renderCoverLetterPdf, renderResumePdf } from "./render";
+import {
+  fitResume,
+  letterHeaderFrom,
+  pdfPageCount,
+  renderCoverLetterPdf,
+  renderResumePdf,
+  spacingBounds,
+} from "./render";
 
 const fixture = (name: string) =>
   JSON.parse(readFileSync(`examples/generation/fixtures/${name}.json`, "utf8"));
@@ -17,6 +24,13 @@ describe("PDF rendering (DESIGN-DOCS.md)", () => {
     expect(pdfPageCount(pdf)).toBe(1);
     expect(pdf.toString("latin1")).toContain("/MediaBox [0 0 612 792]");
     expect(pdf.toString("latin1")).toContain("Helvetica");
+  });
+
+  it("stretches a thin resume's spacing up to the bound and never beyond one page", async () => {
+    // The demo fixture is far shorter than a page: the fit reaches the maximum scale.
+    const thin = await fitResume(resumeContent.parse(fixture("resume")));
+    expect(thin.spacing).toBe(spacingBounds.max);
+    expect(pdfPageCount(thin.pdf)).toBe(1);
   });
 
   it("renders a resume at the full budget on one page", async () => {
@@ -80,7 +94,11 @@ describe("PDF rendering (DESIGN-DOCS.md)", () => {
     );
     expect(entries).toBe(resumeTotals.entries);
     expect(bullets).toBe(resumeTotals.bullets);
-    expect(pdfPageCount(await renderResumePdf(full))).toBe(1);
+    const fitted = await fitResume(full);
+    expect(pdfPageCount(fitted.pdf)).toBe(1);
+    // A full page is fitted, not stretched to the bound: the spacing lands strictly inside it.
+    expect(fitted.spacing).toBeGreaterThanOrEqual(spacingBounds.min);
+    expect(fitted.spacing).toBeLessThan(spacingBounds.max);
   });
 
   it("rejects a resume over the totals before it can reach the renderer", () => {

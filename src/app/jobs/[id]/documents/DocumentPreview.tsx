@@ -7,6 +7,7 @@ import { Chip } from "@/components/Chip";
 import { AutoGrowTextarea } from "@/components/AutoGrowTextarea";
 import fieldStyles from "@/components/Field.module.css";
 import {
+  summaryHeading,
   warningLabels,
   type CoverLetterContent,
   type DocumentContent,
@@ -58,7 +59,10 @@ function ResumePreview({ ctx, content }: { ctx: Ctx; content: ResumeContent }) {
         ) : null}
       </div>
       {content.summary ? (
-        <Unit ctx={ctx} path="summary" label="summary" unit={content.summary} />
+        <section className={styles.preview}>
+          <h3 className={styles.sectionTitle}>{summaryHeading}</h3>
+          <Unit ctx={ctx} path="summary" label="summary" unit={content.summary} />
+        </section>
       ) : null}
       {content.sections.map((section, i) => (
         <section key={section.kind} className={styles.preview}>

@@ -1,9 +1,15 @@
 import { Document, Page, Text, View } from "@react-pdf/renderer";
-import type { ResumeContent, ResumeEntry } from "../contracts";
-import { styles } from "./styles";
+import { summaryHeading, type ResumeContent, type ResumeEntry } from "../contracts";
+import { resumeStyles } from "./styles";
 
-/** One-page resume (DESIGN-DOCS.md). Renders reviewed content only; never calls a model. */
-export function ResumePdf({ content }: { content: ResumeContent }) {
+type Styles = ReturnType<typeof resumeStyles>;
+
+/**
+ * One-page resume (DESIGN-DOCS.md). Renders reviewed content only; never calls a model.
+ * `spacing` scales the gaps between blocks so the page can be filled to its bottom margin.
+ */
+export function ResumePdf({ content, spacing = 1 }: { content: ResumeContent; spacing?: number }) {
+  const styles = resumeStyles(spacing);
   return (
     <Document title={`${content.header.name} resume`} author={content.header.name}>
       <Page size="LETTER" style={styles.page}>
@@ -14,7 +20,12 @@ export function ResumePdf({ content }: { content: ResumeContent }) {
         {content.header.contact.length > 0 ? (
           <Text style={styles.contact}>{content.header.contact.join(" · ")}</Text>
         ) : null}
-        {content.summary ? <Text style={styles.summary}>{content.summary.text}</Text> : null}
+        {content.summary ? (
+          <View>
+            <Text style={styles.sectionHeading}>{summaryHeading}</Text>
+            <Text style={styles.summary}>{content.summary.text}</Text>
+          </View>
+        ) : null}
         {content.sections.map((section, i) => (
           <View key={i}>
             <Text style={styles.sectionHeading}>{section.title}</Text>
@@ -25,7 +36,7 @@ export function ResumePdf({ content }: { content: ResumeContent }) {
                     {entry.subheading ?? ""}
                   </Text>
                 ))
-              : section.entries.map((entry, j) => <Entry key={j} entry={entry} />)}
+              : section.entries.map((entry, j) => <Entry key={j} entry={entry} styles={styles} />)}
           </View>
         ))}
       </Page>
@@ -33,7 +44,7 @@ export function ResumePdf({ content }: { content: ResumeContent }) {
   );
 }
 
-function Entry({ entry }: { entry: ResumeEntry }) {
+function Entry({ entry, styles }: { entry: ResumeEntry; styles: Styles }) {
   return (
     <View style={styles.entry}>
       <View style={styles.entryRow}>

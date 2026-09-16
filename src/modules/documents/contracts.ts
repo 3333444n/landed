@@ -94,6 +94,9 @@ export const resumeBudgets: Record<ResumeSectionKind, { entries: number; bullets
   skills: { entries: 3, bullets: 0 },
 };
 
+/** Heading the renderer and the preview put over the summary; layout, like the bullet glyph. */
+export const summaryHeading = "Summary";
+
 export const resumeContent = z
   .object({
     header: z.object({
