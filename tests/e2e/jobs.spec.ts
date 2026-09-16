@@ -109,7 +109,14 @@ test("a pasted job gets an application whose status the user moves by hand", asy
       "base64",
     ),
   });
+  // The status already reads "Saved" from the title save and the tile already shows the
+  // browser-side preview, so neither proves the logo was stored: wait for the action's
+  // response before leaving the page.
+  const logoSaved = page.waitForResponse(
+    (r) => r.request().method() === "POST" && r.url().endsWith("/description") && r.ok(),
+  );
   await page.getByRole("button", { name: "Save changes" }).click();
+  await logoSaved;
   await expect(page.getByRole("status")).toHaveText("Saved");
   await expect(page.getByRole("button", { name: "Change logo" }).locator("img")).toHaveCount(1);
   await page.goto(`${jobUrl}?filter=all`);
