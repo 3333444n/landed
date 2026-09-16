@@ -14,6 +14,8 @@ import { pursueJob } from "@/app/jobs/pursue-job";
 import type { DatabaseConnection } from "@/infrastructure/database";
 import { getRun } from "@/modules/documents";
 import { documentArtifacts, documentRevisions, generationRuns } from "@/modules/documents/schema";
+import { applications } from "@/modules/applications/schema";
+import { jobs } from "@/modules/jobs/schema";
 import { getCurrentProfile } from "@/modules/profile";
 import { demo, seedDemoProfile, unwrap } from "../helpers/demo-seed";
 import { openTestDatabase, truncateAll } from "../helpers/test-database";
@@ -113,6 +115,78 @@ describe("list_jobs and get_job", () => {
     expect(await callExpectingError("get_job", { job_id: crypto.randomUUID() })).toContain(
       "not_found",
     );
+  });
+});
+
+describe("add_job", () => {
+  it("creates the job and its application together, and replays on the same id", async () => {
+    const jobId = crypto.randomUUID();
+    const posting = {
+      job_id: jobId,
+      title: "Data engineer",
+      company: "Example Logistics",
+      description: "Example Logistics needs a data engineer for its reporting pipeline.",
+      location: "Monterrey",
+      salary: "MXN 60,000 a month",
+      source_url: "https://example.com/jobs/data-engineer",
+    };
+    const added = await call<{ job_id: string; application_id: string }>("add_job", posting);
+    expect(added.job_id).toBe(jobId);
+    expect(added.application_id).toMatch(/^[0-9a-f-]{36}$/);
+
+    const jobRows = await connection.db.select().from(jobs);
+    expect(jobRows).toHaveLength(2);
+    expect(jobRows.find((j) => j.id === jobId)).toMatchObject({
+      title: "Data engineer",
+      companyName: "Example Logistics",
+      rawDescription: posting.description,
+      location: "Monterrey",
+      salary: "MXN 60,000 a month",
+      sourceUrl: posting.source_url,
+      source: "pasted",
+    });
+    const applicationRows = await connection.db.select().from(applications);
+    expect(applicationRows).toHaveLength(2);
+    expect(applicationRows.find((a) => a.jobId === jobId)).toMatchObject({
+      id: added.application_id,
+      status: "preparing",
+    });
+
+    const again = await call<{ job_id: string; application_id: string }>("add_job", posting);
+    expect(again).toEqual(added);
+    expect(await connection.db.select().from(jobs)).toHaveLength(2);
+    expect(await connection.db.select().from(applications)).toHaveLength(2);
+
+    const { jobs: listed } = await call<{ jobs: { id: string; title: string }[] }>("list_jobs");
+    expect(listed.map((j) => j.id).sort()).toEqual([demo.jobId, jobId].sort());
+    expect(listed.find((j) => j.id === jobId)).toMatchObject({
+      title: "Data engineer",
+      company: "Example Logistics",
+      status: "Preparing",
+    });
+    const detail = await call("get_job", { job_id: jobId });
+    expect(detail).toMatchObject({ source_url: posting.source_url, salary: "MXN 60,000 a month" });
+  });
+
+  it("refuses a posting without a title, naming the field, and writes nothing", async () => {
+    const text = await callExpectingError("add_job", {
+      title: "   ",
+      company: "Example Logistics",
+      description: "A posting with no title.",
+    });
+    expect(text).toContain("validation");
+    expect(text).toContain("title: Enter the job title");
+    expect(text).not.toContain("company:");
+    expect(await connection.db.select().from(jobs)).toHaveLength(1);
+    expect(await connection.db.select().from(applications)).toHaveLength(1);
+
+    const badUrl = await callExpectingError("add_job", {
+      title: "Data engineer",
+      company: "Example Logistics",
+      description: "A posting with a bad address.",
+      source_url: "ftp://example.com/posting",
+    });
+    expect(badUrl).toContain("source_url: Enter a full web address");
   });
 });
 

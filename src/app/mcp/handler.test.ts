@@ -21,10 +21,11 @@ async function connect(profile: null) {
 }
 
 describe("buildMcpHandler", () => {
-  it("lists the seven tools with their annotations", async () => {
+  it("lists the eight tools with their annotations", async () => {
     const { client } = await connect(null);
     const { tools } = await client.listTools();
     expect(tools.map((t) => t.name).sort()).toEqual([
+      "add_job",
       "edit_unit",
       "get_document",
       "get_document_brief",
@@ -36,6 +37,11 @@ describe("buildMcpHandler", () => {
     const byName = Object.fromEntries(tools.map((t) => [t.name, t]));
     expect(byName.list_jobs!.annotations).toMatchObject({ readOnlyHint: true });
     expect(byName.submit_document!.annotations).toMatchObject({ destructiveHint: false });
+    expect(byName.add_job!.annotations).toMatchObject({
+      readOnlyHint: false,
+      destructiveHint: false,
+      idempotentHint: true,
+    });
     expect(byName.get_document_brief!.inputSchema).toMatchObject({ type: "object" });
     await client.close();
   });
