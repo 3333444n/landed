@@ -42,6 +42,7 @@ export function buildSnapshot(s: SnapshotSources): Snapshot {
       id: e.id,
       employerName: e.employerName,
       role: e.role,
+      location: e.location,
       startYear: e.startYear,
       startMonth: e.startMonth,
       endYear: e.endYear,

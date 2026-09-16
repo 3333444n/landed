@@ -146,6 +146,7 @@ export async function saveEmployment(
   const values = {
     employerName: input.employerName,
     role: input.role,
+    location: input.location ?? null,
     startYear: input.startYear ?? null,
     startMonth: input.startMonth ?? null,
     endYear: input.endYear ?? null,

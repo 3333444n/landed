@@ -51,7 +51,12 @@ function Entry({ entry, styles }: { entry: ResumeEntry; styles: Styles }) {
         <Text style={styles.entryHeading}>{entry.heading}</Text>
         {entry.dateRange ? <Text style={styles.entryDate}>{entry.dateRange}</Text> : null}
       </View>
-      {entry.subheading ? <Text style={styles.entrySub}>{entry.subheading}</Text> : null}
+      {entry.subheading || entry.location ? (
+        <View style={styles.entryRow}>
+          <Text style={styles.entrySub}>{entry.subheading ?? ""}</Text>
+          {entry.location ? <Text style={styles.entryLocation}>{entry.location}</Text> : null}
+        </View>
+      ) : null}
       {entry.bullets.length > 0 ? (
         <View style={styles.bullets}>
           {entry.bullets.map((bullet, k) => (

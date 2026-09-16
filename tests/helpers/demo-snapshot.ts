@@ -32,6 +32,7 @@ export function demoSnapshot(overrides: Partial<Snapshot> = {}): Snapshot {
       id: String(e.id),
       employerName: String(e.employer_name),
       role: String(e.role),
+      location: nullable(e.location),
       startYear: nullable(e.start_year),
       startMonth: nullable(e.start_month),
       endYear: nullable(e.end_year),

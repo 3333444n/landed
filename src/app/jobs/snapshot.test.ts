@@ -24,6 +24,7 @@ const sources = (): SnapshotSources => ({
       profileId,
       employerName: "Example Workshop",
       role: "Software developer",
+      location: "Mexico City",
       startYear: 2023,
       startMonth: 4,
       endYear: 2025,

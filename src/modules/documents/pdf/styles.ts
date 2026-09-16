@@ -67,6 +67,7 @@ export function resumeStyles(spacing: number) {
     entryHeading: { fontSize: 10.5, fontFamily: "Helvetica-Bold" },
     entryDate: { fontSize: 10, fontFamily: "Helvetica-Bold" },
     entrySub: { fontSize: 10 },
+    entryLocation: { fontSize: 9, color: colors.secondary },
     bullets: { marginTop: gap(gaps.bullets) },
     bullet: { flexDirection: "row", marginBottom: gap(gaps.bullet) },
     bulletMark: { width: 10 },

@@ -16,6 +16,7 @@ const entry = (bullets = 1) => ({
   heading: "H",
   subheading: null,
   dateRange: null,
+  location: null,
   bullets: Array.from({ length: bullets }, () => bullet),
 });
 const withSections = (sections: ResumeContent["sections"]): ResumeContent => ({

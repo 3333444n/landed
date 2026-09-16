@@ -101,6 +101,7 @@ export const employment = pgTable(
       .references(() => profiles.id, { onDelete: "cascade" }),
     employerName: text("employer_name").notNull(),
     role: text("role").notNull(),
+    location: text("location"),
     ...monthDates,
     isCurrent: boolean("is_current").notNull().default(false),
     description: text("description"),

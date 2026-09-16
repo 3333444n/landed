@@ -11,7 +11,7 @@ In this application, a Job is an external opening; an Application is a person's 
 | Concept | Meaning and rule |
 |---|---|
 | Profile | One person's identity, preferences, and career information; one active profile per installation initially |
-| Employment | A role at an employer during a period; concurrent roles and incomplete dates are allowed |
+| Employment | A role at an employer during a period, with an optional location (city and country, or Remote); concurrent roles and incomplete dates are allowed |
 | Project | A distinct body of work; may optionally belong to an employment record |
 | Education | A program/qualification at an institution; not necessarily completed |
 | Skill | A named capability recorded by the person; not proof of a specific accomplishment |
