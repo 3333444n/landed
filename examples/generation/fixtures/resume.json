@@ -19,7 +19,7 @@
           "dateRange": "Apr 2023 – Jun 2025",
           "bullets": [
             {
-              "text": "Reduced weekly report preparation from 4 hours to 1 by building a PostgreSQL-backed reporting tool with reusable SQL queries.",
+              "text": "Reduced weekly report preparation from 4 hours to 1 with a PostgreSQL-backed reporting tool.",
               "evidenceIds": ["50000000-0000-4000-8000-000000000001"]
             }
           ]

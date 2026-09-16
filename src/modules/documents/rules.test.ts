@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { demoSnapshot, readFixture } from "../../../tests/helpers/demo-snapshot";
 import type { CoverLetterContent, RecruiterMessageContent, ResumeContent } from "./contracts";
+import { lineCount, textWidth } from "./helvetica";
 import {
   contentUnits,
   documentFacts,
   groundingCheck,
+  layoutCheck,
+  resumeLine,
   isInterrupted,
   numbersIn,
   stableStringify,
@@ -244,5 +247,61 @@ describe("stableStringify", () => {
     const b = { a: { c: "s", d: null }, b: [{ x: 2, y: 1 }] };
     expect(stableStringify(a)).toBe(stableStringify(b));
     expect(stableStringify(a)).toContain('"a": {');
+  });
+});
+
+describe("helvetica metrics", () => {
+  it("measures with the built-in font's advance widths", () => {
+    // "Hi" in Helvetica: H 722 + i 222 = 944 per 1000 em.
+    expect(textWidth("Hi", 10)).toBeCloseTo(9.44, 5);
+    expect(textWidth("Hi", 10, "bold")).toBeCloseTo((722 + 278) / 100, 5);
+    expect(textWidth("é", 10)).toBe(textWidth("e", 10));
+  });
+  it("counts greedy word-wrapped lines", () => {
+    const word = "word";
+    const w = textWidth(word, 10);
+    const space = textWidth(" ", 10);
+    expect(lineCount(`${word} ${word}`, 2 * w + space, 10)).toBe(1);
+    expect(lineCount(`${word} ${word}`, 2 * w + space - 0.1, 10)).toBe(2);
+    expect(lineCount("", 100, 10)).toBe(1);
+  });
+});
+
+describe("layoutCheck", () => {
+  const fits = readFixture("resume") as ResumeContent;
+  it("passes the fixture and ignores other document types", () => {
+    expect(layoutCheck("resume", fits)).toEqual([]);
+    expect(layoutCheck("cover_letter", readFixture("cover-letter") as never)).toEqual([]);
+  });
+  it("flags a bullet, a subheading, a skills line and a summary that wrap", () => {
+    const long = "word ".repeat(40).trim();
+    const content = structuredClone(fits);
+    content.sections[0]!.entries[0]!.bullets[0]!.text = long;
+    content.sections[0]!.entries[0]!.subheading = long;
+    const skills = content.sections.find((s) => s.kind === "skills")!;
+    skills.entries[0]!.subheading = long;
+    content.summary!.text = "mmmm ".repeat(60).trim();
+    expect(textWidth(long, resumeLine.fontSize)).toBeGreaterThan(resumeLine.text);
+    const paths = layoutCheck("resume", content).map((w) => `${w.kind}:${w.path}`);
+    expect(paths).toEqual([
+      "wraps_line:summary",
+      "wraps_line:sections.0.entries.0",
+      "wraps_line:sections.0.entries.0.bullets.0",
+      `wraps_line:sections.${content.sections.indexOf(skills)}.entries.0`,
+    ]);
+  });
+  it("flags a contact line that wraps", () => {
+    const content = structuredClone(fits);
+    content.header.contact = ["a".repeat(60), "b".repeat(60)];
+    expect(layoutCheck("resume", content).map((w) => w.path)).toEqual(["header"]);
+  });
+  it("accepts a bullet exactly as wide as its printed line", () => {
+    let text = "x";
+    while (textWidth(`${text} x`, resumeLine.bulletFontSize) <= resumeLine.bullet) text += " x";
+    const content = structuredClone(fits);
+    content.sections[0]!.entries[0]!.bullets[0]!.text = text;
+    expect(layoutCheck("resume", content)).toEqual([]);
+    content.sections[0]!.entries[0]!.bullets[0]!.text = `${text} x`;
+    expect(layoutCheck("resume", content)).toHaveLength(1);
   });
 });

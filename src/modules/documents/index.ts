@@ -42,6 +42,7 @@ export {
   contentUnits,
   documentFacts,
   groundingCheck,
+  layoutCheck,
   isInterrupted,
   stableStringify,
   withUnitText,

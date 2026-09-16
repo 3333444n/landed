@@ -2,6 +2,8 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { demoSnapshot } from "../../../../tests/helpers/demo-snapshot";
 import { coverLetterContent, resumeContent, resumeTotals } from "../contracts";
+import { textWidth } from "../helvetica";
+import { resumeLine } from "../rules";
 import {
   fitResume,
   letterHeaderFrom,
@@ -15,7 +17,12 @@ const fixture = (name: string) =>
   JSON.parse(readFileSync(`examples/generation/fixtures/${name}.json`, "utf8"));
 
 const evidenceIds = ["50000000-0000-4000-8000-000000000001"];
-const bullet = (n: number) => ({ text: `Bullet ${n} ${"x".repeat(170)}`, evidenceIds });
+/** A bullet as wide as one printed line allows (resumeLine.bullet), so it is the worst case. */
+const bullet = (n: number) => {
+  let text = `Bullet ${n}`;
+  while (textWidth(`${text} word`, resumeLine.bulletFontSize) <= resumeLine.bullet) text += " word";
+  return { text, evidenceIds };
+};
 
 describe("PDF rendering (DESIGN-DOCS.md)", () => {
   it("renders the resume fixture to exactly one Letter page", async () => {
@@ -34,23 +41,28 @@ describe("PDF rendering (DESIGN-DOCS.md)", () => {
   });
 
   it("renders a resume at the full budget on one page", async () => {
-    // resumeTotals: 6 entries and 8 bullets, every bullet at its 180-character maximum.
+    // resumeTotals: 7 entries and 12 bullets, every bullet filling its printed line, a summary
+    // of three full lines and a headline. The guarantee holds for one-line bullets, subheadings
+    // and skills lines; anything wider is what the layout check warns about.
     const full = resumeContent.parse({
       header: {
         name: "Alex Rivera",
         headline: "Software developer",
         contact: ["a@example.com", "+1 555 0100", "City", "linkedin.com/in/x", "github.com/x"],
       },
-      summary: { text: "s".repeat(300), evidenceIds },
+      summary: {
+        text: `${bullet(0).text} ${bullet(0).text} ${bullet(0).text}`.slice(0, 300),
+        evidenceIds,
+      },
       sections: [
         {
           kind: "experience",
           title: "Work experience",
-          entries: [0, 1].map((i) => ({
+          entries: [0, 1, 2].map((i) => ({
             heading: `Employer ${i}`,
             subheading: "Role title here",
             dateRange: "Jan 2020 – Dec 2021",
-            bullets: [bullet(1), bullet(2), bullet(3), bullet(4)],
+            bullets: i < 2 ? [bullet(1), bullet(2), bullet(3), bullet(4)] : [bullet(5), bullet(6)],
           })),
         },
         {
@@ -60,7 +72,7 @@ describe("PDF rendering (DESIGN-DOCS.md)", () => {
             heading: `Project ${i}`,
             subheading: "Technologies",
             dateRange: null,
-            bullets: [],
+            bullets: [bullet(7)],
           })),
         },
         {
@@ -76,7 +88,7 @@ describe("PDF rendering (DESIGN-DOCS.md)", () => {
         {
           kind: "skills",
           title: "Skills",
-          entries: [0, 1, 2].map((i) => ({
+          entries: [0, 1, 2, 3].map((i) => ({
             heading: `Group ${i}`,
             subheading: "a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x",
             dateRange: null,
@@ -109,7 +121,7 @@ describe("PDF rendering (DESIGN-DOCS.md)", () => {
         {
           kind: "experience",
           title: "Work experience",
-          entries: [0, 1, 2].map((i) => ({
+          entries: [0, 1, 2, 3].map((i) => ({
             heading: `Employer ${i}`,
             subheading: null,
             dateRange: null,

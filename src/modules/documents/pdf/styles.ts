@@ -1,6 +1,6 @@
 /*
- * DESIGN-DOCS.md as react-pdf styles: Letter, 0.6 in margins, built-in Helvetica, monochrome,
- * uppercase section headings on a 1.5 pt rule. Values in points.
+ * DESIGN-DOCS.md as react-pdf styles: Letter, 0.5 in margins, built-in Helvetica, black on white,
+ * uppercase section headings on a 2 pt rule. Values in points.
  *
  * Vertical spacing is parameterised: `resumeStyles(spacing)` multiplies every gap between
  * blocks (never a font size or a line height) so the renderer can stretch a resume until it
@@ -13,30 +13,31 @@ Font.registerHyphenationCallback((word) => [word]);
 
 export const templateVersion = 2;
 
+/** Black on white only: no greys, so a copier or a strict parser sees one tone. */
 export const colors = {
-  text: "#111111",
-  secondary: "#444444",
-  rule: "#999999",
+  text: "#000000",
+  secondary: "#000000",
+  rule: "#000000",
 } as const;
 
 /** Base gaps in points; the resume multiplies them by its spacing scale. */
 export const gaps = {
-  section: 12,
+  section: 10,
   afterRule: 4,
-  entry: 5,
+  entry: 4,
   bullets: 2,
-  bullet: 2,
+  bullet: 1,
   summary: 4,
   skillsLine: 2,
 } as const;
 
 const page = {
-  paddingTop: 43,
-  paddingBottom: 43,
-  paddingHorizontal: 43,
+  paddingTop: 36,
+  paddingBottom: 36,
+  paddingHorizontal: 36,
   fontFamily: "Helvetica",
   fontSize: 10,
-  lineHeight: 1.3,
+  lineHeight: 1.25,
   color: colors.text,
 } as const;
 
@@ -57,7 +58,7 @@ export function resumeStyles(spacing: number) {
       textTransform: "uppercase",
       marginTop: gap(gaps.section),
       paddingBottom: 2,
-      borderBottomWidth: 1.5,
+      borderBottomWidth: 2,
       borderBottomColor: colors.rule,
       marginBottom: gap(gaps.afterRule),
     },

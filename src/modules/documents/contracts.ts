@@ -82,16 +82,17 @@ const resumeSection = z.object({
 export type ResumeSection = z.infer<typeof resumeSection>;
 
 /**
- * Budgets (DESIGN-DOCS.md): what fits on one Letter page at 10 pt. Per-kind caps shape each
- * section; the totals are what the render test proves fit in the worst case.
+ * Budgets (DESIGN-DOCS.md): what fits on one Letter page at 10 pt when every bullet, subheading
+ * and skills line prints on one line. Per-kind caps shape each section; the totals are what the
+ * render test proves fit in the worst case. Wrapped lines are warned about, not rejected.
  */
-export const resumeTotals = { entries: 6, bullets: 8 } as const;
+export const resumeTotals = { entries: 7, bullets: 12 } as const;
 
 export const resumeBudgets: Record<ResumeSectionKind, { entries: number; bullets: number }> = {
   experience: { entries: 4, bullets: 4 },
-  projects: { entries: 3, bullets: 2 },
+  projects: { entries: 3, bullets: 3 },
   education: { entries: 2, bullets: 1 },
-  skills: { entries: 3, bullets: 0 },
+  skills: { entries: 4, bullets: 0 },
 };
 
 /** Heading the renderer and the preview put over the summary; layout, like the bullet glyph. */
@@ -272,7 +273,8 @@ export const snapshot = z.object({
 });
 export type Snapshot = z.infer<typeof snapshot>;
 
-// Grounding warnings (docs/06): produced by the application after every generation.
+// Grounding and layout warnings (docs/06): produced by the application after every generation
+// and every edit. A layout warning marks text that will not print on one line.
 
 export const warningKinds = [
   "unknown_evidence",
@@ -280,6 +282,7 @@ export const warningKinds = [
   "unsupported_number",
   "unknown_heading",
   "misattributed_evidence",
+  "wraps_line",
 ] as const;
 export type WarningKind = (typeof warningKinds)[number];
 
@@ -296,6 +299,7 @@ export const warningLabels: Record<WarningKind, string> = {
   unsupported_number: "Contains a number not found in the cited evidence",
   unknown_heading: "Names an employer, project or institution not in your facts",
   misattributed_evidence: "Cites a record that belongs to another role or project",
+  wraps_line: "Longer than one printed line",
 };
 
 // Inputs

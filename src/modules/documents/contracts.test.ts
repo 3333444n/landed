@@ -46,16 +46,16 @@ describe("resumeContent", () => {
     );
     expect(r.success).toBe(false);
   });
-  it("rejects more than two project bullets", () => {
+  it("rejects more than three project bullets", () => {
     const r = resumeContent.safeParse(
-      withSections([{ kind: "projects", title: "P", entries: [entry(3)] }]),
+      withSections([{ kind: "projects", title: "P", entries: [entry(4)] }]),
     );
     expect(r.success).toBe(false);
     if (!r.success) {
-      expect(r.error.issues[0]?.message).toBe("At most 2 bullets per projects entry");
+      expect(r.error.issues[0]?.message).toBe("At most 3 bullets per projects entry");
     }
     expect(
-      resumeContent.safeParse(withSections([{ kind: "projects", title: "P", entries: [entry(2)] }]))
+      resumeContent.safeParse(withSections([{ kind: "projects", title: "P", entries: [entry(3)] }]))
         .success,
     ).toBe(true);
   });
