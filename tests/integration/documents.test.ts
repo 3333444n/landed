@@ -5,9 +5,12 @@ import type { DatabaseConnection } from "@/infrastructure/database";
 import { FakeModelAdapter, fakeMarkers } from "@/infrastructure/model";
 import {
   generateDocument,
+  prepareAssistantBrief,
   prepareGeneration,
   preparePasteBack,
+  reopenAssistantRun,
 } from "@/app/jobs/generate-document";
+import { runSummary } from "@/app/jobs/[id]/documents/summary";
 import { listJobRows } from "@/app/jobs/list-jobs";
 import { pursueJob } from "@/app/jobs/pursue-job";
 import { getApplicationForJob } from "@/modules/applications";
@@ -521,6 +524,110 @@ describe("paste-back", () => {
       json: "",
     });
     expect(blank.ok).toBe(false);
+  });
+});
+
+describe("assistant briefs", () => {
+  const reported = { provider: "claude-code/1.0", model: "claude-opus-5" };
+
+  it("opens a queued assistant run and records the answer as an assistant revision", async () => {
+    const { application } = await pasteJob();
+    const brief = unwrap(
+      await prepareAssistantBrief(deps(), demo.profileId, demo.jobId, "resume", reported),
+    );
+    expect(brief.run.state).toBe("queued");
+    expect(brief.run.mode).toBe("assistant");
+    expect(brief.run.provider).toBe(reported.provider);
+    expect(brief.run.model).toBe(reported.model);
+    expect(brief.run.startedAt).toBeNull();
+    expect(brief.instructions).toContain("resume");
+    expect(brief.input).toContain("untrusted data");
+    expect((await chip()).chip.label).toBe("Preparing");
+    expect(
+      runSummary(await getDocumentView(deps(), demo.profileId, application.id, "resume")),
+    ).toBe("Assistant brief opened");
+
+    const saved = unwrap(
+      await submitPastedAnswer(deps(), demo.profileId, {
+        runId: brief.run.id,
+        json: fixture("resume"),
+      }),
+    );
+    expect(saved.run.state).toBe("succeeded");
+    expect(saved.run.mode).toBe("assistant");
+    expect(saved.revision.source).toBe("assistant");
+    expect(saved.revision.warnings).toEqual([]);
+    const view = await getDocumentView(deps(), demo.profileId, application.id, "resume");
+    expect(view.revision?.id).toBe(saved.revision.id);
+    expect(runSummary(view)).toBe("Written by assistant");
+    expect((await chip()).chip.label).toBe("Needs review");
+
+    const again = await submitPastedAnswer(deps(), demo.profileId, {
+      runId: brief.run.id,
+      json: fixture("resume"),
+    });
+    expect(again.ok).toBe(false);
+    if (!again.ok && again.error.kind === "validation") {
+      expect(again.error.fieldErrors.form?.[0]).toContain("get_document_brief");
+    }
+  });
+
+  it("fails the run as pasted_invalid and reopens a fresh one with the same snapshot", async () => {
+    await pasteJob();
+    const brief = unwrap(
+      await prepareAssistantBrief(deps(), demo.profileId, demo.jobId, "resume", reported),
+    );
+    const bad = await submitPastedAnswer(deps(), demo.profileId, {
+      runId: brief.run.id,
+      json: "not json",
+    });
+    expect(bad.ok).toBe(false);
+    const failed = (await getRun(deps(), demo.profileId, brief.run.id))!;
+    expect(failed.state).toBe("failed");
+    expect(failed.failureKind).toBe("pasted_invalid");
+    expect(failed.mode).toBe("assistant");
+
+    const reopened = unwrap(await reopenAssistantRun(deps(), demo.profileId, brief.run.id));
+    expect(reopened.id).not.toBe(brief.run.id);
+    expect(reopened.state).toBe("queued");
+    expect(reopened.mode).toBe("assistant");
+    expect(reopened.provider).toBe(reported.provider);
+    expect(reopened.snapshot).toEqual(brief.run.snapshot);
+    const saved = unwrap(
+      await submitPastedAnswer(deps(), demo.profileId, {
+        runId: reopened.id,
+        json: fixture("resume"),
+      }),
+    );
+    expect(saved.revision.source).toBe("assistant");
+    expect(await reopenAssistantRun(deps(), demo.profileId, crypto.randomUUID())).toMatchObject({
+      ok: false,
+    });
+  });
+
+  it("lets the newest brief from either surface supersede an older queued one", async () => {
+    await pasteJob();
+    const assistant = unwrap(
+      await prepareAssistantBrief(deps(), demo.profileId, demo.jobId, "cover_letter", reported),
+    );
+    const pasted = unwrap(
+      await preparePasteBack(deps(), demo.profileId, demo.jobId, "cover_letter"),
+    );
+    expect((await getRun(deps(), demo.profileId, assistant.run.id))?.state).toBe("cancelled");
+    expect((await getRun(deps(), demo.profileId, pasted.run.id))?.state).toBe("queued");
+
+    const assistantAgain = unwrap(
+      await prepareAssistantBrief(deps(), demo.profileId, demo.jobId, "cover_letter", reported),
+    );
+    expect((await getRun(deps(), demo.profileId, pasted.run.id))?.state).toBe("cancelled");
+    expect((await getRun(deps(), demo.profileId, assistantAgain.run.id))?.state).toBe("queued");
+
+    // A brief for another document type is left alone.
+    const resume = unwrap(
+      await prepareAssistantBrief(deps(), demo.profileId, demo.jobId, "resume", reported),
+    );
+    expect((await getRun(deps(), demo.profileId, assistantAgain.run.id))?.state).toBe("queued");
+    expect((await getRun(deps(), demo.profileId, resume.run.id))?.state).toBe("queued");
   });
 });
 
