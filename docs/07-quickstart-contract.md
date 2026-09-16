@@ -1,6 +1,6 @@
 # 07 — Quickstart
 
-Status: contributor path and ordinary-user path implemented and tested on macOS (2026-09-13, re-verified with the Phase 1b image on 2026-09-14); Windows and Linux untested. Updated 2026-09-14.
+Status: contributor path and ordinary-user path implemented and tested on macOS (2026-09-13, re-verified with the Phase 1b image on 2026-09-14); Windows and Linux untested; the "Connect your assistant" path is decided and in progress ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16) and not yet part of the tested contract. Updated 2026-09-16.
 
 ## Contributor path (tested)
 
@@ -30,6 +30,12 @@ Generating documents (Phase 1b) needs either a model provider or nothing at all.
 | Ollama or any OpenAI-compatible server | `openai_compatible` | `llama3.1` | optional | required, for example `http://localhost:11434/v1` |
 
 The model name is whatever the provider spells it as on its own model page; there is no separate model URL to find. Cost per run is shown in the Runs column only when the provider reports it (OpenRouter and the Vercel AI Gateway do; Anthropic and OpenAI report tokens only). The key never leaves the environment file: it is not stored in the database, not included in backups and not logged. Which company receives your facts is the provider you chose; with the Vercel AI Gateway or OpenRouter, that service relays them to the model's operator.
+
+Connect your assistant (in progress, ADR 008; available once its pull requests merge): the third way to get documents written is the assistant you already pay for. Set one more variable in `.env`, restart `pnpm dev`, then open Settings → Connect your assistant in the app and copy the block for Claude Code, Codex or Claude Desktop; the assistant then reads your jobs and facts through Landed and submits its drafts through the same checks. Only the variables that exist today are in the provider table above; the assistant path adds this one:
+
+| Variable | Purpose | Value |
+|---|---|---|
+| `LANDED_MCP_TOKEN` | Bearer token the assistant presents on `/mcp`; without it the endpoint answers 503 | any long random string, at least 24 characters, in `.env` only; the packaged installation's launcher generates it |
 
 Tests use a second database, `landed_test`, created automatically when the volume is first initialised, and the fake model adapter (`LANDED_MODEL_PROVIDER=fake` in `.env.test`), so no key is ever needed for the checks. Apply migrations to it once, then run the checks listed in [CONTRIBUTING](../CONTRIBUTING.md):
 
@@ -66,9 +72,15 @@ Other commands: `stop` (stops the containers, keeps your data), `status`, `logs 
 
 Model provider (optional): `.env.release` contains commented `LANDED_MODEL_*` blocks, one per provider (the same table as in the contributor path above: OpenRouter, Anthropic, OpenAI, the Vercel AI Gateway, or any OpenAI-compatible server by base URL). Fill in one block, then run `start` again; the web service reads the values on restart. Leave them empty to use Paste back on every document instead: the app shows the prompt, you run it in any assistant and paste the answer back, and nothing about your facts leaves your computer except what you paste yourself. The key stays in `.env.release`, which is ignored by Git and never copied into the database or a backup. A local model server on this computer is reached from inside Docker as `http://host.docker.internal:11434/v1`, not `localhost`.
 
-How data is stored: PostgreSQL writes to the Docker named volume `landed-release_pgdata`, outside the source checkout, and generated PDFs (Phase 1b) and company logos to the volume `landed-release_artifacts`. Both survive `stop`, `start`, container restarts, image rebuilds and upgrades. Only the web port is published, and only on 127.0.0.1 of your computer; the database has no host port and is reachable only by the application inside the Compose network ([compose.release.yml](../compose.release.yml)). `.env.release` holds the generated credentials and your optional model key and is ignored by Git; keep it, because the database volume was initialised with that password.
+Connect your assistant (in progress, ADR 008; available once its pull requests merge): if you already pay for Claude Code, Codex or Claude Desktop, no provider key is needed. The launcher writes a token into `.env.release` on `start`, and Settings → Connect your assistant in the app shows one block per assistant with that token and this installation's port filled in; copy it into the assistant, then ask it to write the documents for a job. The assistant talks to Landed at `http://127.0.0.1:<port>/mcp` on your computer only, and every draft it submits passes the same checks as a generated or pasted one.
 
-Upgrade: `git pull` (or unpack the new bundle over the old folder, keeping `.env.release`), then `sh scripts/landed.sh start` again. It rebuilds the image and the `migrate` task applies any new migrations before the new server starts. The PostgreSQL image is pinned to a minor version in `compose.release.yml`; a major-version change (17 to 18) will ship with an explicit backup/restore procedure, never a floating tag.
+| Variable | Purpose | Value |
+|---|---|---|
+| `LANDED_MCP_TOKEN` | Bearer token the assistant presents on `/mcp`; without it the endpoint answers 503 | generated by the launcher on first `start`; rotate it by editing the line and running `start` again |
+
+How data is stored: PostgreSQL writes to the Docker named volume `landed-release_pgdata`, outside the source checkout, and generated PDFs (Phase 1b) and company logos to the volume `landed-release_artifacts`. Both survive `stop`, `start`, container restarts, image rebuilds and upgrades. Only the web port is published, and only on 127.0.0.1 of your computer; the database has no host port and is reachable only by the application inside the Compose network ([compose.release.yml](../compose.release.yml)). `.env.release` holds the generated credentials (the database password and, once the assistant surface ships, the assistant token) and your optional model key and is ignored by Git; keep it, because the database volume was initialised with that password.
+
+Upgrade: `git pull` (or unpack the new bundle over the old folder, keeping `.env.release`), then `sh scripts/landed.sh start` again. It rebuilds the image and the `migrate` task applies any new migrations before the new server starts. Once the assistant surface ships (ADR 008), `start` on an existing installation whose `.env.release` has no `LANDED_MCP_TOKEN` line appends a generated one and prints a notice; your other values are untouched. The PostgreSQL image is pinned to a minor version in `compose.release.yml`; a major-version change (17 to 18) will ship with an explicit backup/restore procedure, never a floating tag.
 
 Backup and restore (tested):
 

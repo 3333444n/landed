@@ -1,6 +1,6 @@
 # 03 — System and modules
 
-Status: stack, Profile, Jobs and Applications modules and packaged runtime implemented; Documents module, model adapter and PDF rendering implemented (Phase 1b, ADR 006). Updated 2026-09-14.
+Status: stack, Profile, Jobs and Applications modules and packaged runtime implemented; Documents module, model adapter and PDF rendering implemented (Phase 1b, ADR 006); the assistant surface at `/mcp` decided and in progress ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16). Updated 2026-09-16.
 
 ## System boundary
 
@@ -14,6 +14,7 @@ Runtime view:
 flowchart LR
   subgraph local["Your computer: one local installation"]
     browser["Browser UI"] -->|"HTTP on 127.0.0.1"| app["Next.js server<br/>module-owned use cases"]
+    assistant["Your assistant<br/>(Claude Code, Codex, Claude Desktop)"] -->|"HTTP on 127.0.0.1 → /mcp<br/>bearer token (ADR 008, in progress)"| app
     app -->|"SQL transactions"| db[("PostgreSQL")]
     app -->|"read / write"| files[("Local files<br/>backups and PDF artifacts")]
     migrate["migrate task (one-shot)<br/>applies db/migrations, then exits"] -.->|"before web starts"| db
@@ -23,7 +24,9 @@ flowchart LR
 
 This is a logical runtime view: PostgreSQL is a process/container with its own volume, and the `migrate` task is a Compose service that runs once per `start` rather than a product component. The diagram abstracts volumes and networks.
 
-Phase 0 and 1a have no runtime network dependency beyond local processes. Installation/image downloads require internet. From Phase 1b the web service makes outbound HTTPS calls to the model provider configured in the environment file, and only then; with no provider configured, paste-back mode keeps everything local. The one other outbound call is user-initiated: pasting an image address for a job's logo fetches that address once, through the guarded fetcher in `src/infrastructure/fetch` ([ADR 007](adr/007-user-initiated-image-fetch.md)). Later job/search providers require outbound access too. LAN/public access and remote MCP require a separate access/security design.
+Phase 0 and 1a have no runtime network dependency beyond local processes. Installation/image downloads require internet. From Phase 1b the web service makes outbound HTTPS calls to the model provider configured in the environment file, and only then; with no provider configured, paste-back mode keeps everything local. The one other outbound call is user-initiated: pasting an image address for a job's logo fetches that address once, through the guarded fetcher in `src/infrastructure/fetch` ([ADR 007](adr/007-user-initiated-image-fetch.md)). Later job/search providers require outbound access too.
+
+The assistant surface ([ADR 008](adr/008-assistant-surface-over-mcp.md), in progress) is an inbound connection, not an outbound one: the user's own assistant on the host computer calls `POST /mcp` on the same port the browser uses, with the bearer token `LANDED_MCP_TOKEN` from the environment file (minted by the launcher for the packaged installation), and Landed's tools call module operations through the composition layer. Two rules then apply to the whole application, not only to `/mcp`: every request's `Host` must be `localhost`, `127.0.0.1` or `::1` (or a name listed in `LANDED_ALLOWED_HOSTS`, empty until a remote design uses it), and an `Origin` header, when present, must name one of the same hosts; any other request is refused with 403 before a handler runs, because the Settings column shows the token and a server that answered any `Host` could be read through DNS rebinding. LAN or public access, and remote MCP from claude.ai or a phone, still require a separate access and security design.
 
 ## Ownership and dependencies
 
@@ -59,7 +62,7 @@ Arrows are code calls or dependencies, not HTTP connections or deployment bounda
 | Research (later) | Sourced findings and bounded research runs | Jobs reads, search/fetch adapters, model runtime |
 | Discovery (later) | Provider adapters, schedules, ingestion runs | Jobs write operations; orchestration can then invoke Matching/Documents |
 
-PDF rendering is a small component within Documents initially, not a separately deployed service. It converts validated structured content through templates into PDFs. Extract an independent package only if real reuse or isolation needs emerge. Model integration is infrastructure, not a business module that knows how resumes work: `src/infrastructure/model/` holds the `ModelAdapter` interface (a structured-output request with a Zod schema in, a validated value with usage or a classified failure out), the AI SDK implementation as a class holding the configured provider client, the fake adapter that answers from `examples/generation`, and the factory that reads the environment ([ADR 006](adr/006-model-access-path.md)). The Model setup column under `/settings/model` reads the same configuration and shows its status without the key.
+PDF rendering is a small component within Documents initially, not a separately deployed service. It converts validated structured content through templates into PDFs. Extract an independent package only if real reuse or isolation needs emerge. Model integration is infrastructure, not a business module that knows how resumes work: `src/infrastructure/model/` holds the `ModelAdapter` interface (a structured-output request with a Zod schema in, a validated value with usage or a classified failure out), the AI SDK implementation as a class holding the configured provider client, the fake adapter that answers from `examples/generation`, and the factory that reads the environment ([ADR 006](adr/006-model-access-path.md)). The Model setup column under `/settings/model` reads the same configuration and shows its status without the key. The assistant surface (ADR 008, in progress) is the other adapter over the same composition functions: `src/app/mcp/` will hold the route, the tool registrations and the bearer check, `src/proxy.ts` the Host and Origin guard, and the runtime configuration gains `LANDED_MCP_TOKEN` next to the model variables, read from the environment only and shown in the browser solely on the Connect your assistant column under `/settings/assistant`.
 
 Keep cross-module workflows at an application composition boundary; avoid circular imports. The implemented example is `src/app/jobs/pursue-job.ts`: pasting a posting must create the job and its application together, so the function opens one transaction and passes the handle to the Jobs and Applications use cases, whose own transactions nest as savepoints inside it; a failure in either rolls back both. Neither module imports the other, and the owner-aware foreign key in the database checks the link. Documents likewise stores an opaque application id without importing Applications operations; `src/app/jobs/generate-document.ts` coordinates reading the pursuit, building the snapshot and generating a document. Database foreign keys do not mandate circular code dependencies.
 

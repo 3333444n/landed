@@ -48,6 +48,10 @@ To work on the code you need Node 22, pnpm and Docker; the [contributor path](do
 
 Paste-back mode is the same pipeline with you as the model: the app shows the prompt, you paste the JSON answer back, and it goes through the same validation and checks.
 
+## Use your own assistant
+
+Arriving in the next releases ([ADR 008](docs/adr/008-assistant-surface-over-mcp.md)): use the assistant you already pay for, no key needed. Three steps: start Landed as usual; open Settings → Connect your assistant and copy the block for Claude Code, Codex or Claude Desktop; ask it to write the documents for a job. The assistant reads your jobs and facts through a local connection on your computer, and every draft it hands back goes through the same checks as above. This section fills in when the feature ships.
+
 ## Architecture in one screen
 
 TypeScript, Next.js (App Router, Server Actions), PostgreSQL through Drizzle with committed SQL migrations, Zod for every boundary, the Vercel AI SDK behind one adapter interface, `@react-pdf/renderer` for PDFs, `lucide-react` for interface icons, Vitest and Playwright for tests, Docker Compose for the packaged install. A modular monolith: four modules (`profile`, `jobs`, `applications`, `documents`), each six files with the same roles, each owning its tables; cross-module workflows live in the app layer and never reach into another module's persistence.

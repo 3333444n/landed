@@ -1,6 +1,6 @@
 # 09 — Decisions and implementation readiness
 
-Updated 2026-09-14. Accepted decisions below reflect the user's explicit instructions. Recommendations remain proposals.
+Updated 2026-09-16. Accepted decisions below reflect the user's explicit instructions. Recommendations remain proposals.
 
 ## Accepted
 
@@ -40,10 +40,17 @@ Updated 2026-09-14. Accepted decisions below reflect the user's explicit instruc
 - Structured document content in PostgreSQL; PDFs in a persistent local volume with database metadata (implemented 2026-09-14).
 - Testing scope by behavioural blast radius with `pnpm check`, `pnpm verify` and `pnpm verify:full` (CONTRIBUTING "Checks", 2026-09-14).
 - Phase 1c additions (decided 2026-09-14, after Phase 1b, when link import was parked): salary as one free-text field, shown and never parsed; a company logo as an uploaded image or a pasted image address (PNG, JPEG, WebP, SVG, up to 1 MB), stored as uploaded under the artifact directory and never hotlinked, chosen from the tile next to the form's title, and replacing the job's status icon on the list card and job header once present (the chip keeps the status word; DESIGN.md amended); a word cloud of plain frequencies, top 40, biggest in the middle, words matching the profile's skills highlighted in the accent, on the job column and live under the Description field ([ADR 007](adr/007-user-initiated-image-fetch.md) for the fetch).
+- Assistant surface over MCP (decided 2026-09-16, [ADR 008](adr/008-assistant-surface-over-mcp.md), docs 03, 05, 06, 07, SECURITY; implementation in progress, nothing available until each pull request merges):
+  - The user's own assistant (Claude Code, then Codex, then Claude Desktop) drives Landed through a Streamable HTTP MCP endpoint at `/mcp` in the same Next.js process, using `@modelcontextprotocol/server` v2 directly. No second process, nothing on the internet.
+  - A bearer token `LANDED_MCP_TOKEN` from the environment file only, minted by the launcher like the database password and appended to an existing `.env.release` on upgrade; shown in the browser only on the Connect your assistant column, because it protects local data the browser already shows. Host and Origin validation for the whole application, loopback names only until a remote design lists others.
+  - Run mode `assistant` and revision source `assistant`; a brief opens a queued run, a submission finishes it, an invalid answer fails it with `pasted_invalid` and opens a fresh one; the newest brief from either surface supersedes an older queued run; queued runs are never swept (doc 05).
+  - Tools call module operations through the composition layer, never SQL. First release: `list_jobs`, `get_job`, `get_document_brief`, `submit_document`, `get_document`, `edit_unit`, `render_pdf`; `add_job` in its own pull request; no deletion, no application status change, no profile write. The assistant's model writes and Landed validates, checks grounding and records the run, with provider and model recorded from what the client reports (doc 06).
+  - Settings becomes a hub with two cards, Model setup and Connect your assistant; a portable skill under `.agents/skills` with a Claude Code plugin wrapping it; the fit evaluation and a reviewer pass live in the skill, not in Landed.
+  - Kept as they were: the API key path, paste-back, the fake adapter for every check; `pnpm verify` exercises the endpoint in process with the MCP client and no model.
 
 ## Proposed defaults
 
-- Provider support claims follow the evaluation set: a provider is listed as verified only after `pnpm eval` has been run against it; harness integration and phone or claude.ai access wait for their own designs.
+- Provider support claims follow the evaluation set: a provider is listed as verified only after `pnpm eval` has been run against it; phone or claude.ai access waits for its own design, which reuses the local assistant endpoint of ADR 008 behind a tunnel with authentication.
 - LangGraph as a later orchestration candidate after a small explicit implementation establishes requirements.
 
 ## Phase 0 complete (2026-09-13)
@@ -70,9 +77,13 @@ Merged the same day as Phase 1b, after the first run against a real provider: th
 
 Template version 2 after comparing the output with a dense one-page reference: 24 pt name, 12 pt uppercase section headings on a 2 pt rule, 0.5 in margins, black only, bold dates, a Summary heading, no hyphenation, and `fitResume`, which finds by bisection the largest gap scale (up to 2.4) that still renders one page, so the resume ends at the bottom margin. Budgets raised to 7 entries and 12 bullets and counted in printed lines: `helvetica.ts` carries the built-in font's metrics and `layoutCheck` adds the `wraps_line` warning for a bullet, subheading, skills line or contact line that would wrap, or a summary past three lines. Prompt v3 asks for bullets of 108 to 114 characters and the whole budget and fixes the contact line to phone, email, location, LinkedIn and GitHub. Employment records gain a `location` (migration 0005, a field on the Work history form, carried by the snapshot and the resume entry, printed right-aligned on the role line; prompt v4). `pnpm eval` re-run for each prompt version (doc 06). Known gap: the lite model returns 8 to 10 bullets against a budget of 12, so a thin run stops stretching at the cap and leaves a band at the bottom; regenerate or use a stronger model.
 
+## Assistant surface in progress (2026-09-16)
+
+Decided in [ADR 008](adr/008-assistant-surface-over-mcp.md) and documented in docs 03, 05, 06, 07 and SECURITY ahead of the code, so that the pull requests that follow can each stay small: the endpoint with its token, host guard, run mode migration and seven tools; the Settings hub with the Connect your assistant column and the launcher token; the skill and plugin; then `add_job`. Each pull request updates this section when it merges; until then none of it is available, and a packaged installation answers 503 on `/mcp` until the launcher mints the token.
+
 ## Deliberately deferred
 
-Vector embeddings/indexes; separate vector storage; generalized agent framework; multi-provider support matrix; remote MCP; authentication for hosted use; queues/brokers; all job providers; comprehensive interviews; automatic import from a posting link, after a probe showed that major job boards refuse plain server fetches (Phase 2A keeps the design, with paste as the fallback); filling the paste form's fields from a whole copied posting page (designed on 2026-09-14, deferred to a later session). Reopen each when its phase or an observed requirement needs it.
+Vector embeddings/indexes; separate vector storage; generalized agent framework; multi-provider support matrix; remote MCP (local MCP is decided in ADR 008; remote access from claude.ai or a phone is a later ADR that reuses the same endpoint behind a tunnel); authentication for hosted use; queues/brokers; all job providers; comprehensive interviews; automatic import from a posting link, after a probe showed that major job boards refuse plain server fetches (Phase 2A keeps the design, with paste as the fallback); filling the paste form's fields from a whole copied posting page (designed on 2026-09-14, deferred to a later session). Reopen each when its phase or an observed requirement needs it.
 
 ## Decision records
 
@@ -83,3 +94,4 @@ Vector embeddings/indexes; separate vector storage; generalized agent framework;
 - [ADR 005 — Interface as URL-driven columns](adr/005-url-driven-columns.md)
 - [ADR 006 — Model access path](adr/006-model-access-path.md)
 - [ADR 007 — User-initiated image fetch](adr/007-user-initiated-image-fetch.md)
+- [ADR 008 — Assistant surface over MCP](adr/008-assistant-surface-over-mcp.md)
