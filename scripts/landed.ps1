@@ -1,7 +1,8 @@
 # Launcher for the packaged installation (ADR 003), Windows PowerShell version of landed.sh.
-# Usage: powershell -ExecutionPolicy Bypass -File scripts\landed.ps1 start|stop|status|logs|backup|restore <file>
+# Usage: powershell -ExecutionPolicy Bypass -File scripts\landed.ps1 start|stop|status|logs|backup|restore <file>|token
 #
-# `start` creates .env.release on first run (random database password) and never overwrites it.
+# `start` creates .env.release on first run (random database password and assistant token) and
+# never overwrites it; on an older file it only appends a missing LANDED_MCP_TOKEN line.
 # `stop` keeps the data volume; a factory reset is a separate, deliberate command, see
 # docs/07-quickstart-contract.md. Untested on Windows as of 2026-09-13; report problems.
 param(
@@ -36,14 +37,25 @@ function New-RandomPassword {
 }
 
 function Ensure-Env {
-  if (Test-Path $envFile) { return }
+  if (Test-Path $envFile) { Update-Env; return }
   $password = New-RandomPassword
-  # Copy the example, replacing only the password placeholder. ASCII without BOM keeps the
+  $token = New-RandomPassword
+  # Copy the example, replacing only the two generated placeholders. ASCII without BOM keeps the
   # file readable by Docker Compose.
-  $content = (Get-Content ".env.release.example") -replace "^POSTGRES_PASSWORD=.*", "POSTGRES_PASSWORD=$password"
+  $content = (Get-Content ".env.release.example") -replace "^POSTGRES_PASSWORD=.*", "POSTGRES_PASSWORD=$password" -replace "^LANDED_MCP_TOKEN=.*", "LANDED_MCP_TOKEN=$token"
   [System.IO.File]::WriteAllLines((Join-Path (Get-Location) $envFile), $content, (New-Object System.Text.UTF8Encoding $false))
-  Write-Host "Created $envFile with a generated database password."
+  Write-Host "Created $envFile with a generated database password and assistant token."
   Write-Host "To let the app call a model provider, fill in the LANDED_MODEL_* lines in $envFile and run start again; paste-back mode works without them."
+}
+
+function Update-Env {
+  # An .env.release written before the assistant surface has no token line (ADR 008). Append one
+  # and touch nothing else.
+  if (Get-Content $envFile | Where-Object { $_ -like "LANDED_MCP_TOKEN=*" }) { return }
+  $token = New-RandomPassword
+  $lines = @("", "# Token your assistant presents to Landed (Settings, Connect your assistant); added on upgrade.", "LANDED_MCP_TOKEN=$token")
+  [System.IO.File]::AppendAllLines((Join-Path (Get-Location) $envFile), [string[]] $lines, (New-Object System.Text.UTF8Encoding $false))
+  Write-Host "Added a generated LANDED_MCP_TOKEN to $envFile (Settings, Connect your assistant shows how to use it)."
 }
 
 function Get-EnvValue { param([string] $Key)
@@ -65,6 +77,13 @@ switch ($Command) {
     $port = Get-EnvValue "LANDED_PORT"; if (-not $port) { $port = "3000" }
     Write-Host "Landed is starting at http://127.0.0.1:$port"
     Write-Host "Run 'scripts\landed.ps1 status' to see when it reports healthy."
+    Write-Host "To use the assistant you already pay for, open Settings, Connect your assistant (or run 'scripts\landed.ps1 token')."
+  }
+  "token" {
+    Require-Env
+    $port = Get-EnvValue "LANDED_PORT"; if (-not $port) { $port = "3000" }
+    Write-Host "Copy the block for your assistant at http://127.0.0.1:$port/settings/assistant"
+    Write-Host "LANDED_MCP_TOKEN=$(Get-EnvValue 'LANDED_MCP_TOKEN')"
   }
   "stop" {
     Require-Docker; Require-Env
@@ -95,7 +114,7 @@ switch ($Command) {
     Write-Host "Restored $file into $db"
   }
   default {
-    Write-Error "Usage: scripts\landed.ps1 start|stop|status|logs|backup|restore <file>"
+    Write-Error "Usage: scripts\landed.ps1 start|stop|status|logs|backup|restore <file>|token"
     exit 2
   }
 }

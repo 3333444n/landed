@@ -87,7 +87,9 @@ src/
                          layout.tsx (review column with inline editing), page.tsx (null),
                          evidence/, paste/, runs/ columns, pdf/route.ts download; document-actions.ts,
                          generate-document.ts and snapshot.ts (composition)
-    settings/model/      Model setup column (configuration status, no key)
+    settings/            layout.tsx (the hub: Model setup and Connect your assistant cards), page.tsx (placeholder),
+                         model/ (Model setup column, configuration status, no key), assistant/ (Connect your
+                         assistant column: one copyable block per assistant, the only place the token is shown)
     form-state.ts        shared action result shape and form helpers
     palettes.css         the palettes (every colour as a light and a dark value; steel is the default)
     tokens.css           semantic tokens from DESIGN.md: colours picked from the palette by scheme, plus sizes, radii, spacing, type, motion

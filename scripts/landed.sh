@@ -1,8 +1,9 @@
 #!/usr/bin/env sh
 # Launcher for the packaged installation (ADR 003). Requires only Docker with Compose v2.
-# Usage: sh scripts/landed.sh start|stop|status|logs|backup|restore <file>
+# Usage: sh scripts/landed.sh start|stop|status|logs|backup|restore <file>|token
 #
-# `start` creates .env.release on first run (random database password) and never overwrites it.
+# `start` creates .env.release on first run (random database password and assistant token) and
+# never overwrites it; on an older file it only appends a missing LANDED_MCP_TOKEN line.
 # `stop` keeps the data volume; a factory reset is a separate, deliberate command, see
 # docs/07-quickstart-contract.md.
 set -eu
@@ -13,7 +14,7 @@ env_file=".env.release"
 compose="docker compose --env-file $env_file -f compose.release.yml"
 
 usage() {
-  echo "Usage: sh scripts/landed.sh start|stop|status|logs|backup|restore <file>" >&2
+  echo "Usage: sh scripts/landed.sh start|stop|status|logs|backup|restore <file>|token" >&2
   exit 2
 }
 
@@ -43,14 +44,28 @@ random_password() {
 
 ensure_env() {
   if [ -f "$env_file" ]; then
+    upgrade_env
     return
   fi
   password="$(random_password)"
-  # Copy the example, replacing only the password placeholder; the other values (port, the
+  token="$(random_password)"
+  # Copy the example, replacing only the two generated placeholders; the other values (port, the
   # optional LANDED_MODEL_* lines) keep their documented defaults and stay editable by hand.
-  sed "s/^POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=$password/" .env.release.example > "$env_file"
-  echo "Created $env_file with a generated database password."
+  sed -e "s/^POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=$password/" \
+      -e "s/^LANDED_MCP_TOKEN=.*/LANDED_MCP_TOKEN=$token/" .env.release.example > "$env_file"
+  echo "Created $env_file with a generated database password and assistant token."
   echo "To let the app call a model provider, fill in the LANDED_MODEL_* lines in $env_file and run start again; paste-back mode works without them."
+}
+
+upgrade_env() {
+  # An .env.release written before the assistant surface has no token line (ADR 008). Append one
+  # and touch nothing else; the file is the person's, so no other line is ever rewritten.
+  if grep -q "^LANDED_MCP_TOKEN=" "$env_file"; then
+    return
+  fi
+  token="$(random_password)"
+  printf '\n# Token your assistant presents to Landed (Settings, Connect your assistant); added on upgrade.\nLANDED_MCP_TOKEN=%s\n' "$token" >> "$env_file"
+  echo "Added a generated LANDED_MCP_TOKEN to $env_file (Settings, Connect your assistant shows how to use it)."
 }
 
 env_value() {
@@ -79,6 +94,13 @@ case "$cmd" in
     port="$(env_value LANDED_PORT)"
     echo "Landed is starting at http://127.0.0.1:${port:-3000}"
     echo "Run 'sh scripts/landed.sh status' to see when it reports healthy."
+    echo "To use the assistant you already pay for, open Settings, Connect your assistant (or run 'sh scripts/landed.sh token')."
+    ;;
+  token)
+    require_env
+    port="$(env_value LANDED_PORT)"
+    echo "Copy the block for your assistant at http://127.0.0.1:${port:-3000}/settings/assistant"
+    echo "LANDED_MCP_TOKEN=$(env_value LANDED_MCP_TOKEN)"
     ;;
   stop)
     require_docker

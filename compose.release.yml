@@ -59,6 +59,9 @@ services:
       LANDED_MODEL: ${LANDED_MODEL:-}
       LANDED_MODEL_API_KEY: ${LANDED_MODEL_API_KEY:-}
       LANDED_MODEL_BASE_URL: ${LANDED_MODEL_BASE_URL:-}
+      # The assistant token (ADR 008), minted by the launcher into .env.release. Empty means the
+      # /mcp endpoint answers 503 until one is set.
+      LANDED_MCP_TOKEN: ${LANDED_MCP_TOKEN:-}
       LANDED_ARTIFACT_DIR: /app/artifacts
     volumes:
       - artifacts:/app/artifacts
