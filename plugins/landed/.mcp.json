@@ -1,0 +1,6 @@
+{
+  "landed": {
+    "url": "${user_config.url}",
+    "headers": { "Authorization": "Bearer ${user_config.token}" }
+  }
+}

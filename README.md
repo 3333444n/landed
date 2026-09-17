@@ -20,6 +20,7 @@ Tailoring an application by hand takes an hour per job, and the shortcuts are ba
 | Documents | Per job, a generated resume, cover letter and recruiter message. Each bullet cites your records; numbers that do not appear in the cited evidence are flagged. Edit any line in place; every edit is a saved revision |
 | PDFs | One-page resume filled to the margin and a one-page cover letter, monochrome, built from the reviewed text |
 | Model access | Bring an API key for OpenRouter, Anthropic, OpenAI, the Vercel AI Gateway or any OpenAI-compatible server (Ollama and similar), or use no key at all: paste-back mode shows you the prompt, you run it in whatever assistant you already have and paste the answer back through the same checks |
+| Your assistant | Works with Claude Code, Codex and Claude Desktop through a local connection, no key needed: your assistant writes the documents and Landed checks them |
 | Runs | Every model call is recorded with model, prompt version, tokens, latency and cost, visible next to the document |
 | Data safety | Backup and restore of the database, the PDFs and the logos; keys live only in your environment file; nothing is sent anywhere until you configure a provider or paste an image address |
 
@@ -46,11 +47,24 @@ To work on the code you need Node 22, pnpm and Docker; the [contributor path](do
 3. The answer is validated against the schema, then checked deterministically: every evidence id must exist in the snapshot, and every number in the text must appear in the cited records. Violations become warning chips, never silent edits.
 4. The result is saved as an immutable revision. You edit in place (each save is a new revision), mark it reviewed, and download the PDF. Nothing is ever submitted for you.
 
-Paste-back mode is the same pipeline with you as the model: the app shows the prompt, you paste the JSON answer back, and it goes through the same validation and checks.
+Paste-back mode is the same pipeline with you as the model: the app shows the prompt, you paste the JSON answer back, and it goes through the same validation and checks. Your own assistant (below) is the same pipeline again, with the assistant asking for the prompt and submitting the answer itself through a local connection.
 
 ## Use your own assistant
 
-Arriving in the next releases ([ADR 008](docs/adr/008-assistant-surface-over-mcp.md)): use the assistant you already pay for, no key needed. Three steps: start Landed as usual; open Settings → Connect your assistant and copy the block for Claude Code, Codex or Claude Desktop; ask it to write the documents for a job. The assistant reads your jobs and facts through a local connection on your computer, and every draft it hands back goes through the same checks as above. This section fills in when the feature ships.
+Use the assistant you already pay for, no key needed ([ADR 008](docs/adr/008-assistant-surface-over-mcp.md)). The assistant reads your jobs and facts through a connection that stays on your computer, writes the documents, and every draft it hands back goes through the same checks as above. Three steps:
+
+1. Start Landed as usual.
+2. Open Settings → Connect your assistant in the app and copy the block for your tool (Claude Code, Codex or Claude Desktop). It contains the address and the token this installation generated.
+3. Install the workflow so the assistant knows the steps. Claude Code:
+
+   ```sh
+   claude plugin marketplace add 3333444n/landed
+   claude plugin install landed@landed    # asks for the address and the token from step 2
+   ```
+
+   Codex discovers the same skill by itself when you run it inside the Landed checkout; to use it from anywhere, link it into your user skills: `mkdir -p ~/.agents/skills && ln -s "$PWD/.agents/skills/landed" ~/.agents/skills/landed`. Claude Desktop uses the block from step 2 alone.
+
+Then ask for a resume: "tailor my resume for the Acme job". The assistant checks the fit first, writes the resume, cover letter and recruiter message in turn, fixes the warnings Landed raises, and gives you the PDF links. It never marks an application applied and never sends anything.
 
 ## Architecture in one screen
 

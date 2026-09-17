@@ -14,7 +14,7 @@ Three scripts implement the levels:
 
 | Script | Runs | Needs | When |
 |---|---|---|---|
-| `pnpm check` | `format:check`, `lint`, `typecheck`, `test` (unit) | nothing but Node | constantly while coding; seconds |
+| `pnpm check` | `format:check`, `lint`, `typecheck`, `test` (unit), `scripts/check-skill-sync.sh` (the plugin's copy of the assistant skill matches `.agents/skills/landed/SKILL.md`) | nothing but Node | constantly while coding; seconds |
 | `pnpm verify` | `check` + `test:integration` + `scripts/check-migrations.sh` | `pnpm db:up` and `.env.test` | when a change touches persistence, a Server Action, a route, or a module's public surface; a minute or two |
 | `pnpm verify:full` | `verify` + `build` + `CI=true test:e2e` (the journeys against the production build, as CI runs them) | the above plus Playwright's Chromium | before opening any pull request; several minutes |
 
