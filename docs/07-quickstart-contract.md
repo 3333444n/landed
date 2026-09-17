@@ -1,6 +1,6 @@
 # 07 — Quickstart
 
-Status: contributor path and ordinary-user path implemented and tested on macOS (2026-09-13, re-verified with the Phase 1b image on 2026-09-14); Windows and Linux untested; the "Connect your assistant" path ([ADR 008](adr/008-assistant-surface-over-mcp.md)) has its endpoint, Settings column and launcher token as of 2026-09-16; the guided workflow for the assistant (its skill) is the next pull request. Updated 2026-09-16.
+Status: contributor path and ordinary-user path implemented and tested on macOS (2026-09-13, re-verified with the Phase 1b image on 2026-09-14); Windows and Linux untested; the "Connect your assistant" path ([ADR 008](adr/008-assistant-surface-over-mcp.md)) is implemented as of 2026-09-16 and tested from Claude Code on a contributor install; the packaged path with the launcher-minted token is not yet exercised in Docker. Updated 2026-09-16.
 
 ## Contributor path (tested)
 
@@ -121,13 +121,14 @@ Verified on macOS (Apple Silicon, Docker Desktop, 2026-09-13) unless marked othe
 
 - Fresh install without pre-existing local dependencies beyond stated prerequisites: verified (clean state, no `.env.release`, only Docker used).
 - App readiness reflects both service health and successful migrations: verified (`web` waits for `migrate` to complete successfully and `db` to be healthy; its own health check loads a database-backed page).
-- Data survives process/container restart, image recreation, and supported application upgrade: verified for restart, `stop`/`start` and image rebuild, and once for an upgrade with a new migration (2026-09-14: the Phase 1b image started over a volume created with migrations 0000 and 0001 and the migrate task applied 0002 before the web service started). There are three migrations; a tagged version-to-version upgrade is not yet exercised because there is no tagged release.
+- Data survives process/container restart, image recreation, and supported application upgrade: verified for restart, `stop`/`start` and image rebuild, and once for an upgrade with a new migration (2026-09-14: the Phase 1b image started over a volume created with migrations 0000 and 0001 and the migrate task applied 0002 before the web service started). There are seven migrations (0000 to 0006); a tagged version-to-version upgrade is not yet exercised because there is no tagged release.
 - Backup/restore works on a new installation: verified, including the artifacts archive (2026-09-14: a probe file in `/app/artifacts` was archived by `backup`, deleted, and came back with `restore`; the web service answered afterwards). PowerShell launcher: database only.
 - Restart/stop never silently deletes volumes. Factory reset is separate and explicit: verified (`stop` runs `down` without `-v`; the reset is documented above and manual).
 - Helpful troubleshooting for Docker not running, occupied port, failed download, permission failure, database unavailable, migration failure, and low disk space: written above; the Docker-not-running, port-in-use and migration-failure cases were exercised, the others are documented from Docker's own messages.
 - Pin supported versions and explain upgrade steps: images pinned (`node:22.23-bookworm-slim`, `postgres:17.11`); the PostgreSQL major-version procedure is still to be written when a major bump is planned.
 - Verify release images on intended CPU architectures and document tested macOS, Windows, and Linux setups: tested on macOS arm64 only. Windows (`scripts/landed.ps1`), Linux and x86-64 are untested.
 - Phase 0 and 1a work offline after installation; example data and tests require no provider key: verified (the containers make no outbound requests; Next.js telemetry is disabled in the image). From Phase 1b the web service calls only the provider configured in `.env.release`, and nothing when none is configured.
+- Connect your assistant (ADR 008): the contributor path is tested (2026-09-16, macOS): `LANDED_MCP_TOKEN` set in `.env`, the Claude Code block copied from the Settings column, the plugin installed, and a posting added and the three documents written, submitted and rendered from Claude Code through `/mcp`. The packaged path is not tested: the launcher's token generation on a fresh `start`, the append on an older `.env.release`, the `token` command and the endpoint inside the container have not been exercised in Docker (the base image pull stalled during the check). The Codex and Claude Desktop blocks are written from their vendors' documentation and not run end to end.
 
 Store runtime data in volumes outside the source checkout. Ignore files are a second guard, not backup or access control. Release bundles include only an explicit allowlist of application assets; never package the entire workspace with personal files.
 

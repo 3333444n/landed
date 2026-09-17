@@ -1,19 +1,19 @@
 # 00 — Documentation index
 
-Status: Phase 0 complete (career data entry, packaged Docker installation, column interface since 2026-09-14); Phase 1a complete (manual jobs and application tracking, 2026-09-14); Phase 1b complete (generated materials, review, PDFs, model access, 2026-09-14); Phase 1c additions to the paste flow complete (salary, company logo, word cloud, 2026-09-14); the assistant surface over MCP decided and in progress ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16); Phases 2 to 4 are design. Updated 2026-09-16.
+Status: Phase 0 complete (career data entry, packaged Docker installation, column interface since 2026-09-14); Phase 1a complete (manual jobs and application tracking, 2026-09-14); Phase 1b complete (generated materials, review, PDFs, model access, 2026-09-14); Phase 1c additions to the paste flow complete (salary, company logo, word cloud, 2026-09-14); the assistant surface over MCP complete ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16); Phases 2 to 4 are design. Updated 2026-09-16.
 
 Numbers establish reading order, not software release versions. Accepted choices are distinguished from proposals, and each document says which parts are implemented; a diagram describes the intended structure, and its labels say which phase each part belongs to.
 
 | Document | Question answered | Status |
 |---|---|---|
-| [01 — Product and phases](01-product-and-phases.md) | What can users accomplish, and when? | Phases 0, 1a, 1b and the 1c additions complete; Phases 2 to 4 proposed |
-| [02 — Domain model](02-domain-model.md) | What do the product's concepts mean? | Vocabulary through Phase 1b in use; Phase 2 to 4 concepts proposed |
-| [03 — System and modules](03-system-and-modules.md) | Where does code run, and who owns behavior? | Profile, Jobs and Applications modules, column interface and packaged runtime implemented; Documents module, model adapter and PDF rendering implemented |
-| [04 — Data model](04-data-model.md) | How does PostgreSQL represent those concepts? | Phase 0, 1a and 1b schemas migrated |
-| [05 — Workflows and failures](05-workflows-and-failures.md) | What happens on success, failure, and retry? | Phases 0, 1a and 1b implemented; Phase 2 and 3 workflows proposed |
-| [06 — AI and integrations](06-ai-and-integrations.md) | How do models, harnesses, RAG, and agents fit? | Model access path implemented (ADR 006); OpenRouter run through the evaluation set; the assistant surface and its tool contract decided (ADR 008, in progress); later integrations proposed |
-| [07 — Quickstart](07-quickstart-contract.md) | How do you run it, and what does the packaged install guarantee? | Both paths tested on macOS; Windows and Linux untested |
-| [08 — Contributions and documentation](08-contributions-and-documentation.md) | How do changes stay understandable and documented? | CI, conventions and SECURITY in place |
+| [01 — Product and phases](01-product-and-phases.md) | What can users accomplish, and when? | Phases 0, 1a, 1b, the 1c additions and the assistant surface complete; Phases 2 to 4 proposed |
+| [02 — Domain model](02-domain-model.md) | What do the product's concepts mean? | Vocabulary through the assistant surface in use; Phase 2 to 4 concepts proposed |
+| [03 — System and modules](03-system-and-modules.md) | Where does code run, and who owns behavior? | Profile, Jobs and Applications modules, column interface and packaged runtime implemented; Documents module, model adapter and PDF rendering implemented; the `/mcp` endpoint and the host guard implemented |
+| [04 — Data model](04-data-model.md) | How does PostgreSQL represent those concepts? | Phase 0, 1a, 1b and 1c schemas migrated (0000 to 0006) |
+| [05 — Workflows and failures](05-workflows-and-failures.md) | What happens on success, failure, and retry? | Phases 0, 1a and 1b and the assistant run lifecycle implemented; Phase 2 and 3 workflows proposed |
+| [06 — AI and integrations](06-ai-and-integrations.md) | How do models, harnesses, RAG, and agents fit? | Model access path implemented (ADR 006); OpenRouter run through the evaluation set; the assistant surface and its eight tools implemented (ADR 008, 2026-09-16); later integrations proposed |
+| [07 — Quickstart](07-quickstart-contract.md) | How do you run it, and what does the packaged install guarantee? | Both paths tested on macOS; the assistant path tested from Claude Code on a contributor install, not yet in Docker; Windows and Linux untested |
+| [08 — Contributions and documentation](08-contributions-and-documentation.md) | How do changes stay understandable and documented? | CI, conventions, the skill sync check and SECURITY in place |
 | [09 — Decisions and readiness](09-decisions-and-readiness.md) | What is accepted, open, or deferred? | Current decision register |
 
 ## Decision records
@@ -27,7 +27,7 @@ Numbers establish reading order, not software release versions. Accepted choices
 | [005 — Interface as URL-driven columns](adr/005-url-driven-columns.md) | Path as navigation state, sidebar and shifting columns, derived job status | Accepted, implemented |
 | [006 — Model access path](adr/006-model-access-path.md) | App calls a provider through one adapter; env-only configuration; paste-back mode; fake adapter for checks | Accepted, implemented |
 | [007 — User-initiated image fetch](adr/007-user-initiated-image-fetch.md) | The one outbound call besides the provider: a logo address the user pastes, fetched once through a guarded fetcher and stored | Accepted, implemented |
-| [008 — Assistant surface over MCP](adr/008-assistant-surface-over-mcp.md) | Your own assistant (Claude Code, Codex, Claude Desktop) drives Landed through a local MCP endpoint with a launcher-minted token; reads and drafts only; Landed keeps validation, grounding and the run record | Accepted, implementation in progress |
+| [008 — Assistant surface over MCP](adr/008-assistant-surface-over-mcp.md) | Your own assistant (Claude Code, Codex, Claude Desktop) drives Landed through a local MCP endpoint with a launcher-minted token; reads, drafts and adding a posting, nothing else; Landed keeps validation, grounding and the run record | Accepted, implemented (2026-09-16) |
 
 ## Architecture diagrams
 

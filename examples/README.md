@@ -4,4 +4,4 @@
 
 The fixture covers a measurable employment achievement, a project achievement without an invented metric, a standalone achievement, optional fields, and reusable skill links. Since Phase 1a it also holds one fictional job posting (`jobs`) and its `preparing` application (`applications`), which the jobs integration test and browser journey take their values from. Any future loader must target an isolated demo/test database. The contact address uses the reserved example.com domain.
 
-`generation/` holds the Phase 1b material: the fixtures the fake model adapter answers with and the synthetic cases behind `pnpm eval`; see [its README](generation/README.md).
+`generation/` holds the Phase 1b material: the fixtures the fake model adapter answers with and the synthetic cases behind `pnpm eval`; see [its README](generation/README.md). The assistant endpoint's integration test (`tests/integration/mcp.test.ts`) seeds the same demo profile and submits those fixtures as the assistant's answers, so a change to the skill or the tools is checked without any assistant installed.

@@ -1,6 +1,6 @@
 # 03 — System and modules
 
-Status: stack, Profile, Jobs and Applications modules and packaged runtime implemented; Documents module, model adapter and PDF rendering implemented (Phase 1b, ADR 006); the assistant surface at `/mcp` decided and in progress ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16). Updated 2026-09-16.
+Status: stack, Profile, Jobs and Applications modules and packaged runtime implemented; Documents module, model adapter and PDF rendering implemented (Phase 1b, ADR 006); the assistant surface at `/mcp` and the Host and Origin guard implemented ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16). Updated 2026-09-16.
 
 ## System boundary
 
@@ -14,7 +14,7 @@ Runtime view:
 flowchart LR
   subgraph local["Your computer: one local installation"]
     browser["Browser UI"] -->|"HTTP on 127.0.0.1"| app["Next.js server<br/>module-owned use cases"]
-    assistant["Your assistant<br/>(Claude Code, Codex, Claude Desktop)"] -->|"HTTP on 127.0.0.1 → /mcp<br/>bearer token (ADR 008, in progress)"| app
+    assistant["Your assistant<br/>(Claude Code, Codex, Claude Desktop)"] -->|"HTTP on 127.0.0.1 → /mcp<br/>bearer token (ADR 008, implemented)"| app
     app -->|"SQL transactions"| db[("PostgreSQL")]
     app -->|"read / write"| files[("Local files<br/>backups and PDF artifacts")]
     migrate["migrate task (one-shot)<br/>applies db/migrations, then exits"] -.->|"before web starts"| db
@@ -26,7 +26,7 @@ This is a logical runtime view: PostgreSQL is a process/container with its own v
 
 Phase 0 and 1a have no runtime network dependency beyond local processes. Installation/image downloads require internet. From Phase 1b the web service makes outbound HTTPS calls to the model provider configured in the environment file, and only then; with no provider configured, paste-back mode keeps everything local. The one other outbound call is user-initiated: pasting an image address for a job's logo fetches that address once, through the guarded fetcher in `src/infrastructure/fetch` ([ADR 007](adr/007-user-initiated-image-fetch.md)). Later job/search providers require outbound access too.
 
-The assistant surface ([ADR 008](adr/008-assistant-surface-over-mcp.md), in progress) is an inbound connection, not an outbound one: the user's own assistant on the host computer calls `POST /mcp` on the same port the browser uses, with the bearer token `LANDED_MCP_TOKEN` from the environment file (minted by the launcher for the packaged installation), and Landed's tools call module operations through the composition layer. Two rules then apply to the whole application, not only to `/mcp`: every request's `Host` must be `localhost`, `127.0.0.1` or `::1` (or a name listed in `LANDED_ALLOWED_HOSTS`, empty until a remote design uses it), and an `Origin` header, when present, must name one of the same hosts; any other request is refused with 403 before a handler runs, because the Settings column shows the token and a server that answered any `Host` could be read through DNS rebinding. LAN or public access, and remote MCP from claude.ai or a phone, still require a separate access and security design.
+The assistant surface ([ADR 008](adr/008-assistant-surface-over-mcp.md), implemented 2026-09-16) is an inbound connection, not an outbound one: the user's own assistant on the host computer calls `POST /mcp` on the same port the browser uses, with the bearer token `LANDED_MCP_TOKEN` from the environment file (minted by the launcher for the packaged installation), and Landed's tools call module operations through the composition layer. Two rules then apply to the whole application, not only to `/mcp`: every request's `Host` must be `localhost`, `127.0.0.1` or `::1` (or a name listed in `LANDED_ALLOWED_HOSTS`, empty until a remote design uses it), and an `Origin` header, when present, must name one of the same hosts; any other request is refused with 403 before a handler runs, because the Settings column shows the token and a server that answered any `Host` could be read through DNS rebinding. LAN or public access, and remote MCP from claude.ai or a phone, still require a separate access and security design.
 
 ## Ownership and dependencies
 
@@ -62,7 +62,7 @@ Arrows are code calls or dependencies, not HTTP connections or deployment bounda
 | Research (later) | Sourced findings and bounded research runs | Jobs reads, search/fetch adapters, model runtime |
 | Discovery (later) | Provider adapters, schedules, ingestion runs | Jobs write operations; orchestration can then invoke Matching/Documents |
 
-PDF rendering is a small component within Documents initially, not a separately deployed service. It converts validated structured content through templates into PDFs. Extract an independent package only if real reuse or isolation needs emerge. Model integration is infrastructure, not a business module that knows how resumes work: `src/infrastructure/model/` holds the `ModelAdapter` interface (a structured-output request with a Zod schema in, a validated value with usage or a classified failure out), the AI SDK implementation as a class holding the configured provider client, the fake adapter that answers from `examples/generation`, and the factory that reads the environment ([ADR 006](adr/006-model-access-path.md)). The Model setup column under `/settings/model` reads the same configuration and shows its status without the key. The assistant surface (ADR 008, in progress) is the other adapter over the same composition functions: `src/app/mcp/` will hold the route, the tool registrations and the bearer check, `src/proxy.ts` the Host and Origin guard, and the runtime configuration gains `LANDED_MCP_TOKEN` next to the model variables, read from the environment only and shown in the browser solely on the Connect your assistant column under `/settings/assistant`.
+PDF rendering is a small component within Documents initially, not a separately deployed service. It converts validated structured content through templates into PDFs. Extract an independent package only if real reuse or isolation needs emerge. Model integration is infrastructure, not a business module that knows how resumes work: `src/infrastructure/model/` holds the `ModelAdapter` interface (a structured-output request with a Zod schema in, a validated value with usage or a classified failure out), the AI SDK implementation as a class holding the configured provider client, the fake adapter that answers from `examples/generation`, and the factory that reads the environment ([ADR 006](adr/006-model-access-path.md)). The Model setup column under `/settings/model` reads the same configuration and shows its status without the key. The assistant surface (ADR 008) is the other adapter over the same composition functions: `src/app/mcp/` holds the route (`route.ts`), the SDK handler (`handler.ts`), the eight tool registrations (`tools.ts`), the bearer check (`auth.ts`) and the projections (`serialize.ts`); `src/proxy.ts` applies the Host and Origin guard from `src/infrastructure/host-guard.ts`; and the runtime configuration has `LANDED_MCP_TOKEN` and `LANDED_ALLOWED_HOSTS` next to the model variables, read from the environment only, the token shown in the browser solely on the Connect your assistant column under `/settings/assistant`.
 
 Keep cross-module workflows at an application composition boundary; avoid circular imports. The implemented example is `src/app/jobs/pursue-job.ts`: pasting a posting must create the job and its application together, so the function opens one transaction and passes the handle to the Jobs and Applications use cases, whose own transactions nest as savepoints inside it; a failure in either rolls back both. Neither module imports the other, and the owner-aware foreign key in the database checks the link. Documents likewise stores an opaque application id without importing Applications operations; `src/app/jobs/generate-document.ts` coordinates reading the pursuit, building the snapshot and generating a document. Database foreign keys do not mandate circular code dependencies.
 
@@ -90,6 +90,9 @@ src/
     settings/            layout.tsx (the hub: Model setup and Connect your assistant cards), page.tsx (placeholder),
                          model/ (Model setup column, configuration status, no key), assistant/ (Connect your
                          assistant column: one copyable block per assistant, the only place the token is shown)
+    mcp/                 route.ts (POST /mcp: 503 without a token, 401 on a wrong bearer), handler.ts (the SDK
+                         handler, no Next imports), tools.ts (the eight tools), auth.ts (constant-time bearer
+                         compare), serialize.ts (projections)
     form-state.ts        shared action result shape and form helpers
     palettes.css         the palettes (every colour as a light and a dark value; steel is the default)
     tokens.css           semantic tokens from DESIGN.md: colours picked from the palette by scheme, plus sizes, radii, spacing, type, motion
@@ -101,15 +104,20 @@ src/
     jobs/                same shape plus logo.ts (logo files under the artifact directory, row after file) and stopwords.ts (word cloud)
     applications/        same shape; pursuits and the derived job status rule
     documents/           same shape plus prompts/ (versioned prompt builders), pdf/ (templates) and artifacts.ts
-  components/            shared presentation components (Shell, SidebarNav, ThemeToggle, Drawer, Column, Toolbar, ToolbarMenu, Card, IconTile, LogoPicker, WordCloud, Field, AutoGrowTextarea, ...)
-  infrastructure/        database pool, configuration, model/ (adapter interface, AI SDK class, fake, factory), fetch/ (guarded image fetch, ADR 007)
+  proxy.ts               runs before every request: 403 unless Host and Origin name this computer (ADR 008)
+  components/            shared presentation components (Shell, SidebarNav, ThemeToggle, Drawer, Column, Toolbar, ToolbarMenu, Card, IconTile, LogoPicker, WordCloud, Field, CopyButton, AutoGrowTextarea, ...)
+  infrastructure/        database pool, configuration, model/ (adapter interface, AI SDK class, fake, factory), fetch/ (guarded image fetch, ADR 007), host-guard.ts (pure Host and Origin check)
 db/migrations/           generated SQL migrations and drizzle-kit journal
 db/migrate.mjs           migration runner used inside the release image (production dependencies only)
 db/init/                 creates the test database on first start of the development database
 docker-compose.yml       development database only
 Dockerfile               multi-stage release image (Next.js standalone output, non-root user)
 compose.release.yml      packaged installation: db, migrate, web
-scripts/                 landed.sh / landed.ps1 launcher; db-backup.sh / db-restore.sh for contributors
+scripts/                 landed.sh / landed.ps1 launcher; db-backup.sh / db-restore.sh for contributors;
+                         check-migrations.sh (drift) and check-skill-sync.sh (the plugin's copy of the skill)
+.agents/skills/landed/   SKILL.md, the assistant workflow (single source; Codex reads it here)
+plugins/landed/          the Claude Code plugin: manifest, .mcp.json, a copy of the skill
+.claude-plugin/          marketplace.json publishing that plugin
 tests/integration/       Vitest against real PostgreSQL
 tests/e2e/               Playwright browser journeys
 examples/                synthetic data; generation/ holds the evaluation cases and fixtures (Phase 1b)
