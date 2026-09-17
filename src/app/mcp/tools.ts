@@ -1,5 +1,5 @@
 /*
- * The seven tools an assistant may call (ADR 008, docs/06). Each one is a thin adapter over a
+ * The eight tools an assistant may call (ADR 008, docs/06). Each one is a thin adapter over a
  * composition function or a module operation and returns plain JSON text; a refused operation
  * comes back as an `isError` result with the module's error, never as a thrown exception, so
  * the harness can read the reason and try again. Nothing here opens a transaction or imports a
@@ -13,6 +13,7 @@ import {
   type DocumentBrief,
 } from "@/app/jobs/generate-document";
 import { listJobRows } from "@/app/jobs/list-jobs";
+import { pursueJob } from "@/app/jobs/pursue-job";
 import { withoutLengthKeywords } from "@/infrastructure/model/portable-schema";
 import { getApplicationForJob, matchesFilter } from "@/modules/applications";
 import {
@@ -266,6 +267,41 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
     }),
   );
 
+  server.registerTool(
+    "add_job",
+    {
+      title: "Add job",
+      description:
+        "Saves a posting the user wants to pursue and opens its application, as pasting one in the browser does. Pass the posting text as the harness fetched or received it; Landed never fetches a posting page itself. Supply `job_id` (a UUID you mint) to make a retry safe: the same id replays to the same job instead of creating a second one. Returns `{ job_id, application_id }`.",
+      inputSchema: z.object({
+        job_id: z.uuid().optional().describe("A UUID minted by the client, so a retry replays"),
+        title: z.string().describe("The job title as the posting states it"),
+        company: z.string().describe("The employer's name"),
+        description: z.string().describe("The full posting text, up to 50,000 characters"),
+        location: z.string().optional(),
+        salary: z.string().optional().describe("Free text, shown as written and never parsed"),
+        source_url: z.string().optional().describe("The posting's address, http or https"),
+      }),
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
+    },
+    tool(
+      async ({ job_id, title, company, description, location, salary, source_url }, profileId) => {
+        const saved = await pursueJob({ ...ctx.deps, artifactDir: ctx.artifactDir }, profileId, {
+          id: job_id,
+          title,
+          companyName: company,
+          rawDescription: description,
+          location,
+          salary,
+          sourceUrl: source_url,
+        });
+        if (!saved.ok) return refused(renamed(saved.error, jobFieldNames));
+        const application = await getApplicationForJob(ctx.deps, profileId, saved.value.id);
+        return json({ job_id: saved.value.id, application_id: application?.id ?? null });
+      },
+    ),
+  );
+
   async function documentViews(
     profileId: string,
     applicationId: string | null,
@@ -288,6 +324,22 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
     const view = await getDocumentView(ctx.deps, profileId, application.id, type);
     return { ok: true as const, job, application, view };
   }
+}
+
+/** The tool's parameter names for the job fields the module validates, so errors name what was sent. */
+const jobFieldNames: Record<string, string> = {
+  id: "job_id",
+  companyName: "company",
+  rawDescription: "description",
+  sourceUrl: "source_url",
+};
+
+function renamed(error: ModuleError, names: Record<string, string>): ModuleError {
+  if (error.kind !== "validation") return error;
+  const fieldErrors = Object.fromEntries(
+    Object.entries(error.fieldErrors).map(([field, messages]) => [names[field] ?? field, messages]),
+  );
+  return { ...error, fieldErrors };
 }
 
 /**

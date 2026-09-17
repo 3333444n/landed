@@ -1,6 +1,6 @@
 # Contributing
 
-Start at the [documentation index](docs/00-index.md) and the [decision register](docs/09-decisions-and-readiness.md). Phase 0 (career data entry), Phase 1a (jobs and applications) and Phase 1b (generated materials, review, PDFs, model access) are implemented; later phases are design only. Distinguish accepted decisions from suggestions and avoid describing planned features as implemented.
+Start at the [documentation index](docs/00-index.md) and the [decision register](docs/09-decisions-and-readiness.md). Phase 0 (career data entry), Phase 1a (jobs and applications), Phase 1b (generated materials, review, PDFs, model access) and the assistant surface ([ADR 008](docs/adr/008-assistant-surface-over-mcp.md), 2026-09-16) are implemented; later phases are design only. Distinguish accepted decisions from suggestions and avoid describing planned features as implemented.
 
 ## Set up
 
@@ -41,6 +41,7 @@ Prefer independent branches from `origin/main`. Use a stack only when one change
 - Every schema change ships with its generated migration in `db/migrations`, reviewed like code, and with updates to [doc 04](docs/04-data-model.md).
 - UI follows [DESIGN.md](DESIGN.md); colours live in `src/app/palettes.css` and every other token in `src/app/tokens.css`, never in component files, and components use only the semantic tokens. The produced PDFs follow [DESIGN-DOCS.md](DESIGN-DOCS.md).
 - The model key comes from the environment only (`LANDED_MODEL_API_KEY`); never store it, log it, or send it to the browser. Prompts keep pasted postings in labelled data blocks, never in the instructions, and bump the prompt version when the text changes.
-- Modules expose plain functions from `index.ts`; framework code never imports a module's repository or schema.
+- Modules expose plain functions from `index.ts`; framework code never imports a module's repository or schema. The `/mcp` tools (`src/app/mcp/tools.ts`) call the composition functions in `src/app` and module operations, never a repository, and never throw.
+- The assistant token (`LANDED_MCP_TOKEN`) comes from the environment only; never store it, log it or render it anywhere but the Connect your assistant column. The assistant workflow is edited in `.agents/skills/landed/SKILL.md` and copied to `plugins/landed/skills/landed/SKILL.md`; `pnpm check` fails on drift.
 - Do not include personal profiles, credentials, real resumes, or private notes in patches, screenshots, tests or examples. Use the [fictional examples](examples/README.md).
 - For documentation changes, check relative links and keep the numbered documents consistent; diagrams are Mermaid blocks edited with the text. See the [documentation policy](docs/08-contributions-and-documentation.md).

@@ -1,6 +1,6 @@
 # ADR 008 — Assistant surface over MCP
 
-Date: 2026-09-16. Status: accepted, implementation in progress. Everything below is decided; it is implemented by the pull requests that follow this record (the endpoint and tools, the Settings column and launcher token, the skill, then `add_job`). Until each merges, [doc 09](../09-decisions-and-readiness.md) says what exists.
+Date: 2026-09-16. Status: accepted, implemented (2026-09-16). It was implemented as a stack of pull requests (the endpoint and tools, the Settings column and launcher token, the skill and plugin, then `add_job`); [doc 09](../09-decisions-and-readiness.md) records the verification and the known gaps.
 
 ## Context
 
@@ -24,7 +24,7 @@ Landed exposes its operations to the user's assistant through an MCP endpoint.
 - Host and Origin validation for the whole application, not only `/mcp`: the `Host` header's hostname must be `localhost`, `127.0.0.1` or `::1` (or a name listed in `LANDED_ALLOWED_HOSTS`, empty until a remote design uses it), and an `Origin` header, when present, must name one of the same hosts; anything else is refused with 403 before any handler runs. The reason is the token page: a server that answered any `Host` could be read through DNS rebinding. The MCP transport specification separately requires local servers to validate `Origin` for the same attack.
 - Run mode `assistant` beside `adapter` and `pasted`, with revision source `assistant`. The lifecycle is in [doc 05](../05-workflows-and-failures.md): a brief opens a queued run, a submission finishes it, and an invalid answer fails it and opens a fresh one.
 - Tools call module operations through the composition layer in `src/app`, never SQL and never a module's repository, so an assistant run passes the same schema validation, grounding check and run record as a generated or pasted one. The tool contract is in [doc 06](../06-ai-and-integrations.md).
-- Scope of this release: reads and drafts. The assistant can list and read jobs, fetch a document brief, submit a document, read and edit a revision and render the PDFs; `add_job` follows in its own pull request. No deletion, no application status change, no profile write. Landed never marks anything applied and never sends anything.
+- Scope of this release: reads, drafts and adding a posting. The assistant can list and read jobs, add a posting it fetched or was given (`add_job`), fetch a document brief, submit a document, read and edit a revision and render the PDFs. No deletion, no application status change, no profile write. Landed never marks anything applied and never sends anything.
 - Who writes: the assistant's model. Landed validates the answer, checks grounding and records the run. The run record's provider is taken from the client's `User-Agent` and its model from what the assistant reports about itself when it asks for the brief; both are best effort and the Runs column labels them as reported, not verified.
 - A portable skill file teaches the assistant the workflow (preconditions, posting intake, a fit evaluation, brief, write, submit, fix, render, report); the Claude Code plugin wraps the same file. The rules the assistant must follow while writing are returned by the brief tool itself, so every assistant sees them whether or not the skill is installed.
 

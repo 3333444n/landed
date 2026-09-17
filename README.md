@@ -24,7 +24,7 @@ Tailoring an application by hand takes an hour per job, and the shortcuts are ba
 | Runs | Every model call is recorded with model, prompt version, tokens, latency and cost, visible next to the document |
 | Data safety | Backup and restore of the database, the PDFs and the logos; keys live only in your environment file; nothing is sent anywhere until you configure a provider or paste an image address |
 
-Status: **Phase 1b complete (2026-09-14)**. Everything in the table is implemented, tested and installable with Docker on macOS; Windows and Linux are untested. What is not built yet: importing a posting from a link, scoring how well you match, company research, automatic discovery of jobs, and interview tracking. See [product scope and phases](docs/01-product-and-phases.md) for the roadmap and [decisions and readiness](docs/09-decisions-and-readiness.md) for the honest list of known gaps.
+Status: **Phase 1b complete (2026-09-14); assistant surface complete (2026-09-16)**. Everything in the table is implemented and tested; the packaged Docker install is tested on macOS, and the assistant connection has been used end to end from Claude Code on a contributor install (the packaged install's generated token is not yet exercised in Docker); Windows and Linux are untested. What is not built yet: importing a posting from a link, scoring how well you match, company research, automatic discovery of jobs, and interview tracking. See [product scope and phases](docs/01-product-and-phases.md) for the roadmap and [decisions and readiness](docs/09-decisions-and-readiness.md) for the honest list of known gaps.
 
 ## Quickstart
 
@@ -68,12 +68,13 @@ Then ask for a resume: "tailor my resume for the Acme job". The assistant checks
 
 ## Architecture in one screen
 
-TypeScript, Next.js (App Router, Server Actions), PostgreSQL through Drizzle with committed SQL migrations, Zod for every boundary, the Vercel AI SDK behind one adapter interface, `@react-pdf/renderer` for PDFs, `lucide-react` for interface icons, Vitest and Playwright for tests, Docker Compose for the packaged install. A modular monolith: four modules (`profile`, `jobs`, `applications`, `documents`), each six files with the same roles, each owning its tables; cross-module workflows live in the app layer and never reach into another module's persistence.
+TypeScript, Next.js (App Router, Server Actions), PostgreSQL through Drizzle with committed SQL migrations, Zod for every boundary, the Vercel AI SDK behind one adapter interface, `@modelcontextprotocol/server` for the assistant endpoint at `/mcp`, `@react-pdf/renderer` for PDFs, `lucide-react` for interface icons, Vitest and Playwright for tests, Docker Compose for the packaged install. A modular monolith: four modules (`profile`, `jobs`, `applications`, `documents`), each six files with the same roles, each owning its tables; cross-module workflows live in the app layer and never reach into another module's persistence.
 
 ```mermaid
 flowchart LR
   subgraph local["Your computer"]
     browser["Browser"] --> app["Next.js server\nmodule use cases"]
+    assistant["Your assistant\n(Claude Code, Codex, Claude Desktop)"] -->|"/mcp, bearer token"| app
     app --> db[("PostgreSQL")]
     app --> files[("PDF artifacts\nand backups")]
   end
@@ -88,12 +89,14 @@ Decisions that shaped it, each with its reasoning and the alternatives rejected:
 - [ADR 004](docs/adr/004-drizzle-persistence.md): Drizzle with generated SQL migrations reviewed like code.
 - [ADR 005](docs/adr/005-url-driven-columns.md): the interface as URL-driven columns; a job's status is derived, never stored.
 - [ADR 006](docs/adr/006-model-access-path.md): the app calls the provider through one adapter; keys live in the environment only; paste-back as the zero-setup path; a fake adapter for every automated check.
+- [ADR 007](docs/adr/007-user-initiated-image-fetch.md): a logo address you paste is the one outbound request you start, fetched once through a guarded fetcher and stored.
+- [ADR 008](docs/adr/008-assistant-surface-over-mcp.md): your own assistant drives Landed through a local MCP endpoint with a launcher-minted token; Landed keeps validation, grounding and the run record.
 
 The [numbered documentation](docs/00-index.md) covers product, domain, modules, data model, workflows and failures, AI and integrations, quickstart, and the decision register. The interface follows [DESIGN.md](DESIGN.md); the produced PDFs follow [DESIGN-DOCS.md](DESIGN-DOCS.md).
 
 ## Testing and quality
 
-CI runs on every pull request: formatting, lint, types, unit tests, integration tests against a real PostgreSQL, a production build, browser journeys, and a check that the committed migrations match the schema. All of it runs with a fake model adapter, so no credentials are ever needed. Real providers are measured separately with `pnpm eval` on synthetic cases; [doc 06](docs/06-ai-and-integrations.md) lists which providers have actually been run. Commits follow Conventional Commits and pull requests state what was tested.
+CI runs on every pull request: formatting, lint, types, unit tests, integration tests against a real PostgreSQL, a production build, browser journeys, and a check that the committed migrations match the schema. All of it runs with a fake model adapter, so no credentials are ever needed; the assistant endpoint is driven in process with the MCP client and no model. Real providers are measured separately with `pnpm eval` on synthetic cases; [doc 06](docs/06-ai-and-integrations.md) lists which providers have actually been run. Commits follow Conventional Commits and pull requests state what was tested.
 
 ## Contributing
 
