@@ -1,6 +1,6 @@
 # 01 — Product and phases
 
-Status: Phase 0 complete (2026-09-13); Phase 1a complete (2026-09-14); Phase 1b complete (2026-09-14); Phase 1c additions complete (2026-09-14); Phases 2 to 4 proposed. Updated 2026-09-14.
+Status: Phase 0 complete (2026-09-13); Phase 1a complete (2026-09-14); Phase 1b complete (2026-09-14); Phase 1c additions complete (2026-09-14); "Use your own assistant" decided and in progress (2026-09-16); Phases 2 to 4 proposed. Updated 2026-09-16.
 
 Landed is a locally run job-search application that produces factual, tailored materials and helps people manage applications. It must be usable without editing source code. Code can be cloned/forked independently of personal data. The shortest useful outcome is a reviewed resume, cover letter, and recruiter message for a real job.
 
@@ -49,6 +49,10 @@ Completed on 2026-09-14: the Documents module with generation runs, frozen snaps
 ### Phase 1c — Additions to the paste flow
 
 Decided and completed on 2026-09-14, after a probe showed that a plain server fetch of a major job board's posting page is refused, which kept automatic link import in Phase 2A. Three smaller additions make the manual paste flow richer: a free-text salary field on the job, shown on its card and never parsed; a company logo chosen from the tile next to the form's title as an uploaded image (PNG, JPEG, WebP or SVG up to 1 MB) or a pasted image address, stored as a file under the artifact directory and shown on the job's card and header in place of its status icon while the chip keeps the status word; and a word cloud of the posting's most frequent words, larger the more often they appear and highlighted when they are one of the profile's skills, on the job column and live under the Description field while a posting is pasted or edited. The logo address fetch is the app's first user-initiated outbound request ([ADR 007](adr/007-user-initiated-image-fetch.md)). Verified with 118 unit tests, 45 integration tests and 4 browser journeys. Known gaps: images are stored as uploaded, never resized; the address fetch resolves the host once and connects again, so a name whose answer changes in between is not caught; the word cloud counts single words only, so a two-word skill is highlighted word by word; an uploaded image has to be chosen again after a validation error. Filling the form's fields from a whole copied posting page is designed but deferred.
+
+### Use your own assistant (in progress)
+
+Decided on 2026-09-16 ([ADR 008](adr/008-assistant-surface-over-mcp.md)) and arriving over the next releases; nothing here is available until its pull request merges. The user starts Landed as today, opens Settings, copies one block into the assistant they already pay for (Claude Code first, then Codex, then Claude Desktop) and asks it, for example, to write the three documents for a job. The assistant reads the job and the career facts through Landed, writes each document and hands it back; Landed runs the same schema validation and grounding check as for a generated or pasted document, saves the revision, records the run and renders the PDFs. No API key is needed and nothing new runs on the computer. In this first release the assistant can read jobs and documents, draft, edit a line and render PDFs; adding a job from the assistant follows; it can never delete anything, change an application's status or write to the profile. The API key and paste-back paths are unchanged. The lifecycle is in [doc 05](05-workflows-and-failures.md) and the tools in [doc 06](06-ai-and-integrations.md).
 
 ## Phase 2 — Assisted import, matching, and research
 
