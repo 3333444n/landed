@@ -35,7 +35,7 @@ cd landed
 sh scripts/landed.sh start        # Windows: powershell -ExecutionPolicy Bypass -File scripts\landed.ps1 start
 ```
 
-The first start takes a few minutes, then open http://127.0.0.1:3000 and enter your name. `stop`, `status`, `logs`, `backup` and `restore` are the other launcher commands. To let Landed call a model itself, open Settings in the app: it lists the three lines to add to `.env.release` for each provider. The [quickstart](docs/07-quickstart-contract.md) has the provider table, backup, upgrade and troubleshooting.
+The first start takes a few minutes, then open http://127.0.0.1:3000 and enter your name. `stop`, `status`, `logs`, `backup`, `restore` and `token` are the other launcher commands. To let Landed call a model itself, open Settings in the app: it lists the three lines to add to `.env.release` for each provider. The [quickstart](docs/07-quickstart-contract.md) has the provider table, backup, upgrade and troubleshooting.
 
 To work on the code you need Node 22, pnpm and Docker; the [contributor path](docs/07-quickstart-contract.md#contributor-path-tested) is six commands.
 

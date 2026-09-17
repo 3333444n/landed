@@ -7,13 +7,18 @@ type Shared = {
   name: string;
   helper?: string;
   errors?: string[];
+  /**
+   * The monospace stack, allowed only on a read-only multiline field holding a preformatted
+   * command block (DESIGN.md "Typography", the one exception).
+   */
+  mono?: boolean;
 };
 
 type InputProps = Shared & { multiline?: false } & Omit<ComponentProps<"input">, "name" | "id">;
 type TextareaProps = Shared & { multiline: true } & Omit<ComponentProps<"textarea">, "name" | "id">;
 
 export function Field(props: InputProps | TextareaProps) {
-  const { label, name, helper, errors, ...rest } = props;
+  const { label, name, helper, errors, mono, ...rest } = props;
   const id = `${useId()}-${name}`;
   const errorId = `${id}-error`;
   const helperId = `${id}-helper`;
@@ -33,7 +38,7 @@ export function Field(props: InputProps | TextareaProps) {
           {...omitMultiline(rest)}
           id={id}
           name={name}
-          className={styles.control}
+          className={`${styles.control} ${mono ? styles.mono : ""}`}
           aria-invalid={hasError || undefined}
           aria-describedby={describedBy || undefined}
         />

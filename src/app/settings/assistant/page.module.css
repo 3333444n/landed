@@ -1,0 +1,13 @@
+.text {
+  margin-top: var(--space-3);
+}
+
+.block {
+  margin-top: var(--space-3);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--space-2);
+}

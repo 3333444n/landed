@@ -16,7 +16,7 @@ import {
   type RecruiterMessageContent,
   type ResumeContent,
 } from "@/modules/documents/contracts";
-import { CopyButton } from "./CopyButton";
+import { CopyButton } from "@/components/CopyButton";
 import styles from "./documents.module.css";
 
 interface PreviewProps {

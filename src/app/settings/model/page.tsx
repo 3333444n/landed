@@ -62,6 +62,8 @@ export default function ModelSetupPage() {
       icon={<Settings />}
       title="Model setup"
       subtitle="Where generated documents come from."
+      parentHref="/settings"
+      parentTitle="Settings"
       width="detail"
     >
       {status.kind === "unconfigured" ? (

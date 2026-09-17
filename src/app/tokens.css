@@ -68,6 +68,8 @@
   --width-detail-max: 720px;
 
   --font-sans: "Helvetica Neue", Helvetica, Inter, "SF Pro Text", Arial, sans-serif;
+  /* Only for a preformatted command block inside a read-only Field (DESIGN.md, 2026-09-16). */
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --duration-hover: 150ms;
