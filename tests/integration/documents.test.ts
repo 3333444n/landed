@@ -5,9 +5,12 @@ import type { DatabaseConnection } from "@/infrastructure/database";
 import { FakeModelAdapter, fakeMarkers } from "@/infrastructure/model";
 import {
   generateDocument,
+  prepareAssistantBrief,
   prepareGeneration,
   preparePasteBack,
+  reopenAssistantRun,
 } from "@/app/jobs/generate-document";
+import { runSummary } from "@/app/jobs/[id]/documents/summary";
 import { listJobRows } from "@/app/jobs/list-jobs";
 import { pursueJob } from "@/app/jobs/pursue-job";
 import { getApplicationForJob } from "@/modules/applications";
@@ -25,124 +28,14 @@ import {
 } from "@/modules/documents";
 import { documentRevisions, documents, generationRuns } from "@/modules/documents/schema";
 import { deleteJob } from "@/modules/jobs";
-import {
-  createAchievement,
-  createProfile,
-  saveEducation,
-  saveEmployment,
-  saveProject,
-  saveSkill,
-  updateProfile,
-} from "@/modules/profile";
+import { updateProfile } from "@/modules/profile";
+import { demo, seedDemoProfile, unwrap } from "../helpers/demo-seed";
 import { openTestDatabase, truncateAll } from "../helpers/test-database";
-
-// Values from examples/demo-profile.json (fictional); the fixtures cite these ids.
-const demo = {
-  profileId: "10000000-0000-4000-8000-000000000001",
-  employmentId: "20000000-0000-4000-8000-000000000001",
-  educationId: "30000000-0000-4000-8000-000000000001",
-  projectId: "40000000-0000-4000-8000-000000000001",
-  achievementIds: [
-    "50000000-0000-4000-8000-000000000001",
-    "50000000-0000-4000-8000-000000000002",
-    "50000000-0000-4000-8000-000000000003",
-  ],
-  skillIds: ["60000000-0000-4000-8000-000000000001", "60000000-0000-4000-8000-000000000002"],
-  jobId: "70000000-0000-4000-8000-000000000001",
-  job: {
-    title: "Full-stack developer",
-    companyName: "Example Analytics",
-    location: "Remote",
-    rawDescription:
-      "Example Analytics is looking for a full-stack developer to build internal reporting tools.\n\nYou will work with PostgreSQL and TypeScript.",
-  },
-};
 
 let connection: DatabaseConnection;
 const deps = () => ({ db: connection.db });
 const fake = new FakeModelAdapter();
 const fixture = (name: string) => readFileSync(`examples/generation/fixtures/${name}.json`, "utf8");
-
-function unwrap<T>(result: { ok: true; value: T } | { ok: false; error: unknown }): T {
-  if (!result.ok) throw new Error(`expected ok, got ${JSON.stringify(result.error)}`);
-  return result.value;
-}
-
-async function seedProfile() {
-  unwrap(await createProfile(deps(), { id: demo.profileId, displayName: "Alex Rivera" }));
-  unwrap(
-    await updateProfile(deps(), demo.profileId, {
-      displayName: "Alex Rivera",
-      headline: "Software developer",
-      email: "alex@example.com",
-      location: "Mexico City",
-      summary: "Builds internal tools and accessible web interfaces.",
-    }),
-  );
-  unwrap(
-    await saveEmployment(deps(), demo.profileId, {
-      id: demo.employmentId,
-      employerName: "Example Workshop",
-      role: "Software developer",
-      startYear: "2023",
-      startMonth: "4",
-      endYear: "2025",
-      endMonth: "6",
-    }),
-  );
-  unwrap(
-    await saveEducation(deps(), demo.profileId, {
-      id: demo.educationId,
-      institution: "Example Learning Institute",
-      qualification: "Web development certificate",
-      subject: "Software development",
-      status: "completed",
-    }),
-  );
-  unwrap(
-    await saveProject(deps(), demo.profileId, {
-      id: demo.projectId,
-      name: "Community Tool Library",
-      description: "A volunteer project for tracking borrowed tools.",
-    }),
-  );
-  unwrap(
-    await saveSkill(deps(), demo.profileId, { id: demo.skillIds[0], displayName: "PostgreSQL" }),
-  );
-  unwrap(
-    await saveSkill(deps(), demo.profileId, {
-      id: demo.skillIds[1],
-      displayName: "Web accessibility",
-    }),
-  );
-  unwrap(
-    await createAchievement(deps(), demo.profileId, {
-      id: demo.achievementIds[0],
-      employmentId: demo.employmentId,
-      statement:
-        "Reduced weekly report preparation from four hours to one by building a PostgreSQL-backed reporting tool.",
-      problem: "Manual preparation of weekly reports.",
-      action: "Built a reporting tool with reusable SQL queries.",
-      result: "Weekly preparation took one hour.",
-      metric: "4 hours to 1 hour per week",
-      skillIds: [demo.skillIds[0]],
-    }),
-  );
-  unwrap(
-    await createAchievement(deps(), demo.profileId, {
-      id: demo.achievementIds[1],
-      projectId: demo.projectId,
-      statement: "Implemented keyboard-accessible forms for recording tool loans.",
-      skillIds: [demo.skillIds[1]],
-    }),
-  );
-  unwrap(
-    await createAchievement(deps(), demo.profileId, {
-      id: demo.achievementIds[2],
-      statement: "Documented a local development setup for a volunteer team.",
-    }),
-  );
-}
 
 async function pasteJob(description = demo.job.rawDescription) {
   const job = unwrap(
@@ -169,7 +62,7 @@ afterAll(async () => {
 });
 beforeEach(async () => {
   await truncateAll(connection);
-  await seedProfile();
+  await seedDemoProfile(deps);
 });
 
 describe("generateDocument with the fake adapter", () => {
@@ -521,6 +414,110 @@ describe("paste-back", () => {
       json: "",
     });
     expect(blank.ok).toBe(false);
+  });
+});
+
+describe("assistant briefs", () => {
+  const reported = { provider: "claude-code/1.0", model: "claude-opus-5" };
+
+  it("opens a queued assistant run and records the answer as an assistant revision", async () => {
+    const { application } = await pasteJob();
+    const brief = unwrap(
+      await prepareAssistantBrief(deps(), demo.profileId, demo.jobId, "resume", reported),
+    );
+    expect(brief.run.state).toBe("queued");
+    expect(brief.run.mode).toBe("assistant");
+    expect(brief.run.provider).toBe(reported.provider);
+    expect(brief.run.model).toBe(reported.model);
+    expect(brief.run.startedAt).toBeNull();
+    expect(brief.instructions).toContain("resume");
+    expect(brief.input).toContain("untrusted data");
+    expect((await chip()).chip.label).toBe("Preparing");
+    expect(
+      runSummary(await getDocumentView(deps(), demo.profileId, application.id, "resume")),
+    ).toBe("Assistant brief opened");
+
+    const saved = unwrap(
+      await submitPastedAnswer(deps(), demo.profileId, {
+        runId: brief.run.id,
+        json: fixture("resume"),
+      }),
+    );
+    expect(saved.run.state).toBe("succeeded");
+    expect(saved.run.mode).toBe("assistant");
+    expect(saved.revision.source).toBe("assistant");
+    expect(saved.revision.warnings).toEqual([]);
+    const view = await getDocumentView(deps(), demo.profileId, application.id, "resume");
+    expect(view.revision?.id).toBe(saved.revision.id);
+    expect(runSummary(view)).toBe("Written by assistant");
+    expect((await chip()).chip.label).toBe("Needs review");
+
+    const again = await submitPastedAnswer(deps(), demo.profileId, {
+      runId: brief.run.id,
+      json: fixture("resume"),
+    });
+    expect(again.ok).toBe(false);
+    if (!again.ok && again.error.kind === "validation") {
+      expect(again.error.fieldErrors.form?.[0]).toContain("get_document_brief");
+    }
+  });
+
+  it("fails the run as pasted_invalid and reopens a fresh one with the same snapshot", async () => {
+    await pasteJob();
+    const brief = unwrap(
+      await prepareAssistantBrief(deps(), demo.profileId, demo.jobId, "resume", reported),
+    );
+    const bad = await submitPastedAnswer(deps(), demo.profileId, {
+      runId: brief.run.id,
+      json: "not json",
+    });
+    expect(bad.ok).toBe(false);
+    const failed = (await getRun(deps(), demo.profileId, brief.run.id))!;
+    expect(failed.state).toBe("failed");
+    expect(failed.failureKind).toBe("pasted_invalid");
+    expect(failed.mode).toBe("assistant");
+
+    const reopened = unwrap(await reopenAssistantRun(deps(), demo.profileId, brief.run.id));
+    expect(reopened.id).not.toBe(brief.run.id);
+    expect(reopened.state).toBe("queued");
+    expect(reopened.mode).toBe("assistant");
+    expect(reopened.provider).toBe(reported.provider);
+    expect(reopened.snapshot).toEqual(brief.run.snapshot);
+    const saved = unwrap(
+      await submitPastedAnswer(deps(), demo.profileId, {
+        runId: reopened.id,
+        json: fixture("resume"),
+      }),
+    );
+    expect(saved.revision.source).toBe("assistant");
+    expect(await reopenAssistantRun(deps(), demo.profileId, crypto.randomUUID())).toMatchObject({
+      ok: false,
+    });
+  });
+
+  it("lets the newest brief from either surface supersede an older queued one", async () => {
+    await pasteJob();
+    const assistant = unwrap(
+      await prepareAssistantBrief(deps(), demo.profileId, demo.jobId, "cover_letter", reported),
+    );
+    const pasted = unwrap(
+      await preparePasteBack(deps(), demo.profileId, demo.jobId, "cover_letter"),
+    );
+    expect((await getRun(deps(), demo.profileId, assistant.run.id))?.state).toBe("cancelled");
+    expect((await getRun(deps(), demo.profileId, pasted.run.id))?.state).toBe("queued");
+
+    const assistantAgain = unwrap(
+      await prepareAssistantBrief(deps(), demo.profileId, demo.jobId, "cover_letter", reported),
+    );
+    expect((await getRun(deps(), demo.profileId, pasted.run.id))?.state).toBe("cancelled");
+    expect((await getRun(deps(), demo.profileId, assistantAgain.run.id))?.state).toBe("queued");
+
+    // A brief for another document type is left alone.
+    const resume = unwrap(
+      await prepareAssistantBrief(deps(), demo.profileId, demo.jobId, "resume", reported),
+    );
+    expect((await getRun(deps(), demo.profileId, assistantAgain.run.id))?.state).toBe("queued");
+    expect((await getRun(deps(), demo.profileId, resume.run.id))?.state).toBe("queued");
   });
 });
 

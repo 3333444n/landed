@@ -30,8 +30,10 @@ export function runSummary(view: DocumentView): string {
     return `Failed: ${run.failureKind ? failureLabels[run.failureKind] : "unknown error"}`;
   }
   if (run.state === "queued" && run.mode === "pasted") return "Paste back opened, no answer yet";
+  if (run.state === "queued" && run.mode === "assistant") return "Assistant brief opened";
   if (run.state === "queued" || run.state === "running") return "Crafting";
   if (run.mode === "pasted") return "Pasted back";
+  if (run.mode === "assistant") return "Written by assistant";
   return ["Generated", formatTokens(run), formatCost(run.costUsd)].filter(Boolean).join(" · ");
 }
 

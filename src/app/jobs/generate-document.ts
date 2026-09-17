@@ -10,6 +10,7 @@ import { getApplicationForJob } from "@/modules/applications";
 import {
   contentSchemas,
   finishRun,
+  getRun,
   type DocumentContent,
   promptFor,
   startRun,
@@ -125,4 +126,63 @@ export async function preparePasteBack(
     ok: true,
     value: { run, instructions: prompt.instructions, input: prompt.buildInput(snapshot) },
   };
+}
+
+/** What a brief hands to whoever writes the answer: the run to answer and the prompt text. */
+export interface DocumentBrief {
+  run: GenerationRunRecord;
+  instructions: string;
+  input: string;
+}
+
+/**
+ * The assistant surface (ADR 008): the same frozen snapshot and prompt as paste-back, in a queued
+ * run of mode `assistant`. The provider and model are what the harness says about itself; the
+ * run record is honest about that being self-reported.
+ */
+export async function prepareAssistantBrief(
+  deps: BaseDeps,
+  profileId: string,
+  jobId: string,
+  type: DocumentType,
+  reported: { provider: string; model: string },
+): Promise<Result<DocumentBrief>> {
+  const prepared = await prepareGeneration(deps, profileId, jobId);
+  if (!prepared.ok) return prepared;
+  const { applicationId, snapshot } = prepared.value;
+  const prompt = promptFor(type);
+  const run = await startRun(deps, profileId, {
+    applicationId,
+    documentType: type,
+    snapshot,
+    mode: "assistant",
+    provider: reported.provider,
+    model: reported.model,
+  });
+  return {
+    ok: true,
+    value: { run, instructions: prompt.instructions, input: prompt.buildInput(snapshot) },
+  };
+}
+
+/**
+ * After an assistant's answer is refused, a fresh queued run with the same snapshot lets it
+ * resubmit without asking for the brief again; the refused run stays recorded as failed.
+ */
+export async function reopenAssistantRun(
+  deps: BaseDeps,
+  profileId: string,
+  runId: string,
+): Promise<Result<GenerationRunRecord>> {
+  const previous = await getRun(deps, profileId, runId);
+  if (!previous) return notFound("Generation run");
+  const run = await startRun(deps, profileId, {
+    applicationId: previous.applicationId,
+    documentType: previous.documentType,
+    snapshot: previous.snapshot,
+    mode: "assistant",
+    provider: previous.provider,
+    model: previous.model,
+  });
+  return { ok: true, value: run };
 }

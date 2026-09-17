@@ -21,6 +21,7 @@ import {
   type DocumentContent,
   type DocumentType,
   type GroundingWarning,
+  type RevisionSource,
   type RunMode,
   type Snapshot,
 } from "./contracts";
@@ -51,7 +52,10 @@ export function promptFor(type: DocumentType): PromptDefinition {
   return prompts[type];
 }
 
-/** Writes the run row first (docs/05). `running` for an adapter call, `queued` for paste-back. */
+/**
+ * Writes the run row first (docs/05). `running` for an adapter call, `queued` for paste-back and
+ * the assistant, whose answers arrive later.
+ */
 export async function startRun(
   deps: DocumentsDeps,
   profileId: string,
@@ -59,8 +63,8 @@ export async function startRun(
 ): Promise<repo.GenerationRunRecord> {
   const prompt = prompts[identity.documentType];
   const at = now(deps);
-  if (identity.mode === "pasted") {
-    await repo.cancelQueuedPastedRuns(
+  if (identity.mode !== "adapter") {
+    await repo.cancelQueuedRuns(
       deps.db,
       profileId,
       identity.applicationId,
@@ -117,8 +121,9 @@ export async function finishRun(
 }
 
 /**
- * Paste-back: the user's pasted JSON goes through the same schema and grounding check as an
- * adapter answer. Invalid JSON is a field error and a failed run of kind `pasted_invalid`.
+ * Paste-back and the assistant: the submitted JSON goes through the same schema and grounding
+ * check as an adapter answer. Invalid JSON is a field error and a failed run of kind
+ * `pasted_invalid`; the revision's source follows the run's mode.
  */
 export async function submitPastedAnswer(
   deps: DocumentsDeps,
@@ -129,8 +134,14 @@ export async function submitPastedAnswer(
   if (!parsed.success) return validation(fieldErrorsFromZod(parsed.error));
   const run = await repo.findRun(deps.db, profileId, parsed.data.runId);
   if (!run) return notFound("Generation run");
-  if (run.mode !== "pasted" || run.state !== "queued") {
-    return validation({ form: ["This prompt was already answered; open Paste back again"] });
+  if (run.mode === "adapter" || run.state !== "queued") {
+    return validation({
+      form: [
+        run.mode === "assistant"
+          ? "This brief was already answered; call get_document_brief again"
+          : "This prompt was already answered; open Paste back again",
+      ],
+    });
   }
   const at = now(deps);
   let content: unknown;
@@ -158,7 +169,7 @@ export async function submitPastedAnswer(
       json: [`The answer does not match the document shape: ${issues.join("; ")}`],
     });
   }
-  const saved = await saveRevision(deps, profileId, run, checked.data, null, "pasted", at);
+  const saved = await saveRevision(deps, profileId, run, checked.data, null, run.mode, at);
   if (!saved.ok) return saved;
   return { ok: true, value: { run: saved.value.run, revision: saved.value.revision! } };
 }
@@ -325,7 +336,7 @@ async function saveRevision(
   run: repo.GenerationRunRecord,
   value: unknown,
   usage: GenerateUsage | null,
-  source: "generated" | "pasted",
+  source: Exclude<RevisionSource, "edited">,
   at: Date,
 ): Promise<
   Result<{ run: repo.GenerationRunRecord; revision: repo.DocumentRevisionRecord | null }>
