@@ -3,6 +3,18 @@
  */
 export {
   achievementInput,
+  profilePatchInput,
+  employmentPatchInput,
+  educationPatchInput,
+  projectPatchInput,
+  skillPatchInput,
+  achievementPatchInput,
+  type ProfilePatchInput,
+  type EmploymentPatchInput,
+  type EducationPatchInput,
+  type ProjectPatchInput,
+  type SkillPatchInput,
+  type AchievementPatchInput,
   createAchievementInput,
   createProfileInput,
   educationInput,
@@ -28,6 +40,12 @@ export {
   type UpdateProfileInput,
 } from "./contracts";
 export {
+  patchProfile,
+  patchEmployment,
+  patchEducation,
+  patchProject,
+  patchSkill,
+  patchAchievement,
   createAchievement,
   createProfile,
   deleteAchievement,

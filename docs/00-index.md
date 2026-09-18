@@ -41,3 +41,9 @@ Diagrams are Mermaid blocks inside the numbered documents, so they render on Git
 Change the relevant numbered document and its Mermaid diagram in the same change as the behavior/schema/dependency change. Record significant accepted decisions in an ADR. Keep one authoritative explanation per subject and link to it. No recurring background monitor is required.
 
 Personal inputs and development notes must not be included in release artifacts.
+
+## Profile management over MCP (accepted, pending merge)
+
+[ADR 009 — Profile management over MCP](adr/009-profile-management-over-mcp.md) extends ADR 008 with 18 tools: profile read/create/update and add/update/delete for roles, education, projects, skills and achievements. The feature branch uses module-owned partial updates, required version checks, client ids for retries, serialized first-profile creation and individual-record deletion only. The portable skill routes profile tasks independently of jobs. Existing snapshots remain unchanged. No new provider access, dependency or schema migration is planned for this extension.
+
+Implementation and local acceptance are in progress; this is not a released feature. Required verification is `pnpm verify:full`, followed by local assistant testing before a pull request. Do not infer that the original ADR 008 verification covers the additional tools. Contracts: [doc 06](06-ai-and-integrations.md#profile-tools-adr-009-feature-branch-pending-merge); workflow: [doc 05](05-workflows-and-failures.md#profile-management-from-an-assistant-adr-009-pending-merge).

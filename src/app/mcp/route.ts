@@ -7,7 +7,6 @@
 import { deps } from "@/app/current-profile";
 import { loadConfig } from "@/infrastructure/config";
 import { getAssistantConfig } from "@/infrastructure/server";
-import { getCurrentProfile } from "@/modules/profile";
 import { bearerMatches } from "./auth";
 import { buildMcpHandler } from "./handler";
 
@@ -29,11 +28,9 @@ export async function POST(request: Request) {
     return Response.json({ error: "unauthorized" }, { status: 401 });
   }
   const dependencies = deps();
-  const profile = await getCurrentProfile(dependencies);
   const handler = buildMcpHandler({
     deps: dependencies,
     artifactDir: loadConfig().LANDED_ARTIFACT_DIR,
-    profile,
     origin: originOf(request),
     userAgent: request.headers.get("user-agent"),
   });

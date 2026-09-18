@@ -1,6 +1,6 @@
 /*
- * The MCP handler for one request: a fresh server with the eight tools bound to the verified
- * profile, the dependencies and the request's origin. No Next imports, so the integration test
+ * The MCP handler for one request: a fresh server with tools bound to the authenticated request
+ * context, the dependencies and the request's origin. No Next imports, so the integration test
  * drives `fetch` directly. `legacy: "stateless"` keeps the 2025-era transport that Claude Code,
  * Codex and Claude Desktop speak today: every POST is answered by a fresh instance, GET and
  * DELETE answer 405, and nothing is held between requests.

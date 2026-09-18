@@ -137,3 +137,11 @@ Store runtime data in volumes outside the source checkout. Ignore files are a se
 [Resume Matcher SETUP](https://github.com/srbhr/Resume-Matcher/blob/main/SETUP.md) documents local development, provider setup, Docker, and troubleshooting. Its retrieved [.github/CONTRIBUTING.md](https://github.com/srbhr/Resume-Matcher/blob/main/.github/CONTRIBUTING.md) includes older setup paths inconsistent with that guide; verify current source before copying any commands. Our installation instructions have one owner: this document.
 
 [ai-job-search](https://github.com/MadsLorentzen/ai-job-search) uses an installed agent environment and local tools. Its tracked profile-file approach introduces different contribution/privacy concerns than an app that stores user data outside Git. Borrow workflow ideas without inheriting that storage arrangement.
+
+## Trying profile tools on the feature branch (ADR 009, pending merge)
+
+Use the same Settings → Connect your assistant setup and refresh the connected tool list after restarting the updated server. The branch adds `get_profile`, `create_profile`, `update_profile` and add/update/delete tools for each career-record type. Use the skill from the same checkout; a published plugin from an older release may still describe only the document workflow.
+
+On an empty installation, ask “Create my profile with the name Morgan Example.” Then try “Add PostgreSQL to my skills,” “Put that skill in the Databases category,” and “Delete the PostgreSQL skill.” Refresh About me in the browser to inspect each result. These examples are fictional; use an isolated local database for demonstrations. The profile workflow does not require a job or a model API key. Existing installations keep their data, token and configuration; whole-profile deletion is not exposed.
+
+Local acceptance from Codex and Claude Code and packaged verification for this extension have not yet been recorded. The original connection verification above applies only to ADR 008.

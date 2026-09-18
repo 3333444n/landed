@@ -1,5 +1,6 @@
 /*
- * The eight tools an assistant may call (ADR 008, docs/06). Each one is a thin adapter over a
+ * The document and job tools an assistant may call (ADR 008, docs/06).
+ * Profile tools are registered separately under ADR 009. Each one is a thin adapter over a
  * composition function or a module operation and returns plain JSON text; a refused operation
  * comes back as an `isError` result with the module's error, never as a thrown exception, so
  * the harness can read the reason and try again. Nothing here opens a transaction or imports a
@@ -33,16 +34,15 @@ import {
   type DocumentView,
 } from "@/modules/documents";
 import { getJob } from "@/modules/jobs";
-import type { ProfileRecord } from "@/modules/profile";
+import { getCurrentProfile } from "@/modules/profile";
 import type { ModuleError } from "@/modules/shared/contracts";
 import type { BaseDeps } from "@/modules/shared/service";
 import { documentDetail, errorText, jobDetail, jobListItem, warning } from "./serialize";
+import { registerProfileTools } from "./profile-tools";
 
 export interface ToolContext {
   deps: BaseDeps;
   artifactDir: string;
-  /** Null on a blank installation; every tool then answers with the same error. */
-  profile: ProfileRecord | null;
   /** Scheme and host the request arrived on, for download links the harness can open. */
   origin: string;
   /** The client's User-Agent, recorded as the run's provider (self-reported, best effort). */
@@ -75,15 +75,22 @@ const failure = (text: string): ToolResult => ({
 const refused = (error: ModuleError) => failure(errorText(error));
 
 export function registerTools(server: McpServer, ctx: ToolContext): void {
+  registerProfileTools(server, ctx);
   /** Runs a tool body with the profile resolved; any thrown error becomes a result. */
   const tool =
     <A>(body: (args: A, profileId: string) => Promise<ToolResult>) =>
     async (args: A): Promise<ToolResult> => {
-      if (!ctx.profile) return failure("not_found: Create your profile in the browser first");
       try {
-        return await body(args, ctx.profile.id);
-      } catch (error) {
-        return failure(`internal: ${error instanceof Error ? error.message : String(error)}`);
+        const profile = await getCurrentProfile(ctx.deps);
+        if (!profile)
+          return failure(
+            "not_found: Call create_profile or create your profile in the browser first",
+          );
+        return await body(args, profile.id);
+      } catch {
+        return failure(
+          "internal: Landed could not complete the operation. Check that the database is running and try again.",
+        );
       }
     };
 

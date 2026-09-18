@@ -16,7 +16,6 @@ import { getRun } from "@/modules/documents";
 import { documentArtifacts, documentRevisions, generationRuns } from "@/modules/documents/schema";
 import { applications } from "@/modules/applications/schema";
 import { jobs } from "@/modules/jobs/schema";
-import { getCurrentProfile } from "@/modules/profile";
 import { demo, seedDemoProfile, unwrap } from "../helpers/demo-seed";
 import { openTestDatabase, truncateAll } from "../helpers/test-database";
 
@@ -34,8 +33,7 @@ const origin = "http://127.0.0.1:3000";
 const userAgent = "claude-code/2.1.0";
 
 async function connect(): Promise<Client> {
-  const profile = await getCurrentProfile(deps());
-  const handler = buildMcpHandler({ deps: deps(), artifactDir, profile, origin, userAgent });
+  const handler = buildMcpHandler({ deps: deps(), artifactDir, origin, userAgent });
   const c = new Client({ name: "landed-test", version: "1" });
   await c.connect(
     new StreamableHTTPClientTransport(new URL(`${origin}/mcp`), {

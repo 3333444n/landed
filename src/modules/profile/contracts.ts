@@ -140,3 +140,84 @@ export const createAchievementInput = achievementInput;
 export type CreateAchievementInput = AchievementInput;
 
 export type ProfileError = ModuleError;
+
+/** JSON contracts for conversational edits: omission preserves; null clears optional values. */
+const patchText = z.string().trim().max(4000).nullable().optional();
+const patchUrl = z
+  .url({ protocol: /^https?$/ })
+  .nullable()
+  .optional();
+const patchUuid = z.uuid().nullable().optional();
+const patchDates = {
+  startYear: z.number().int().nullable().optional(),
+  startMonth: z.number().int().nullable().optional(),
+  endYear: z.number().int().nullable().optional(),
+  endMonth: z.number().int().nullable().optional(),
+};
+const patchVersion = { expectedUpdatedAt: z.iso.datetime() };
+export const profilePatchInput = z.strictObject({
+  ...patchVersion,
+  displayName: requiredText("Enter your name").optional(),
+  headline: patchText,
+  summary: patchText,
+  email: z.email().nullable().optional(),
+  phone: patchText,
+  location: patchText,
+  desiredRoles: z.array(z.string().trim().min(1).max(200)).optional(),
+  locations: z.array(z.string().trim().min(1).max(200)).optional(),
+  workArrangement: z.array(z.enum(workArrangements)).optional(),
+  constraints: patchText,
+  linkedinUrl: patchUrl,
+  githubUrl: patchUrl,
+  websiteUrl: patchUrl,
+});
+export const employmentPatchInput = z.strictObject({
+  ...patchVersion,
+  employerName: requiredText("Enter the employer").optional(),
+  role: requiredText("Enter your role").optional(),
+  location: patchText,
+  ...patchDates,
+  isCurrent: z.boolean().optional(),
+  description: patchText,
+});
+export const educationPatchInput = z.strictObject({
+  ...patchVersion,
+  institution: requiredText("Enter the institution").optional(),
+  qualification: patchText,
+  subject: patchText,
+  ...patchDates,
+  status: z.enum(educationStatuses).optional(),
+  description: patchText,
+});
+export const projectPatchInput = z.strictObject({
+  ...patchVersion,
+  name: requiredText("Enter the project name").optional(),
+  description: patchText,
+  url: patchUrl,
+  employmentId: patchUuid,
+  ...patchDates,
+});
+export const skillPatchInput = z.strictObject({
+  ...patchVersion,
+  displayName: requiredText("Enter the skill").optional(),
+  category: patchText,
+});
+export const achievementPatchInput = z.strictObject({
+  ...patchVersion,
+  statement: requiredText("Write the factual statement", 2000).optional(),
+  problem: patchText,
+  action: patchText,
+  result: patchText,
+  metric: patchText,
+  sourceNote: patchText,
+  sourceUrl: patchUrl,
+  employmentId: patchUuid,
+  projectId: patchUuid,
+  skillIds: z.array(z.uuid()).optional(),
+});
+export type ProfilePatchInput = z.infer<typeof profilePatchInput>;
+export type EmploymentPatchInput = z.infer<typeof employmentPatchInput>;
+export type EducationPatchInput = z.infer<typeof educationPatchInput>;
+export type ProjectPatchInput = z.infer<typeof projectPatchInput>;
+export type SkillPatchInput = z.infer<typeof skillPatchInput>;
+export type AchievementPatchInput = z.infer<typeof achievementPatchInput>;

@@ -64,6 +64,8 @@ Use the assistant you already pay for, no key needed ([ADR 008](docs/adr/008-ass
 
    Codex discovers the same skill by itself when you run it inside the Landed checkout; to use it from anywhere, link it into your user skills: `mkdir -p ~/.agents/skills && ln -s "$PWD/.agents/skills/landed" ~/.agents/skills/landed`. Claude Desktop uses the block from step 2 alone.
 
+The profile-management extension is on the feature branch, pending local acceptance and merge ([ADR 009](docs/adr/009-profile-management-over-mcp.md)). It adds conversational profile creation and editing, plus individual career-record deletion through the same connection. See the [branch testing instructions](docs/07-quickstart-contract.md#trying-profile-tools-on-the-feature-branch-adr-009-pending-merge).
+
 Then ask for a resume: "tailor my resume for the Acme job". The assistant checks the fit first, writes the resume, cover letter and recruiter message in turn, fixes the warnings Landed raises, and gives you the PDF links. It never marks an application applied and never sends anything.
 
 ## Architecture in one screen
