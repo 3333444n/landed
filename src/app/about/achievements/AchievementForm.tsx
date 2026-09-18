@@ -7,6 +7,7 @@ import { Field } from "@/components/Field";
 import { Select } from "@/components/Select";
 import formStyles from "@/components/forms.module.css";
 import { fieldsKey, idleState, prefill, type ActionState, type FormValues } from "@/app/form-state";
+import { Combobox } from "@/components/Combobox";
 import styles from "./achievements.module.css";
 
 export type Option = { value: string; label: string };
@@ -34,6 +35,7 @@ export function AchievementForm({
   projects: Option[];
   skills: Option[];
 }) {
+  const [selectedSkills, setSelectedSkills] = useState(recordSkillIds);
   const [state, formAction, pending] = useActionState(action, idleState);
   const errors = state.status === "error" ? state.fieldErrors : {};
   const values = prefill(state, record ?? {});
@@ -45,7 +47,8 @@ export function AchievementForm({
         values={values}
         errors={errors}
         editing={!!record}
-        recordSkillIds={recordSkillIds}
+        selectedSkills={selectedSkills}
+        onSkillsChange={setSelectedSkills}
         jobs={jobs}
         projects={projects}
         skills={skills}
@@ -73,7 +76,8 @@ function Fields({
   values,
   errors,
   editing,
-  recordSkillIds,
+  selectedSkills,
+  onSkillsChange,
   jobs,
   projects,
   skills,
@@ -81,7 +85,8 @@ function Fields({
   values: FormValues;
   errors: Record<string, string[]>;
   editing: boolean;
-  recordSkillIds: string[];
+  selectedSkills: string[];
+  onSkillsChange: (value: string[]) => void;
   jobs: Option[];
   projects: Option[];
   skills: Option[];
@@ -89,9 +94,6 @@ function Fields({
   // Generated once per blank form and kept across errors: a retry after a lost response saves
   // the same record instead of a duplicate (docs/05).
   const [recordId] = useState(() => values.id ?? crypto.randomUUID());
-  // FormValues keeps only the last string per key, so a multi-value checkbox group cannot be
-  // echoed back after an error; the boxes fall back to the record's links instead.
-  const checkedSkills = new Set(recordSkillIds);
 
   return (
     <>
@@ -171,29 +173,23 @@ function Fields({
         helper="An achievement links to a role or a project, not both."
         errors={errors.projectId}
       />
-      <fieldset className={styles.group}>
-        <legend className={styles.groupLabel}>Skills used</legend>
-        {skills.length === 0 ? (
-          <p className={`body-sm ${styles.groupHelper}`}>
-            Add skills under About me to link them here.
-          </p>
-        ) : (
-          skills.map((skill) => (
-            <Checkbox
-              key={skill.value}
-              label={skill.label}
-              name="skillIds"
-              value={skill.value}
-              defaultChecked={checkedSkills.has(skill.value)}
-            />
-          ))
-        )}
-        {errors.skillIds ? (
-          <p className={`${formStyles.status} ${formStyles.failed}`} role="alert">
-            {errors.skillIds.join(" ")}
-          </p>
-        ) : null}
-      </fieldset>
+      <Combobox
+        multiple
+        name="skillIds"
+        label="Skills used"
+        placeholder="Search skills"
+        emptyMessage="No matching skills."
+        helper={
+          skills.length
+            ? "Select all the skills used in this achievement."
+            : "Add skills under About me to link them here."
+        }
+        disabled={skills.length === 0}
+        options={skills}
+        value={selectedSkills}
+        onChange={onSkillsChange}
+        errors={errors.skillIds}
+      />
       {editing ? (
         <div className={styles.group}>
           <Checkbox label="Reviewed" name="reviewed" defaultChecked={values.reviewed === "on"} />
