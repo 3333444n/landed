@@ -75,9 +75,10 @@ export default async function AssistantSetupPage() {
       width="detail"
     >
       <p className="text-secondary">
-        Your assistant reads your jobs and your facts through Landed at {url} and hands its drafts
-        back through the same checks as a generated or pasted document. Only this computer can reach
-        that address.
+        Your assistant can maintain your profile and career records, read your jobs, and return
+        drafts through Landed at {url}. You can ask it to add a skill, update a role, or delete an
+        individual record. Drafts pass the same checks as generated or pasted documents. Only this
+        computer can reach that address.
       </p>
       {assistant.kind === "unconfigured" ? (
         <Card title="Not configured">

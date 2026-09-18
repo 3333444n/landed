@@ -5,7 +5,7 @@
  * Every owned table shares the same shape (id, profile_id, updated_at), so the CRUD helpers are
  * written once over a small descriptor and reused per table.
  */
-import { and, asc, desc, eq, inArray, sql, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, getTableColumns, inArray, sql, type SQL } from "drizzle-orm";
 import type { PgColumn, PgTable } from "drizzle-orm/pg-core";
 import type { DbHandle } from "@/infrastructure/database";
 import {
@@ -104,12 +104,14 @@ export async function findOwned<O extends Owned>(
   owned: O,
   profileId: string,
   id: string,
+  lock = false,
 ): Promise<RowOf<O> | null> {
-  const rows = (await db
+  const query = db
     .select()
     .from(owned.table as PgTable)
     .where(and(eq(owned.profileId, profileId), eq(owned.id, id)))
-    .limit(1)) as RowOf<O>[];
+    .limit(1);
+  const rows = (await (lock ? query.for("update") : query)) as RowOf<O>[];
   return rows[0] ?? null;
 }
 
@@ -152,10 +154,13 @@ export async function deleteOwned(
   owned: Owned,
   profileId: string,
   id: string,
+  expectedUpdatedAt?: Date,
 ): Promise<boolean> {
+  const conditions = [eq(owned.profileId, profileId), eq(owned.id, id)];
+  if (expectedUpdatedAt) conditions.push(eq(owned.updatedAt, expectedUpdatedAt));
   const rows = await db
     .delete(owned.table as PgTable)
-    .where(and(eq(owned.profileId, profileId), eq(owned.id, id)))
+    .where(and(...conditions))
     .returning({ id: owned.id });
   return rows.length === 1;
 }
@@ -227,32 +232,33 @@ export async function insertAchievementSkills(
     .values(skillIds.map((skillId) => ({ profileId, achievementId, skillId })));
 }
 
-export async function listSkillIdsForAchievement(
+/**
+ * The row version and its skill links must come from the same statement snapshot. Separate
+ * reads can pair a new updated_at with old links, allowing a subsequent patch to lose links.
+ */
+export async function listAchievementsWithSkills(
   db: DbHandle,
   profileId: string,
-  achievementId: string,
-): Promise<string[]> {
-  const rows = await db
-    .select({ skillId: achievementSkills.skillId })
-    .from(achievementSkills)
+  id?: string,
+): Promise<(AchievementRecord & { skillIds: string[] })[]> {
+  return db
+    .select({
+      ...getTableColumns(achievements),
+      skillIds: sql<string[]>`array(
+      select ${achievementSkills.skillId} from ${achievementSkills}
+      where ${achievementSkills.profileId} = ${achievements.profileId}
+        and ${achievementSkills.achievementId} = ${achievements.id}
+      order by ${achievementSkills.skillId}
+    )`,
+    })
+    .from(achievements)
     .where(
       and(
-        eq(achievementSkills.profileId, profileId),
-        eq(achievementSkills.achievementId, achievementId),
+        eq(achievements.profileId, profileId),
+        id === undefined ? undefined : eq(achievements.id, id),
       ),
-    );
-  return rows.map((r) => r.skillId);
-}
-
-/** All skill links for a profile, for building lists without one query per achievement. */
-export async function listSkillLinks(
-  db: DbHandle,
-  profileId: string,
-): Promise<{ achievementId: string; skillId: string }[]> {
-  return db
-    .select({ achievementId: achievementSkills.achievementId, skillId: achievementSkills.skillId })
-    .from(achievementSkills)
-    .where(eq(achievementSkills.profileId, profileId));
+    )
+    .orderBy(...ownedTables.achievements.order);
 }
 
 // Ownership checks
@@ -317,4 +323,33 @@ export async function countProjectDependents(
     .from(achievements)
     .where(and(eq(achievements.profileId, profileId), eq(achievements.projectId, projectId)));
   return rows.length;
+}
+
+/** Serialize bootstrap checks across processes without introducing a second source of truth. */
+export async function lockProfileCreation(db: DbHandle): Promise<void> {
+  await db.execute(sql`select pg_advisory_xact_lock(174812, 1)`);
+}
+
+/** Skill deletion changes the achievement aggregate even though only joins disappear. */
+export async function touchAchievementsForSkill(
+  db: DbHandle,
+  profileId: string,
+  skillId: string,
+  timestamp: Date,
+): Promise<void> {
+  const linked = db
+    .select({ id: achievementSkills.achievementId })
+    .from(achievementSkills)
+    .where(and(eq(achievementSkills.profileId, profileId), eq(achievementSkills.skillId, skillId)));
+  await db
+    .update(achievements)
+    .set({
+      updatedAt: sql`greatest(${timestamp.toISOString()}::timestamptz, ${achievements.updatedAt} + interval '1 millisecond')`,
+    })
+    .where(and(eq(achievements.profileId, profileId), inArray(achievements.id, linked)));
+}
+
+/** Keep achievement row/skill-link edits ordered with cascading skill removal. */
+export async function lockAchievementSkills(db: DbHandle, profileId: string): Promise<void> {
+  await db.execute(sql`select pg_advisory_xact_lock(174813, hashtext(${profileId}))`);
 }

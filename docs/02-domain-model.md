@@ -32,7 +32,7 @@ In this application, a Job is an external opening; an Application is a person's 
 
 ## Evidence rules
 
-An achievement may be standalone, associated with one employment record, or associated with one project. Proposed simplification: at most one direct employment/project link. A project can itself link to employment. This avoids conflicting context links while retaining both contexts indirectly.
+An achievement may be standalone, associated with one employment record, or associated with one project. At most one direct employment/project link is allowed. A project can itself link to employment. This avoids conflicting context links while retaining both contexts indirectly.
 
 A factual statement is required; a numerical metric is not. Sources may be a user assertion or an external reference. A user assertion is not independently verified evidence. The system must not require fictitious numbers to complete a form. A skill may link to multiple achievements and vice versa.
 

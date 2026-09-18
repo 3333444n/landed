@@ -2,6 +2,7 @@
  * Use cases. Each one validates input, applies rules, and writes inside a transaction.
  * Dependencies arrive as a parameter; nothing here is a singleton.
  */
+import { z } from "zod";
 import {
   expected,
   fail,
@@ -17,6 +18,13 @@ import {
 } from "@/modules/shared/service";
 import {
   achievementInput,
+  profilePatchInput,
+  employmentPatchInput,
+  educationPatchInput,
+  projectPatchInput,
+  skillPatchInput,
+  achievementPatchInput,
+  profileLinkLabels,
   createProfileInput,
   educationInput,
   employmentInput,
@@ -55,6 +63,7 @@ export async function createProfile(
 
   try {
     return await deps.db.transaction(async (tx) => {
+      await repo.lockProfileCreation(tx);
       const existing = await repo.findSingleProfile(tx);
       if (existing) {
         return existing.id === id
@@ -110,7 +119,7 @@ export async function updateProfile(
           location: input.location ?? null,
           preferences,
           links,
-          updatedAt: now(deps),
+          updatedAt: nextVersion(deps, current.updatedAt),
         },
         expected(input.expectedUpdatedAt),
       );
@@ -166,6 +175,7 @@ export async function deleteEmployment(
   deps: ProfileDeps,
   profileId: string,
   id: string,
+  expectedUpdatedAt?: string,
 ): Promise<Result<void>> {
   const dependents = await repo.countEmploymentDependents(deps.db, profileId, id);
   if (dependents.projects > 0 || dependents.achievements > 0) {
@@ -174,7 +184,14 @@ export async function deleteEmployment(
       message: `Detach the ${describeDependents(dependents)} that reference this role before deleting it`,
     });
   }
-  return deleteOwned(deps, repo.ownedTables.employment, "Employment", profileId, id);
+  return deleteOwned(
+    deps,
+    repo.ownedTables.employment,
+    "Employment",
+    profileId,
+    id,
+    expectedUpdatedAt,
+  );
 }
 
 // Education
@@ -222,8 +239,16 @@ export async function deleteEducation(
   deps: ProfileDeps,
   profileId: string,
   id: string,
+  expectedUpdatedAt?: string,
 ): Promise<Result<void>> {
-  return deleteOwned(deps, repo.ownedTables.education, "Education", profileId, id);
+  return deleteOwned(
+    deps,
+    repo.ownedTables.education,
+    "Education",
+    profileId,
+    id,
+    expectedUpdatedAt,
+  );
 }
 
 // Projects
@@ -276,6 +301,7 @@ export async function deleteProject(
   deps: ProfileDeps,
   profileId: string,
   id: string,
+  expectedUpdatedAt?: string,
 ): Promise<Result<void>> {
   const dependents = await repo.countProjectDependents(deps.db, profileId, id);
   if (dependents > 0) {
@@ -284,7 +310,7 @@ export async function deleteProject(
       message: `Detach the ${plural(dependents, "achievement")} that reference this project before deleting it`,
     });
   }
-  return deleteOwned(deps, repo.ownedTables.projects, "Project", profileId, id);
+  return deleteOwned(deps, repo.ownedTables.projects, "Project", profileId, id, expectedUpdatedAt);
 }
 
 // Skills
@@ -324,8 +350,9 @@ export async function deleteSkill(
   deps: ProfileDeps,
   profileId: string,
   id: string,
+  expectedUpdatedAt?: string,
 ): Promise<Result<void>> {
-  return deleteOwned(deps, repo.ownedTables.skills, "Skill", profileId, id);
+  return deleteOwned(deps, repo.ownedTables.skills, "Skill", profileId, id, expectedUpdatedAt);
 }
 
 // Achievements
@@ -334,14 +361,7 @@ export async function listAchievements(
   deps: ProfileDeps,
   profileId: string,
 ): Promise<AchievementWithSkills[]> {
-  const [rows, links] = await Promise.all([
-    repo.listOwned(deps.db, repo.ownedTables.achievements, profileId),
-    repo.listSkillLinks(deps.db, profileId),
-  ]);
-  return rows.map((row) => ({
-    ...row,
-    skillIds: links.filter((l) => l.achievementId === row.id).map((l) => l.skillId),
-  }));
+  return repo.listAchievementsWithSkills(deps.db, profileId);
 }
 
 export async function getAchievement(
@@ -349,9 +369,8 @@ export async function getAchievement(
   profileId: string,
   id: string,
 ): Promise<AchievementWithSkills | null> {
-  const row = await repo.findOwned(deps.db, repo.ownedTables.achievements, profileId, id);
-  if (!row) return null;
-  return { ...row, skillIds: await repo.listSkillIdsForAchievement(deps.db, profileId, id) };
+  const rows = await repo.listAchievementsWithSkills(deps.db, profileId, id);
+  return rows[0] ?? null;
 }
 
 /**
@@ -395,6 +414,7 @@ async function saveAchievement(
 
   try {
     return await deps.db.transaction(async (tx) => {
+      await repo.lockAchievementSkills(tx, profileId);
       const profile = await repo.findProfileById(tx, profileId);
       if (!profile) return notFound("Profile");
 
@@ -434,7 +454,11 @@ async function saveAchievement(
           repo.ownedTables.achievements,
           profileId,
           id,
-          { ...values, reviewed: reviewedAfterEdit(current, input), updatedAt: now(deps) },
+          {
+            ...values,
+            reviewed: reviewedAfterEdit(current, input),
+            updatedAt: nextVersion(deps, current.updatedAt),
+          },
           expected(input.expectedUpdatedAt),
         );
         if (!updated) return stale();
@@ -466,8 +490,16 @@ export async function deleteAchievement(
   deps: ProfileDeps,
   profileId: string,
   id: string,
+  expectedUpdatedAt?: string,
 ): Promise<Result<void>> {
-  return deleteOwned(deps, repo.ownedTables.achievements, "Achievement", profileId, id);
+  return deleteOwned(
+    deps,
+    repo.ownedTables.achievements,
+    "Achievement",
+    profileId,
+    id,
+    expectedUpdatedAt,
+  );
 }
 
 // Shared helpers
@@ -504,7 +536,9 @@ async function saveOwned<T extends OwnedTable>(
           owned,
           profileId,
           id,
-          { ...options.values, updatedAt: now(deps) } as Partial<T["table"]["$inferInsert"]>,
+          { ...options.values, updatedAt: nextVersion(deps, current.updatedAt) } as Partial<
+            T["table"]["$inferInsert"]
+          >,
           expected(options.expectedUpdatedAt),
         );
         return updated ? { ok: true as const, value: updated } : stale();
@@ -535,13 +569,37 @@ async function deleteOwned(
   label: string,
   profileId: string,
   id: string,
+  expectedUpdatedAt?: string,
 ): Promise<Result<void>> {
+  if (expectedUpdatedAt !== undefined && !z.iso.datetime().safeParse(expectedUpdatedAt).success) {
+    return validation({ expectedUpdatedAt: ["Supply a valid ISO timestamp"] });
+  }
   try {
-    const deleted = await repo.deleteOwned(deps.db, owned, profileId, id);
-    return deleted ? { ok: true, value: undefined } : notFound(label);
+    return await deps.db.transaction(async (tx) => {
+      if (owned === repo.ownedTables.skills || owned === repo.ownedTables.achievements) {
+        await repo.lockAchievementSkills(tx, profileId);
+      }
+      const current = await repo.findOwned(tx, owned, profileId, id, true);
+      if (!current) return notFound(label);
+      if (
+        expectedUpdatedAt &&
+        current.updatedAt.getTime() !== new Date(expectedUpdatedAt).getTime()
+      )
+        return stale();
+      if (owned === repo.ownedTables.skills) {
+        await repo.touchAchievementsForSkill(tx, profileId, id, now(deps));
+      }
+      const deleted = await repo.deleteOwned(tx, owned, profileId, id, expected(expectedUpdatedAt));
+      return deleted ? { ok: true as const, value: undefined } : stale();
+    });
   } catch (error) {
     return mapDatabaseError(error, async () => null);
   }
+}
+
+/** A successful edit must always invalidate an earlier version, even within one millisecond. */
+function nextVersion(deps: ProfileDeps, previous: Date): Date {
+  return new Date(Math.max(now(deps).getTime(), previous.getTime() + 1));
 }
 
 function describeDependents(d: { projects: number; achievements: number }): string {
@@ -549,4 +607,146 @@ function describeDependents(d: { projects: number; achievements: number }): stri
   if (d.projects > 0) parts.push(plural(d.projects, "project"));
   if (d.achievements > 0) parts.push(plural(d.achievements, "achievement"));
   return parts.join(" and ");
+}
+
+// Partial edits reuse the full-save rules after merging with the transaction's current record.
+export async function patchProfile(
+  deps: ProfileDeps,
+  profileId: string,
+  rawInput: unknown,
+): Promise<Result<repo.ProfileRecord>> {
+  const parsed = profilePatchInput.safeParse(rawInput);
+  if (!parsed.success) return validation(fieldErrorsFromZod(parsed.error));
+  const {
+    expectedUpdatedAt,
+    desiredRoles,
+    locations,
+    workArrangement,
+    constraints,
+    linkedinUrl,
+    githubUrl,
+    websiteUrl,
+    ...fields
+  } = parsed.data;
+  try {
+    return await deps.db.transaction(async (tx) => {
+      const current = await repo.findProfileById(tx, profileId);
+      if (!current) return notFound("Profile");
+      const preferences = { ...current.preferences };
+      if (desiredRoles !== undefined) preferences.desiredRoles = desiredRoles;
+      if (locations !== undefined) preferences.locations = locations;
+      if (workArrangement !== undefined) preferences.workArrangement = workArrangement;
+      if (constraints === null) delete preferences.constraints;
+      else if (constraints !== undefined) preferences.constraints = constraints;
+      let links = [...current.links];
+      for (const [key, value] of Object.entries({ linkedinUrl, githubUrl, websiteUrl })) {
+        if (value === undefined) continue;
+        const label = profileLinkLabels[key as keyof typeof profileLinkLabels];
+        links = links.filter((link) => link.label !== label);
+        if (value !== null) links.push({ label, url: value });
+      }
+      const updated = await repo.updateProfile(
+        tx,
+        profileId,
+        {
+          ...definedFields(fields),
+          preferences,
+          links,
+          updatedAt: nextVersion(deps, current.updatedAt),
+        },
+        new Date(expectedUpdatedAt),
+      );
+      return updated ? { ok: true as const, value: updated } : stale();
+    });
+  } catch (error) {
+    return mapDatabaseError(error, async () => null);
+  }
+}
+
+function definedFields(fields: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(fields).filter(([, value]) => value !== undefined));
+}
+
+async function patchRecord<T extends { updatedAt: Date }>(
+  deps: ProfileDeps,
+  profileId: string,
+  id: string,
+  rawInput: unknown,
+  schema: z.ZodType<{ expectedUpdatedAt: string }>,
+  read: (deps: ProfileDeps, profileId: string, id: string) => Promise<T | null>,
+  save: (deps: ProfileDeps, profileId: string, input: unknown, id: string) => Promise<Result<T>>,
+  label: string,
+): Promise<Result<T>> {
+  const parsed = schema.safeParse(rawInput);
+  if (!parsed.success) return validation(fieldErrorsFromZod(parsed.error));
+  try {
+    return await deps.db.transaction(async (tx) => {
+      const transactionDeps = { ...deps, db: tx };
+      const current = await read(transactionDeps, profileId, id);
+      if (!current) return notFound(label);
+      if (current.updatedAt.getTime() !== new Date(parsed.data.expectedUpdatedAt).getTime())
+        return stale();
+      const merged = { ...current, ...definedFields(parsed.data) };
+      // Browser contracts interpret absent optional values as undefined, not null.
+      const input = Object.fromEntries(
+        Object.entries(merged).map(([key, value]) => [key, value === null ? undefined : value]),
+      );
+      return save(transactionDeps, profileId, input, id);
+    });
+  } catch (error) {
+    return mapDatabaseError(error, async () => null);
+  }
+}
+
+export function patchEmployment(deps: ProfileDeps, profileId: string, id: string, input: unknown) {
+  return patchRecord(
+    deps,
+    profileId,
+    id,
+    input,
+    employmentPatchInput,
+    getEmployment,
+    saveEmployment,
+    "Role",
+  );
+}
+export function patchEducation(deps: ProfileDeps, profileId: string, id: string, input: unknown) {
+  return patchRecord(
+    deps,
+    profileId,
+    id,
+    input,
+    educationPatchInput,
+    getEducation,
+    saveEducation,
+    "Education",
+  );
+}
+export function patchProject(deps: ProfileDeps, profileId: string, id: string, input: unknown) {
+  return patchRecord(
+    deps,
+    profileId,
+    id,
+    input,
+    projectPatchInput,
+    getProject,
+    saveProject,
+    "Project",
+  );
+}
+export function patchSkill(deps: ProfileDeps, profileId: string, id: string, input: unknown) {
+  return patchRecord(deps, profileId, id, input, skillPatchInput, getSkill, saveSkill, "Skill");
+}
+export function patchAchievement(deps: ProfileDeps, profileId: string, id: string, input: unknown) {
+  return patchRecord(
+    deps,
+    profileId,
+    id,
+    input,
+    achievementPatchInput,
+    getAchievement,
+    (transactionDeps, ownerId, merged, recordId) =>
+      updateAchievement(transactionDeps, ownerId, recordId, merged),
+    "Achievement",
+  );
 }

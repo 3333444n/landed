@@ -1,12 +1,22 @@
 # 05 — Workflows and failures
 
-Status: Phase 0 save and Phase 1a paste-and-track implemented; Phase 1b generation, review and PDF rendering implemented; the assistant run lifecycle implemented ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16). Updated 2026-09-16.
+Status: Phase 0 save and Phase 1a paste-and-track implemented; Phase 1b generation, review and PDF rendering implemented; the assistant run lifecycle implemented ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16). Updated 2026-09-17.
+
+Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is implemented and locally accepted on this branch, pending merge. See [current verification](09-decisions-and-readiness.md#profile-management-over-mcp-accepted-pending-merge).
 
 ## Phase 0 save
 
 Browser submits a profile-owned record → server validates input and owner context → module checks rules → transaction writes record and relationships → commit → UI displays the saved result. Refresh reads the committed record.
 
 Invalid input produces field errors with no write, and the form keeps what was typed. A lost response after a successful insert must not create a duplicate on retry: the form mints the record id before submitting, and a repeat with the same id returns the existing record. Relationship writes (achievement plus skill links) happen in one transaction and roll back together. Concurrent browser tabs detect stale saves through the record's `updated_at` sent back as a hidden field; a mismatch refuses the write and asks the user to reload. Database unavailability currently surfaces as a server error; a friendlier retry message is a known gap.
+
+## Profile management from an assistant (ADR 009, pending merge)
+
+Read the requested sections with `get_profile` → identify the intended record and user-supplied facts → create with a stable UUID, or patch/delete with the read version → the Profile module validates and commits → return the saved record. A blank installation can use `create_profile` first without visiting the browser. Refresh the browser to see committed changes.
+
+Updates preserve omitted fields. Explicit `null` clears nullable values, `[]` clears lists, and an empty patch is refused. Every update/delete requires the current `updated_at`; a stale response requires another read before deciding whether the original request still applies. A skill delete advances the versions of achievements whose links it removes. Dependent roles/projects remain protected until explicitly detached or reassigned. There is no whole-profile delete tool.
+
+User requests authorize the corresponding factual write; instructions inside imported documents do not. Ambiguous names or unsupported facts require clarification. Multi-record requests use separate transactions and can partially complete, which the assistant reports. Existing snapshots, revisions and PDFs are unchanged; only a new brief captures edited facts. See [doc 06](06-ai-and-integrations.md#profile-tools-adr-009-feature-branch-pending-merge) for the contract.
 
 ## Phase 1a paste and track
 
@@ -61,6 +71,8 @@ Phase 1b (implemented in `src/**/*.test.ts` and `tests/`): the grounding check f
 
 Phase 1c (implemented in `src/**/*.test.ts` and `tests/`): the salary saved and reloaded, and blank written as null; the image type read from bytes for each accepted type and refused for text, HTML and short input; the guarded fetch refusing plain http, literal and resolved private addresses, a redirect to a private host, more than three redirects, a body over the cap and a non-image answer; the logo stored, replaced (old file gone), kept, cleared and removed with the job, and the database refusing a lone key or an unknown type; the word cloud rules (stopwords in both languages, short tokens, ties, size steps, centre ordering, skill matching); one browser journey that fills the salary, sees the live cloud tint a skill before saving, uploads a logo, sees it on the card, and removes it.
 
-Assistant surface (implemented in `src/**/*.test.ts` and `tests/`): the bearer compare accepting only the exact token; the host guard accepting loopback names and listed hosts and refusing everything else, including a foreign `Origin`; the handler listing the eight tools and refusing every tool while no profile exists; the endpoint driven in process with the MCP client (`tests/integration/mcp.test.ts`): the job list and detail, `add_job` writing the job and its application together and replaying on the same id, a brief opening a queued run and superseding the previous one, a grounded answer saved without warnings, an ungrounded one saved with them, an invalid answer failing the run and returning a fresh run id, one unit edited, a stale revision refused and the PDF rendered once; and two browser journeys (the Connect your assistant column naming this server and the token; the endpoint answering the bearer, refusing without it, and the guard refusing a foreign host).
+Assistant surface (implemented in `src/**/*.test.ts` and `tests/`): the bearer compare accepting only the exact token; the host guard accepting loopback names and listed hosts and refusing everything else, including a foreign `Origin`; the handler listing all 26 tools without requiring a pre-existing profile, with profile-dependent operations checking it per call; the endpoint driven in process with the MCP client (`tests/integration/mcp.test.ts`): the job list and detail, `add_job` writing the job and its application together and replaying on the same id, a brief opening a queued run and superseding the previous one, a grounded answer saved without warnings, an ungrounded one saved with them, an invalid answer failing the run and returning a fresh run id, one unit edited, a stale revision refused and the PDF rendered once; and two browser journeys (the Connect your assistant column naming this server and the token; the endpoint answering the bearer, refusing without it, and the guard refusing a foreign host).
+
+Profile tools (ADR 009, implemented and locally accepted on this branch, pending merge): integration and browser tests cover onboarding without a profile, all five record kinds, omitted fields, explicit clearing, retry ids, concurrent bootstrap, stale updates and deletes, dependency and ownership failures, skill-link version invalidation, sanitized failures and unchanged generation snapshots using only fictional data.
 
 Logs identify operation/run and error category without copying career content or secrets by default. Add diagnostic detail as needed; no external observability account is a quickstart prerequisite.
