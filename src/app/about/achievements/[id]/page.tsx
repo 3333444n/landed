@@ -34,6 +34,7 @@ export default async function EditAchievementPage({ params }: { params: Promise<
       width="detail"
     >
       <AchievementForm
+        key={achievement.id}
         action={saveAchievementAction.bind(null, achievement.id)}
         submitLabel="Save changes"
         jobs={roles.map((r) => ({ value: r.id, label: `${r.role} at ${r.employerName}` }))}

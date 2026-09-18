@@ -54,6 +54,7 @@ export default async function AchievementsLayout({ children }: { children: React
                     icon={<Award />}
                     href={`/about/achievements/${a.id}`}
                     title={a.statement}
+                    titleStyle="body"
                     subtitle={context}
                     meta={meta}
                     chips={

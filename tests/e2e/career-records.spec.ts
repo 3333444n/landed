@@ -70,13 +70,29 @@ test("profile, role, project, skill and a linked achievement survive a reload", 
   await page.goto("/about/achievements/new");
   await page.getByLabel("Statement").fill(demo.statement);
   await page.getByLabel("Project").selectOption({ label: demo.project });
-  await page.getByLabel(demo.skill).check();
+  await page.getByRole("combobox", { name: "Skills used" }).click();
+  await page.getByRole("combobox", { name: "Skills used" }).fill("not-a-skill");
+  await expect(page.getByText("No matching skills.")).toBeVisible();
+  await page.getByRole("combobox", { name: "Skills used" }).fill("post");
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("combobox", { name: "Skills used" })).toBeFocused();
+  await expect(page.locator('input[name="skillIds"]')).toHaveCount(1);
+  // Invalid submissions must retain the selection.
+  await page.getByLabel("Statement").fill("");
+  await page.getByRole("button", { name: "Save achievement" }).click();
+  await expect(page.getByLabel("Statement")).toHaveAttribute("aria-invalid", "true");
+  await expect(page.locator('input[name="skillIds"]')).toHaveCount(1);
+  await page.getByLabel("Statement").fill(demo.statement);
   await page.getByRole("button", { name: "Save achievement" }).click();
   await expect(page.getByRole("heading", { name: "Edit achievement" })).toBeVisible();
   const list = page.getByRole("list", { name: "Achievements" });
   await expect(list.getByText(demo.statement)).toBeVisible();
   await expect(list.getByText(demo.project)).toBeVisible();
   await expect(list.getByText(demo.skill, { exact: true })).toBeVisible();
+
+  await expect(list.getByRole("heading", { name: demo.statement })).toHaveCSS("font-size", "15px");
+  await expect(list.getByRole("heading", { name: demo.statement })).toHaveCSS("font-weight", "400");
 
   // Editing in place stays on the record and confirms the save
   await page.getByLabel("Metric").fill("2 forms");
@@ -85,6 +101,24 @@ test("profile, role, project, skill and a linked achievement survive a reload", 
 
   await page.reload();
   await expect(list.getByText(demo.statement)).toBeVisible();
+
+  await page.getByRole("combobox", { name: "Skills used" }).click();
+  await expect(page.getByRole("option", { name: demo.skill, exact: true })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
+  await page.getByRole("option", { name: demo.skill, exact: true }).click();
+  await page.keyboard.press("Escape");
+  await page.getByLabel("Statement").fill("");
+  await page.getByRole("button", { name: "Save changes" }).click();
+  await expect(page.getByLabel("Statement")).toHaveAttribute("aria-invalid", "true");
+  await expect(page.locator('input[name="skillIds"]')).toHaveCount(0);
+  await page.getByLabel("Statement").fill(demo.statement);
+  await page.getByRole("button", { name: "Save changes" }).click();
+  await expect(page.getByRole("status")).toHaveText("Saved");
+  await page.reload();
+  await expect(page.locator('input[name="skillIds"]')).toHaveCount(0);
+  await expect(list.getByText(demo.skill, { exact: true })).toHaveCount(0);
 
   // The old Phase 0 addresses still land on the new columns
   await page.goto("/achievements");

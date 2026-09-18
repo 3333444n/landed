@@ -10,6 +10,8 @@ Browser submits a profile-owned record → server validates input and owner cont
 
 Invalid input produces field errors with no write, and the form keeps what was typed. A lost response after a successful insert must not create a duplicate on retry: the form mints the record id before submitting, and a repeat with the same id returns the existing record. Relationship writes (achievement plus skill links) happen in one transaction and roll back together. Concurrent browser tabs detect stale saves through the record's `updated_at` sent back as a hidden field; a mismatch refuses the write and asks the user to reload. Database unavailability currently surfaces as a server error; a friendlier retry message is a known gap.
 
+Achievement forms select linked skills through a searchable multiselect. Selected skills remain visible as chips and survive validation errors, including an empty selection. Saving submits the same skill id list as before.
+
 ## Profile management from an assistant (ADR 009, pending merge)
 
 Read the requested sections with `get_profile` → identify the intended record and user-supplied facts → create with a stable UUID, or patch/delete with the read version → the Profile module validates and commits → return the saved record. A blank installation can use `create_profile` first without visiting the browser. Refresh the browser to see committed changes.

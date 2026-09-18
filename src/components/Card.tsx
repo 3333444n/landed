@@ -11,6 +11,7 @@ export function Card({
   icon,
   title,
   subtitle,
+  titleStyle = "heading",
   meta = [],
   chips,
   href,
@@ -19,6 +20,7 @@ export function Card({
   /** A meaningful icon shown in a tile at the left of the header (DESIGN.md "Icon tile"). */
   icon?: ReactNode;
   title?: string;
+  titleStyle?: "heading" | "body";
   subtitle?: string;
   /** Short metadata lines in `body.sm`, shown under the subtitle. */
   meta?: string[];
@@ -30,7 +32,7 @@ export function Card({
     <>
       {title ? (
         <div className={styles.header}>
-          <h3 className="title-md">{title}</h3>
+          <h3 className={titleStyle === "body" ? styles.bodyTitle : "title-md"}>{title}</h3>
           {subtitle ? <p className={styles.subtitle}>{subtitle}</p> : null}
         </div>
       ) : null}

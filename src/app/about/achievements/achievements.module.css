@@ -8,14 +8,6 @@
   min-width: 0;
 }
 
-/* Same style as a field label (DESIGN.md `label`): sentence case, 13/16, weight 500. */
-.groupLabel {
-  font-size: 13px;
-  line-height: 16px;
-  font-weight: 500;
-  padding: 0;
-}
-
 .groupHelper {
   font-size: 13px;
   line-height: 18px;
