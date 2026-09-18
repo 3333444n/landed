@@ -1,6 +1,8 @@
 # 03 — System and modules
 
-Status: stack, Profile, Jobs and Applications modules and packaged runtime implemented; Documents module, model adapter and PDF rendering implemented (Phase 1b, ADR 006); the assistant surface at `/mcp` and the Host and Origin guard implemented ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16). Updated 2026-09-16.
+Status: stack, Profile, Jobs and Applications modules and packaged runtime implemented; Documents module, model adapter and PDF rendering implemented (Phase 1b, ADR 006); the assistant surface at `/mcp` and the Host and Origin guard implemented ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16). Updated 2026-09-17.
+
+Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is implemented and locally accepted on this branch, pending merge. See [current verification](09-decisions-and-readiness.md#profile-management-over-mcp-accepted-pending-merge).
 
 ## System boundary
 
@@ -24,9 +26,11 @@ flowchart LR
 
 This is a logical runtime view: PostgreSQL is a process/container with its own volume, and the `migrate` task is a Compose service that runs once per `start` rather than a product component. The diagram abstracts volumes and networks.
 
-Phase 0 and 1a have no runtime network dependency beyond local processes. Installation/image downloads require internet. From Phase 1b the web service makes outbound HTTPS calls to the model provider configured in the environment file, and only then; with no provider configured, paste-back mode keeps everything local. The one other outbound call is user-initiated: pasting an image address for a job's logo fetches that address once, through the guarded fetcher in `src/infrastructure/fetch` ([ADR 007](adr/007-user-initiated-image-fetch.md)). Later job/search providers require outbound access too.
+Phase 0 and 1a have no runtime network dependency beyond local processes. Installation/image downloads require internet. From Phase 1b the web service makes outbound HTTPS calls to the model provider configured in the environment file, and only then; with no provider configured, Landed makes no model request itself. The assistant used for paste-back or MCP may send supplied facts to its own provider. The one other outbound call is user-initiated: pasting an image address for a job's logo fetches that address once, through the guarded fetcher in `src/infrastructure/fetch` ([ADR 007](adr/007-user-initiated-image-fetch.md)). Later job/search providers require outbound access too.
 
 The assistant surface ([ADR 008](adr/008-assistant-surface-over-mcp.md), implemented 2026-09-16) is an inbound connection, not an outbound one: the user's own assistant on the host computer calls `POST /mcp` on the same port the browser uses, with the bearer token `LANDED_MCP_TOKEN` from the environment file (minted by the launcher for the packaged installation), and Landed's tools call module operations through the composition layer. Two rules then apply to the whole application, not only to `/mcp`: every request's `Host` must be `localhost`, `127.0.0.1` or `::1` (or a name listed in `LANDED_ALLOWED_HOSTS`, empty until a remote design uses it), and an `Origin` header, when present, must name one of the same hosts; any other request is refused with 403 before a handler runs, because the Settings column shows the token and a server that answered any `Host` could be read through DNS rebinding. LAN or public access, and remote MCP from claude.ai or a phone, still require a separate access and security design.
+
+The root layout initializes the saved theme and palette with Next.js `Script` using `beforeInteractive`. Static sidebar brand images are served directly (`unoptimized`), because the image optimizer's internal requests do not carry the Host header required by the guard.
 
 ## Ownership and dependencies
 
@@ -41,6 +45,11 @@ flowchart TB
   documents["Documents<br/>Phase 1b: runs, snapshots, revisions, review (implemented)"]
   applications["Applications<br/>Phase 1a: status and notes (implemented)"]
   compose["Composition in src/app/jobs<br/>pursue-job (1a), generate-document (1b)"]
+  mcp["MCP tools in src/app/mcp<br/>26 on this branch (ADR 009, pending merge)"]
+  mcp -->|"profile reads and mutations"| profile
+  mcp -->|"document generation workflows"| compose
+  mcp -->|"job operations"| jobs
+  mcp -->|"document operations"| documents
   compose -->|"read facts"| profile
   compose -->|"read posting"| jobs
   compose -->|"read pursuit"| applications
@@ -91,7 +100,7 @@ src/
                          model/ (Model setup column, configuration status, no key), assistant/ (Connect your
                          assistant column: one copyable block per assistant, the only place the token is shown)
     mcp/                 route.ts (POST /mcp: 503 without a token, 401 on a wrong bearer), handler.ts (the SDK
-                         handler, no Next imports), tools.ts (tool registrations), auth.ts (constant-time bearer
+                         handler, no Next imports), tools.ts and profile-tools.ts (tool registrations), auth.ts (constant-time bearer
                          compare), serialize.ts (projections)
     form-state.ts        shared action result shape and form helpers
     palettes.css         the palettes (every colour as a light and a dark value; steel is the default)

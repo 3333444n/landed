@@ -1,8 +1,11 @@
 {
   "name": "landed",
-  "description": "Write and check job application documents through a local Landed installation: the assistant writes the resume, cover letter and recruiter message, Landed checks them against your records and renders the PDFs.",
-  "version": "0.1.0",
-  "author": { "name": "3333444n", "url": "https://github.com/3333444n" },
+  "description": "Maintain your career profile and write job application documents through a local Landed installation. Landed stores your facts, checks drafts against evidence and renders PDFs.",
+  "version": "0.2.0",
+  "author": {
+    "name": "3333444n",
+    "url": "https://github.com/3333444n"
+  },
   "repository": "https://github.com/3333444n/landed",
   "license": "MIT",
   "skills": "./skills/",
@@ -10,13 +13,13 @@
     "url": {
       "type": "string",
       "title": "Landed address",
-      "description": "The /mcp address of your Landed installation, shown under Settings → Connect your assistant.",
+      "description": "The /mcp address of your Landed installation, shown under Settings \u2192 Connect your assistant.",
       "default": "http://127.0.0.1:3000/mcp"
     },
     "token": {
       "type": "string",
       "title": "Landed token",
-      "description": "The token shown under Settings → Connect your assistant (LANDED_MCP_TOKEN).",
+      "description": "The token shown under Settings \u2192 Connect your assistant (LANDED_MCP_TOKEN).",
       "sensitive": true,
       "required": true
     }

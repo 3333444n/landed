@@ -1,6 +1,8 @@
 # 06 — AI, harnesses, and retrieval
 
-Status: model access path implemented in Phase 1b ([ADR 006](adr/006-model-access-path.md)); the guarded outbound fetch exists for a job's logo address ([ADR 007](adr/007-user-initiated-image-fetch.md), 2026-09-14); the evaluation set has been run against OpenRouter (see "Providers run through the evaluation set"); the assistant surface over MCP is implemented ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16; see "Your own assistant over MCP"); agentic research, discovery and retrieval remain future design. Updated 2026-09-16.
+Status: model access path implemented in Phase 1b ([ADR 006](adr/006-model-access-path.md)); the guarded outbound fetch exists for a job's logo address ([ADR 007](adr/007-user-initiated-image-fetch.md), 2026-09-14); the evaluation set has been run against OpenRouter (see "Providers run through the evaluation set"); the assistant surface over MCP is implemented ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16; see "Your own assistant over MCP"); agentic research, discovery and retrieval remain future design. Updated 2026-09-17.
+
+Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is implemented and locally accepted on this branch, pending merge. See [current verification](09-decisions-and-readiness.md#profile-management-over-mcp-accepted-pending-merge).
 
 ## Distinguish the moving parts
 
@@ -60,7 +62,7 @@ What stays as before: the app invoking a harness as a subprocess is not a path (
 
 ## Profile tools (ADR 009, feature branch pending merge)
 
-[ADR 009](adr/009-profile-management-over-mcp.md) extends the original eight tools with 18 profile tools. This contract describes the feature branch; local acceptance and merge are still pending. The endpoint, token and Host/Origin guard are unchanged. The current profile is resolved freshly for each call, including calls on an already-connected client after profile creation.
+[ADR 009](adr/009-profile-management-over-mcp.md) extends the original eight tools with 18 profile tools. This contract describes the feature branch; local acceptance is complete and merge remains pending. The endpoint, token and Host/Origin guard are unchanged. The current profile is resolved freshly for each call, including calls on an already-connected client after profile creation.
 
 | Tool | Input | Returns or effect |
 |---|---|---|

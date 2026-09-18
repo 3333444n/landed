@@ -1,6 +1,8 @@
 # 08 — Contributions and living documentation
 
-Status: CI, commit conventions, PR template, the skill sync check and SECURITY in place; the packaged installation is built from the checkout, no tagged release yet. Updated 2026-09-16.
+Status: CI, commit conventions, PR template, the skill sync check and SECURITY in place; the packaged installation is built from the checkout, no tagged release yet. Updated 2026-09-17.
+
+Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is implemented and locally accepted on this branch, pending merge. See [current verification](09-decisions-and-readiness.md#profile-management-over-mcp-accepted-pending-merge).
 
 ## Small public-repository baseline
 
@@ -24,7 +26,7 @@ Examples do not include real names/contact details from the maintainer. Do not r
 6. Installation changes update document 07 and its clean-install checks.
 7. Scope/decision changes update documents 01/09 and create or supersede an ADR when significant.
 8. Visual changes update DESIGN.md at the repository root; the UI and the file must never disagree. Changes to the produced PDFs or the recruiter text update DESIGN-DOCS.md the same way.
-9. Changes to the assistant workflow are made in `.agents/skills/landed/SKILL.md`, the single source, which Codex reads in place. The Claude Code plugin (`plugins/landed/`, published through `.claude-plugin/marketplace.json`) cannot point outside its own folder, so it carries a copy at `plugins/landed/skills/landed/SKILL.md`; after editing, run `cp .agents/skills/landed/SKILL.md plugins/landed/skills/landed/SKILL.md`. `scripts/check-skill-sync.sh`, part of `pnpm check`, fails on drift. A tool added to or changed in `src/app/mcp/tools.ts` updates the skill and document 06 together; `claude plugin validate --strict plugins/landed` checks the manifest, and the plugin's `version` is bumped when its files change.
+9. Changes to the assistant workflow are made in `.agents/skills/landed/SKILL.md`, the single source, which Codex reads in place. The Claude Code plugin (`plugins/landed/`, published through `.claude-plugin/marketplace.json`) cannot point outside its own folder, so it carries a copy at `plugins/landed/skills/landed/SKILL.md`; after editing, run `cp .agents/skills/landed/SKILL.md plugins/landed/skills/landed/SKILL.md`. `scripts/check-skill-sync.sh`, part of `pnpm check`, fails on drift. A tool added to or changed in `src/app/mcp/tools.ts` or `profile-tools.ts` updates the skill and document 06 together; `claude plugin validate --strict plugins/landed` checks the manifest, and the plugin's `version` is bumped when its files change.
 
 The pull-request template asks what was tested; reviewers ask which documents/diagrams are affected, or why none are. Link checking can later be automated; semantic correctness still requires review. No timer can infer that a design diagram remains correct after arbitrary code changes.
 

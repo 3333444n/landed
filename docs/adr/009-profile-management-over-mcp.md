@@ -1,6 +1,6 @@
 # ADR 009 — Profile management over MCP
 
-Date: 2026-09-17. Status: accepted; implementation on the feature branch, pending local acceptance and merge. Extends the original write scope of [ADR 008](008-assistant-surface-over-mcp.md).
+Date: 2026-09-17. Status: accepted; implementation on the feature branch, locally accepted, pending merge. Extends the original write scope of [ADR 008](008-assistant-surface-over-mcp.md).
 
 ## Context
 
@@ -33,6 +33,6 @@ A bulk import or whole-profile reset needs its own semantics for matching, relat
 
 The same local token permits editing and deleting individual career records. Users should connect only assistants they trust; the selected harness may transmit returned facts to its own model provider. A local MCP connection does not change that harness's data handling.
 
-The portable skill supports profile requests without selecting a job or generating documents. Writes return the saved record and current version so a follow-up operation can use it. Stale conflicts require rereading and reconsidering the requested edit, not blind retries. Multi-record requests may partially complete; report saved and blocked operations separately.
+The portable skill supports profile requests without selecting a job or generating documents. Creates and updates return the saved record and current version so a follow-up operation can use it. Deletes return `{deleted: true, record_id}`. Stale conflicts require rereading and reconsidering the requested edit, not blind retries. Multi-record requests may partially complete; report saved and blocked operations separately.
 
 Verification uses fictional records in the isolated test database: blank-install onboarding, all record types, patch clearing and preservation, retries, competing creates, stale edits/deletes, ownership and dependency failures, skill-link version changes, and unchanged historical snapshots. Local acceptance from an assistant precedes a pull request; verification status lives in doc 09.
