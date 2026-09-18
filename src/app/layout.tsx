@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Shell } from "@/components/Shell";
 import "./globals.css";
 
@@ -18,7 +19,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <Script id="landed-theme" strategy="beforeInteractive">
+          {themeScript}
+        </Script>
       </head>
       <body>
         <Shell>{children}</Shell>
