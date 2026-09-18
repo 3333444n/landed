@@ -11,6 +11,13 @@ test("saved theme and palette survive navigation and reload without script warni
   await page.emulateMedia({ colorScheme: "light" });
   // Settings is independent of profile creation; this journey never writes career data.
   await page.goto("/settings");
+  const marks = page.getByRole("navigation", { name: "Main" }).locator("img");
+  await expect(marks).toHaveCount(2);
+  for (const mark of await marks.all()) {
+    await expect
+      .poll(() => mark.evaluate((image: HTMLImageElement) => image.naturalWidth))
+      .toBeGreaterThan(0);
+  }
   await page.getByRole("button", { name: "Switch between light and dark" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
 

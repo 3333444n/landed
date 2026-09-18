@@ -26,6 +26,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
           width={28}
           height={28}
           className={`${styles.mark} ${styles.markDark}`}
+          unoptimized
           priority
         />
         <Image
@@ -34,6 +35,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
           width={28}
           height={28}
           className={`${styles.mark} ${styles.markLight}`}
+          unoptimized
           priority
         />
         LANDED
