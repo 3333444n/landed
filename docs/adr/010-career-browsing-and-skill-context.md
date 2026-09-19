@@ -12,7 +12,7 @@ About me and its dedicated lists share expandable read-only record cards. A sepa
 
 Skills own two direct many-to-many relationships, to roles and to projects, persisted in owner-aware link tables. Users edit those lists on the skill form or through the existing profile tools. Reads return a coherent skill version and link lists; saves are transactional and version checked. Deleting a role/project with direct skill links is refused until the user detaches those links. Deleting a skill removes its links.
 
-For browsing, effective context is the union of direct links, achievement context, and parent roles of associated projects. This union is derived, never stored as direct associations. A role association does not imply use on every project under that role. Role and Project filters combine with AND, with explicit All and No-context choices. Removing a direct link does not remove an independently evidenced connection.
+For browsing, effective context is the union of direct links, achievement context, and parent roles of associated projects. This union is derived, never stored as direct associations. A role association does not imply use on every project under that role. Multiple Role and Project chips combine with OR within each group and AND across groups, with explicit All and No-context choices. Removing a direct link does not remove an independently evidenced connection.
 
 The document snapshot projection and grounding rules remain unchanged. New associations organize career facts; they do not by themselves justify new generated accomplishments. Historical snapshots stay frozen.
 

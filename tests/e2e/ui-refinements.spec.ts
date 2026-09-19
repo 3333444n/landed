@@ -60,6 +60,7 @@ test("browse nested facts, edit role pills, and filter direct and derived skill 
     await page.keyboard.press("Enter");
     await expect(profile.locator("details")).toHaveAttribute("open", "");
     await expect(profile.getByText("Name", { exact: true })).toBeVisible();
+    await expect(hub.getByText(/^Manage /)).toHaveCount(0);
     const work = hub.locator(":scope > li").nth(1);
     await work.locator("summary").first().click();
     await expect(profile.locator("details")).toHaveAttribute("open", "");
@@ -81,6 +82,9 @@ test("browse nested facts, edit role pills, and filter direct and derived skill 
     await expect(
       page.getByRole("button", { name: "Remove Interface engineer", exact: true }),
     ).toHaveCount(1);
+    await expect(
+      page.getByRole("button", { name: "Remove Interface engineer", exact: true }),
+    ).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
     await desired.fill("Temporary role");
     await desired.press("Enter");
     await page.getByRole("button", { name: "Remove Temporary role", exact: true }).click();
@@ -150,10 +154,7 @@ test("browse nested facts, edit role pills, and filter direct and derived skill 
       .getByLabel("Filter skills", { exact: true })
       .click();
     await page
-      .getByRole("combobox", { name: "Filter by role", exact: true })
-      .fill("UI verification role");
-    await page
-      .getByRole("option", { name: "UI verification role at Example Studio", exact: true })
+      .getByRole("button", { name: "UI verification role at Example Studio", exact: true })
       .click();
     await expect(page).toHaveURL(new RegExp(`skillsRole=${role.id}`));
     const skills = page.getByRole("list", { name: "Skills", exact: true });
@@ -163,16 +164,50 @@ test("browse nested facts, edit role pills, and filter direct and derived skill 
     await expect(
       skills.getByRole("heading", { name: "Evidence-only verification skill", exact: true }),
     ).toBeVisible();
-    await page
-      .getByRole("combobox", { name: "Filter by project", exact: true })
-      .fill("Unrelated verification project");
-    await page.getByRole("option", { name: "Unrelated verification project", exact: true }).click();
+    await page.getByRole("button", { name: "Unrelated verification project", exact: true }).click();
     await expect(
       page
         .getByRole("paragraph")
         .filter({ hasText: "No matches. Change or clear the filters." })
         .filter({ visible: true }),
     ).toBeVisible();
+    await page.getByRole("button", { name: "UI verification project", exact: true }).click();
+    await expect(
+      skills.getByRole("heading", { name: "Direct verification skill", exact: true }),
+    ).toBeVisible();
+    expect(new URL(page.url()).searchParams.getAll("skillsProject")).toEqual([
+      other.id,
+      project.id,
+    ]);
+    await page.reload();
+    await page
+      .getByRole("region", { name: /^Skills/ })
+      .getByLabel("Filter skills", { exact: true })
+      .click();
+    await expect(
+      page.getByRole("button", { name: "UI verification project", exact: true }),
+    ).toHaveAttribute("aria-pressed", "true");
+    await page.getByRole("button", { name: "No role", exact: true }).click();
+    await expect(page.getByRole("button", { name: "No role", exact: true })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(new URL(page.url()).searchParams.getAll("skillsRole")).toEqual([role.id, "none"]);
+    await page.setViewportSize({ width: 390, height: 844 });
+    for (const theme of ["dark", "light"]) {
+      await page.evaluate((value) => {
+        document.documentElement.dataset.theme = value;
+      }, theme);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+        true,
+      );
+      await page.screenshot({
+        path: `artifacts-test/filter-chips-mobile-${theme}.png`,
+        fullPage: true,
+        animations: "disabled",
+      });
+    }
+    await page.setViewportSize({ width: 1280, height: 720 });
     await page.getByRole("button", { name: "Clear filters", exact: true }).click();
     await expect(page).toHaveURL(/\/about\/skills$/);
     await page.goto(`/about/skills?skillsProject=${project.id}`);
