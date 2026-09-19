@@ -188,3 +188,8 @@
   line-height: 18px;
   color: var(--text-secondary);
 }
+
+.headerAction {
+  margin-left: auto;
+  flex-shrink: 0;
+}

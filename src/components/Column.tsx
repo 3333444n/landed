@@ -19,6 +19,8 @@ export function Column({
   parentHref,
   parentTitle,
   toolbar,
+  headerAction,
+  headerDetails,
   width = "list",
   children,
 }: {
@@ -32,6 +34,8 @@ export function Column({
   parentHref?: string;
   parentTitle?: string;
   toolbar?: ReactNode;
+  headerAction?: ReactNode;
+  headerDetails?: ReactNode;
   width?: "list" | "detail";
   children: ReactNode;
 }) {
@@ -56,7 +60,9 @@ export function Column({
               {count !== undefined ? <span className={styles.count}> {count}</span> : null}
             </h2>
             {subtitle ? <p className={styles.subtitle}>{subtitle}</p> : null}
+            {headerDetails}
           </div>
+          {headerAction ? <div className={styles.headerAction}>{headerAction}</div> : null}
         </div>
         {toolbar}
         {children}

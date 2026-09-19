@@ -63,9 +63,50 @@ test("a document is generated, reviewed in place, and another is pasted back", a
   );
 
   // Reviewed is a person's decision; the card shows it
-  await page.getByRole("button", { name: "Mark reviewed" }).click();
-  await expect(page.getByRole("button", { name: "Mark unreviewed" })).toBeVisible();
-  await expect(materials.getByText("Reviewed", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Approve?", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Approved", exact: true })).toBeVisible();
+  await expect(materials.getByText("Approved", { exact: true })).toBeVisible();
+
+  await expect(page.getByRole("button", { name: "Approved", exact: true })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await expect(page.getByRole("link", { name: "Download PDF", exact: true })).toBeVisible();
+  await expect(
+    page
+      .getByRole("navigation", { name: "Resume details" })
+      .getByRole("link", { name: "Evidence", exact: true }),
+  ).toHaveCSS("text-decoration-line", "underline");
+  // Approval can be removed, and a new edited revision starts unapproved.
+  await page.getByRole("button", { name: "Approved", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Approve?", exact: true })).toHaveAttribute(
+    "aria-pressed",
+    "false",
+  );
+  await page.getByRole("button", { name: "Approve?", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Approved", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Edit bullet 1 of Example Workshop" }).click();
+  await page
+    .getByLabel("Text of bullet 1 of Example Workshop")
+    .fill("Built a reporting tool with accessible filters.");
+  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Approve?", exact: true })).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const theme of ["dark", "light"]) {
+    await page.evaluate((value) => {
+      document.documentElement.dataset.theme = value;
+    }, theme);
+    await expect(page.getByRole("link", { name: "Download PDF", exact: true })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+    await page.screenshot({
+      path: `artifacts-test/document-mobile-${theme}.png`,
+      fullPage: true,
+      animations: "disabled",
+    });
+  }
+  await page.setViewportSize({ width: 1280, height: 720 });
 
   // Every call is a run
   await page.goto(`${jobUrl}/resume/runs`);

@@ -45,7 +45,7 @@ export function documentChip(view: DocumentView): { label: string; tone: ChipTon
   if (run?.state === "failed") return { label: "Generation failed", tone: "warning" };
   if (view.revision) {
     return view.revision.reviewedAt
-      ? { label: "Reviewed", tone: "success" }
+      ? { label: "Approved", tone: "success" }
       : { label: "Needs review", tone: "warning" };
   }
   return null;

@@ -213,3 +213,6 @@ Eyebrow labels. Monospace anything except a preformatted command block in a read
 
 
 **Career filters.** Skills and Achievements use a named circular Filter disclosure followed by two searchable selectors in document flow, Role and Project, with All and unlinked choices. This avoids clipping long option lists within nested cards. An accent dot and text mark active filters; Clear filters resets both. A result count is plain secondary text. Nested overview records and dedicated lists use the same card and filtering behavior.
+
+
+**Document controls.** Resume and Cover letter place a named circular Download PDF control at the right of the column header. Under the generation summary, Evidence and Runs are underlined text links with 40px touch targets. Below them a wrapping action row holds icon-and-label Generate/Regenerate, Paste back, and the approval toggle. Approval uses semantic tint: yellow `Approve?`, green `Approved`; the approved button offers removal through its tooltip and pressed state. Editing creates a new unapproved revision. Recruiter message shares the controls except PDF download. These inline action glyphs are 16px, beside their labels, without an extra tile.
