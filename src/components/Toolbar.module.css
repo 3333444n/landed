@@ -47,3 +47,14 @@
 .add:hover {
   --glass-control: var(--accent-soft);
 }
+
+.add[aria-current="page"] {
+  background: var(--accent-soft);
+}
+.add > span {
+  display: inline-flex;
+}
+.add svg {
+  width: var(--size-icon);
+  height: var(--size-icon);
+}
