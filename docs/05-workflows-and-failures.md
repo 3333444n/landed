@@ -78,3 +78,7 @@ Assistant surface (implemented in `src/**/*.test.ts` and `tests/`): the bearer c
 Profile tools (ADR 009, implemented and locally accepted on this branch, pending merge): integration and browser tests cover onboarding without a profile, all five record kinds, omitted fields, explicit clearing, retry ids, concurrent bootstrap, stale updates and deletes, dependency and ownership failures, skill-link version invalidation, sanitized failures and unchanged generation snapshots using only fictional data.
 
 Logs identify operation/run and error category without copying career content or secrets by default. Add diagnostic detail as needed; no external observability account is a quickstart prerequisite.
+
+## Browsing career facts
+
+About me expands each section in place. Profile shows compact contact and preference fields and a 240-character summary preview; the edit column contains the full summary. Other sections contain expandable record cards. A separate pencil link opens a record's edit URL without changing its disclosure; section management links retain the dedicated lists and add controls. Multiple disclosures can stay open during client navigation; reloading starts them closed. List cards share the same read-only details as the overview. Empty sections link to their management page.

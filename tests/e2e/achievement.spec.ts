@@ -26,10 +26,13 @@ test("a new installation creates a profile and saves an achievement that survive
     .click();
   await page
     .getByRole("list", { name: "About me" })
-    .getByRole("link", { name: "Achievements" })
+    .getByRole("link", { name: "Manage achievements", exact: true })
+    .first()
     .click();
   await expect(page.getByRole("heading", { name: /^Achievements/ })).toBeVisible();
-  await expect(page.getByText("No achievements yet")).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: /^Achievements/ }).getByText("No achievements yet"),
+  ).toBeVisible();
   await page.getByRole("link", { name: "Add achievement" }).click();
   await expect(page.getByRole("heading", { name: "New achievement" })).toBeVisible();
 
@@ -40,7 +43,9 @@ test("a new installation creates a profile and saves an achievement that survive
   await expect(page.getByLabel("Statement")).toHaveAccessibleDescription(
     "Write the factual statement",
   );
-  await expect(page.getByText("No achievements yet")).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: /^Achievements/ }).getByText("No achievements yet"),
+  ).toBeVisible();
   await expect(page.getByLabel("Metric")).toHaveValue(demo.metric);
 
   await page.getByLabel("Statement").fill(demo.statement);
@@ -50,14 +55,17 @@ test("a new installation creates a profile and saves an achievement that survive
   // A successful create opens the new record beside the list, which now shows it selected.
   await expect(page.getByRole("heading", { name: "Edit achievement" })).toBeVisible();
   const list = page.getByRole("list", { name: "Achievements" });
-  await expect(list.getByText(demo.statement)).toBeVisible();
+  await expect(list.locator("summary").getByText(demo.statement)).toBeVisible();
+  await list.locator("summary").click();
   await expect(list.getByText("Needs review")).toBeVisible();
-  await expect(list.locator('a[aria-current="page"]')).toContainText(demo.statement);
+  await expect(
+    list.getByRole("link", { name: `Edit achievement: ${demo.statement}` }),
+  ).toHaveAttribute("aria-current", "page");
 
   await page.reload();
   await expect(page.getByRole("heading", { name: "Edit achievement" })).toBeVisible();
   await expect(
-    page.getByRole("list", { name: "Achievements" }).getByText(demo.statement),
+    page.getByRole("list", { name: "Achievements" }).locator("summary").getByText(demo.statement),
   ).toBeVisible();
   await expect(page.getByRole("list", { name: "Achievements" }).getByRole("listitem")).toHaveCount(
     1,

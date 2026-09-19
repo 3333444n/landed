@@ -69,7 +69,7 @@ test("profile, role, project, skill and a linked achievement survive a reload", 
   // An achievement linked to the project and the skill
   await page.goto("/about/achievements/new");
   await page.getByLabel("Statement").fill(demo.statement);
-  await page.getByLabel("Project").selectOption({ label: demo.project });
+  await page.getByLabel("Project", { exact: true }).selectOption({ label: demo.project });
   await page.getByRole("combobox", { name: "Skills used" }).click();
   await page.getByRole("combobox", { name: "Skills used" }).fill("not-a-skill");
   await expect(page.getByText("No matching skills.")).toBeVisible();
@@ -87,8 +87,9 @@ test("profile, role, project, skill and a linked achievement survive a reload", 
   await page.getByRole("button", { name: "Save achievement" }).click();
   await expect(page.getByRole("heading", { name: "Edit achievement" })).toBeVisible();
   const list = page.getByRole("list", { name: "Achievements" });
-  await expect(list.getByText(demo.statement)).toBeVisible();
+  await expect(list.locator("summary").getByText(demo.statement)).toBeVisible();
   await expect(list.getByText(demo.project)).toBeVisible();
+  await list.locator("summary").filter({ hasText: demo.statement }).click();
   await expect(list.getByText(demo.skill, { exact: true })).toBeVisible();
 
   await expect(list.getByRole("heading", { name: demo.statement })).toHaveCSS("font-size", "15px");
@@ -100,7 +101,7 @@ test("profile, role, project, skill and a linked achievement survive a reload", 
   await expect(page.getByRole("status")).toHaveText("Saved");
 
   await page.reload();
-  await expect(list.getByText(demo.statement)).toBeVisible();
+  await expect(list.locator("summary").getByText(demo.statement)).toBeVisible();
 
   await page.getByRole("combobox", { name: "Skills used" }).click();
   await expect(page.getByRole("option", { name: demo.skill, exact: true })).toHaveAttribute(

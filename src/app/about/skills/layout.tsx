@@ -1,10 +1,12 @@
 import { Lightbulb } from "lucide-react";
 import type { ReactNode } from "react";
 import { deps, requireProfile } from "@/app/current-profile";
-import { Card, CardList } from "@/components/Card";
+import { CardList } from "@/components/Card";
 import { Column, EmptyState } from "@/components/Column";
 import { AddLink, Toolbar } from "@/components/Toolbar";
 import { listSkills } from "@/modules/profile";
+
+import { SkillCard } from "../RecordCards";
 
 export const dynamic = "force-dynamic";
 
@@ -29,12 +31,7 @@ export default async function SkillsLayout({ children }: { children: ReactNode }
           <CardList label="Skills">
             {skills.map((skill) => (
               <li key={skill.id}>
-                <Card
-                  icon={<Lightbulb />}
-                  href={`/about/skills/${skill.id}`}
-                  title={skill.displayName}
-                  subtitle={skill.category ?? undefined}
-                />
+                <SkillCard record={skill} />
               </li>
             ))}
           </CardList>

@@ -1,6 +1,6 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { useId, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { IconTile } from "./IconTile";
 import styles from "./Column.module.css";
 
@@ -35,9 +35,8 @@ export function Column({
   width?: "list" | "detail";
   children: ReactNode;
 }) {
-  const headingId = useId();
   return (
-    <section className={`${styles.column} ${styles[width]}`} aria-labelledby={headingId}>
+    <section className={`${styles.column} ${styles[width]}`} aria-label={title}>
       <div className={styles.inner}>
         {parentHref && parentTitle ? (
           <Link
@@ -52,7 +51,7 @@ export function Column({
         <div className={styles.header}>
           {control ?? (icon ? <IconTile>{icon}</IconTile> : null)}
           <div className={styles.titles}>
-            <h2 id={headingId} className={`title-lg ${styles.title}`}>
+            <h2 className={`title-lg ${styles.title}`}>
               {title}
               {count !== undefined ? <span className={styles.count}> {count}</span> : null}
             </h2>

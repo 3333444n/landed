@@ -1,11 +1,12 @@
 import { Briefcase } from "lucide-react";
 import type { ReactNode } from "react";
 import { deps, requireProfile } from "@/app/current-profile";
-import { dateRange } from "@/app/form-state";
-import { Card, CardList } from "@/components/Card";
+import { CardList } from "@/components/Card";
 import { Column, EmptyState } from "@/components/Column";
 import { AddLink, Toolbar } from "@/components/Toolbar";
 import { listEmployment } from "@/modules/profile";
+
+import { RoleCard } from "../RecordCards";
 
 export const dynamic = "force-dynamic";
 
@@ -28,20 +29,11 @@ export default async function WorkHistoryLayout({ children }: { children: ReactN
           <EmptyState>No roles yet. Add the first one with the plus.</EmptyState>
         ) : (
           <CardList label="Work history">
-            {roles.map((role) => {
-              const range = dateRange(role, role.isCurrent);
-              return (
-                <li key={role.id}>
-                  <Card
-                    icon={<Briefcase />}
-                    href={`/about/work-history/${role.id}`}
-                    title={role.role}
-                    subtitle={role.employerName}
-                    meta={range ? [range] : []}
-                  />
-                </li>
-              );
-            })}
+            {roles.map((role) => (
+              <li key={role.id}>
+                <RoleCard record={role} />
+              </li>
+            ))}
           </CardList>
         )}
       </Column>
