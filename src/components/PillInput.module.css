@@ -32,7 +32,13 @@
   width: var(--size-control);
   height: var(--size-control);
   flex-shrink: 0;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  box-shadow: none;
+  cursor: pointer;
 }
 .pill button:hover {
   color: var(--accent);
