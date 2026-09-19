@@ -1,5 +1,6 @@
 "use server";
 
+import { careerRedirect } from "../filter-query";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { deps, requireProfile } from "@/app/current-profile";
@@ -15,10 +16,15 @@ export async function saveSkillAction(
   formData: FormData,
 ): Promise<ActionState> {
   const profile = await requireProfile();
-  const result = await saveSkill(deps(), profile.id, formDataToObject(formData), existingId);
+  const result = await saveSkill(
+    deps(),
+    profile.id,
+    formDataToObject(formData, ["employmentIds", "projectIds"]),
+    existingId,
+  );
   if (!result.ok) return errorState(previous, formData, result.error);
   revalidatePath("/", "layout");
-  if (!existingId) redirect(`${list}/${result.value.id}`);
+  if (!existingId) redirect(careerRedirect(`${list}/${result.value.id}`, formData));
   return { status: "saved", recordId: result.value.id };
 }
 
@@ -31,5 +37,5 @@ export async function deleteSkillAction(
   const result = await deleteSkill(deps(), profile.id, id);
   if (!result.ok) return errorState(previous, formData, result.error);
   revalidatePath("/", "layout");
-  redirect(list);
+  redirect(careerRedirect(list, formData));
 }

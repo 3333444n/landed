@@ -331,3 +331,41 @@ describe("profile MCP contracts", () => {
     expect((await getRun(deps(), demo.profileId, brief.run_id))!.snapshot).toEqual(before);
   });
 });
+
+it("exposes direct skill role_ids/project_ids and preserves omitted links on patches", async () => {
+  await bootstrap();
+  const role = (
+    await call("add_role", {
+      record_id: randomUUID(),
+      employer_name: "Example Workshop",
+      role: "Developer",
+    })
+  ).record;
+  const project = (await call("add_project", { record_id: randomUUID(), name: "Catalogue" }))
+    .record;
+  const skill = (
+    await call("add_skill", {
+      record_id: randomUUID(),
+      display_name: "SQL",
+      role_ids: [role.id],
+      project_ids: [project.id],
+    })
+  ).record;
+  expect(skill).toMatchObject({ role_ids: [role.id], project_ids: [project.id] });
+  const renamed = (
+    await call("update_skill", {
+      record_id: skill.id,
+      expected_updated_at: skill.updated_at,
+      changes: { display_name: "PostgreSQL" },
+    })
+  ).record;
+  expect(renamed).toMatchObject({ role_ids: [role.id], project_ids: [project.id] });
+  const cleared = (
+    await call("update_skill", {
+      record_id: skill.id,
+      expected_updated_at: renamed.updated_at,
+      changes: { role_ids: [], project_ids: [] },
+    })
+  ).record;
+  expect(cleared).toMatchObject({ role_ids: [], project_ids: [] });
+});

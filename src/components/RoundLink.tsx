@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { CareerLink } from "./CareerLink";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import styles from "./Toolbar.module.css";
@@ -25,7 +25,7 @@ export function RoundLink({
       {content}
     </a>
   ) : (
-    <Link
+    <CareerLink
       aria-current={selected ? "page" : undefined}
       href={href}
       className={styles.add}
@@ -33,6 +33,6 @@ export function RoundLink({
       title={label}
     >
       {content}
-    </Link>
+    </CareerLink>
   );
 }

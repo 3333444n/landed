@@ -245,3 +245,49 @@ export const achievementSkills = pgTable(
     index("achievement_skills_profile_id_skill_id_idx").on(t.profileId, t.skillId),
   ],
 );
+
+/** Direct, user-maintained skill context; achievement-derived associations are not stored here. */
+export const skillEmployment = pgTable(
+  "skill_employment",
+  {
+    profileId: uuid("profile_id").notNull(),
+    skillId: uuid("skill_id").notNull(),
+    employmentId: uuid("employment_id").notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.skillId, t.employmentId] }),
+    foreignKey({
+      name: "skill_employment_skill_fk",
+      columns: [t.profileId, t.skillId],
+      foreignColumns: [skills.profileId, skills.id],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "skill_employment_role_fk",
+      columns: [t.profileId, t.employmentId],
+      foreignColumns: [employment.profileId, employment.id],
+    }).onDelete("restrict"),
+    index("skill_employment_profile_role_idx").on(t.profileId, t.employmentId),
+  ],
+);
+export const skillProjects = pgTable(
+  "skill_projects",
+  {
+    profileId: uuid("profile_id").notNull(),
+    skillId: uuid("skill_id").notNull(),
+    projectId: uuid("project_id").notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.skillId, t.projectId] }),
+    foreignKey({
+      name: "skill_projects_skill_fk",
+      columns: [t.profileId, t.skillId],
+      foreignColumns: [skills.profileId, skills.id],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "skill_projects_project_fk",
+      columns: [t.profileId, t.projectId],
+      foreignColumns: [projects.profileId, projects.id],
+    }).onDelete("restrict"),
+    index("skill_projects_profile_project_idx").on(t.profileId, t.projectId),
+  ],
+);

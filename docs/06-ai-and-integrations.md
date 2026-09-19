@@ -83,7 +83,7 @@ Fields for creates and `changes` (required create fields marked **bold**):
 | Role | **`employer_name`**, **`role`**, `location`, `start_year`, `start_month`, `end_year`, `end_month`, `is_current`, `description` |
 | Education | **`institution`**, **`status`** (`in_progress`, `completed`, `incomplete`), `qualification`, `subject`, `start_year`, `start_month`, `end_year`, `end_month`, `description` |
 | Project | **`name`**, `description`, `url`, `role_id`, `start_year`, `start_month`, `end_year`, `end_month` |
-| Skill | **`display_name`**, `category` |
+| Skill | **`display_name`**, `category`, `role_ids`, `project_ids` |
 | Achievement | **`statement`**, `problem`, `action`, `result`, `metric`, `source_note`, `source_url`, `role_id`, `project_id`, `skill_ids` |
 
 Omit a field to preserve it in updates; use `null` to clear a nullable field or `[]` to clear a list. Required scalars, booleans and lists cannot be `null`. Empty `changes` objects are rejected. List fields are arrays; `work_arrangement` contains `remote`, `hybrid` or `onsite`. Existing month/year pairing and date-order rules still apply, so changing one half of a date may require changing the other. Clearing a role/project link does not delete the linked record.
@@ -105,3 +105,6 @@ Generated claims cite input snapshot entries, but valid IDs alone do not establi
 - [MCP specification: transports](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports) (Origin validation, loopback binding and authentication for local servers) and the [2026-07-28 changelog](https://modelcontextprotocol.io/specification/2026-07-28/changelog) (Sampling deprecated)
 - [LangGraph JavaScript overview](https://docs.langchain.com/oss/javascript/langgraph/overview)
 - [pgvector](https://github.com/pgvector/pgvector)
+
+
+Skill context extension (local implementation pending acceptance): `add_skill` accepts optional `role_ids` and `project_ids` arrays; `update_skill.changes` accepts the same fields. `get_profile` and saved skill records return both arrays as explicit links. Omit preserves on update; `[]` clears; null is invalid. Derived associations through achievements/projects are not written to these lists. Roles/projects with direct skill links refuse deletion until detached. These browsing links do not change generation briefs or historical snapshots.

@@ -1,5 +1,5 @@
 import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import { CareerLink } from "./CareerLink";
 import { type ReactNode } from "react";
 import { IconTile } from "./IconTile";
 import styles from "./Column.module.css";
@@ -39,14 +39,14 @@ export function Column({
     <section className={`${styles.column} ${styles[width]}`} aria-label={title}>
       <div className={styles.inner}>
         {parentHref && parentTitle ? (
-          <Link
+          <CareerLink
             href={parentHref}
             className={styles.back}
             aria-label={parentTitle}
             title={parentTitle}
           >
             <ArrowLeft aria-hidden="true" focusable="false" />
-          </Link>
+          </CareerLink>
         ) : null}
         <div className={styles.header}>
           {control ?? (icon ? <IconTile>{icon}</IconTile> : null)}

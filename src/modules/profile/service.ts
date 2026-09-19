@@ -177,6 +177,12 @@ export async function deleteEmployment(
   id: string,
   expectedUpdatedAt?: string,
 ): Promise<Result<void>> {
+  if (await repo.hasSkillContext(deps.db, profileId, "role", id)) {
+    return fail({
+      kind: "conflict",
+      message: "Detach the skills that reference this role before deleting it",
+    });
+  }
   const dependents = await repo.countEmploymentDependents(deps.db, profileId, id);
   if (dependents.projects > 0 || dependents.achievements > 0) {
     return fail({
@@ -303,6 +309,12 @@ export async function deleteProject(
   id: string,
   expectedUpdatedAt?: string,
 ): Promise<Result<void>> {
+  if (await repo.hasSkillContext(deps.db, profileId, "project", id)) {
+    return fail({
+      kind: "conflict",
+      message: "Detach the skills that reference this project before deleting it",
+    });
+  }
   const dependents = await repo.countProjectDependents(deps.db, profileId, id);
   if (dependents > 0) {
     return fail({
@@ -316,11 +328,11 @@ export async function deleteProject(
 // Skills
 
 export async function listSkills(deps: ProfileDeps, profileId: string) {
-  return repo.listOwned(deps.db, repo.ownedTables.skills, profileId);
+  return repo.listSkillsWithContexts(deps.db, profileId);
 }
 
 export async function getSkill(deps: ProfileDeps, profileId: string, id: string) {
-  return repo.findOwned(deps.db, repo.ownedTables.skills, profileId, id);
+  return (await repo.listSkillsWithContexts(deps.db, profileId, id))[0] ?? null;
 }
 
 export async function saveSkill(
@@ -328,22 +340,68 @@ export async function saveSkill(
   profileId: string,
   rawInput: unknown,
   existingId?: string,
-): Promise<Result<repo.SkillRecord>> {
+): Promise<Result<repo.SkillWithContexts>> {
   const parsed = skillInput.safeParse(rawInput);
   if (!parsed.success) return validation(fieldErrorsFromZod(parsed.error));
   const input = parsed.data;
-  const values = {
-    displayName: input.displayName,
-    normalizedName: normalizeSkillName(input.displayName),
-    category: input.category ?? null,
-  };
-  return saveOwned(deps, repo.ownedTables.skills, "Skill", profileId, {
-    id: existingId,
-    clientId: input.id,
-    expectedUpdatedAt: input.expectedUpdatedAt,
-    values,
-    uniqueMessage: { displayName: ["You already have a skill with this name"] },
-  });
+  const id = existingId ?? input.id ?? newId(deps);
+  const employmentIds = [...new Set(input.employmentIds)].sort();
+  const projectIds = [...new Set(input.projectIds)].sort();
+  try {
+    return await deps.db.transaction(async (tx) => {
+      if (!(await repo.findProfileById(tx, profileId))) return notFound("Profile");
+      for (const roleId of employmentIds) {
+        if (!(await repo.employmentBelongsToProfile(tx, profileId, roleId)))
+          return validation({
+            employmentIds: ["One of the selected roles is not in your profile"],
+          });
+      }
+      for (const projectId of projectIds) {
+        if (!(await repo.projectBelongsToProfile(tx, profileId, projectId)))
+          return validation({
+            projectIds: ["One of the selected projects is not in your profile"],
+          });
+      }
+      const values = {
+        displayName: input.displayName,
+        normalizedName: normalizeSkillName(input.displayName),
+        category: input.category ?? null,
+      };
+      let row: repo.SkillRecord;
+      if (existingId) {
+        const current = await repo.findOwned(tx, repo.ownedTables.skills, profileId, id, true);
+        if (!current) return notFound("Skill");
+        const updated = await repo.updateOwned(
+          tx,
+          repo.ownedTables.skills,
+          profileId,
+          id,
+          { ...values, updatedAt: nextVersion(deps, current.updatedAt) },
+          expected(input.expectedUpdatedAt),
+        );
+        if (!updated) return stale();
+        row = updated;
+      } else {
+        row = await repo.insertOwned(tx, repo.ownedTables.skills, {
+          id,
+          profileId,
+          ...values,
+          ...stamps(deps),
+        });
+      }
+      await repo.replaceSkillContexts(tx, profileId, id, employmentIds, projectIds);
+      return { ok: true as const, value: { ...row, employmentIds, projectIds } };
+    });
+  } catch (error) {
+    return mapDatabaseError(
+      error,
+      async () => {
+        const existing = await getSkill(deps, profileId, id);
+        return existing ? { ok: true as const, value: existing } : null;
+      },
+      { displayName: ["You already have a skill with this name"] },
+    );
+  }
 }
 
 export async function deleteSkill(

@@ -115,6 +115,8 @@ export const skillInput = z.object({
   expectedUpdatedAt,
   displayName: requiredText("Enter the skill"),
   category: optionalText,
+  employmentIds: z.array(z.uuid()).default([]),
+  projectIds: z.array(z.uuid()).default([]),
 });
 export type SkillInput = z.infer<typeof skillInput>;
 
@@ -201,6 +203,8 @@ export const skillPatchInput = z.strictObject({
   ...patchVersion,
   displayName: requiredText("Enter the skill").optional(),
   category: patchText,
+  employmentIds: z.array(z.uuid()).optional(),
+  projectIds: z.array(z.uuid()).optional(),
 });
 export const achievementPatchInput = z.strictObject({
   ...patchVersion,
