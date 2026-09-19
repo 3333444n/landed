@@ -1,6 +1,6 @@
 # ADR 010 — Expandable career browsing and explicit skill context
 
-Date: 2026-09-19. Status: accepted design; local implementation pending user acceptance and merge.
+Date: 2026-09-19. Status: accepted design; implementation locally accepted, pending merge.
 
 ## Context
 

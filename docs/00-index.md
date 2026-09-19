@@ -53,6 +53,6 @@ Personal inputs and development notes must not be included in release artifacts.
 Implementation, `pnpm verify:full` and local assistant acceptance are complete on this branch; merge and release remain pending. See doc 09 for the verification details and remaining platform coverage. Do not infer that the original ADR 008 verification covers the additional tools. Contracts: [doc 06](06-ai-and-integrations.md#profile-tools-adr-009-feature-branch-pending-merge); workflow: [doc 05](05-workflows-and-failures.md#profile-management-from-an-assistant-adr-009-pending-merge).
 
 
-## Career browsing refinement (local implementation, pending acceptance)
+## Career browsing refinement (locally accepted, pending merge)
 
 [ADR 010](adr/010-career-browsing-and-skill-context.md) adds expandable career cards, nested About me browsing, direct skill links to roles/projects and context filters (migration 0007). Desired roles use removable pills. Document controls use a header download action, evidence/run text links and an approval toggle. These changes are local and not released; see doc 09 for validation status.
