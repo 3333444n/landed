@@ -31,8 +31,9 @@ export function skillContext(
   }
   return { employmentIds: [...employmentIds], projectIds: [...projectIds] };
 }
-export function matchesContext(context: Context, role: string, project: string): boolean {
-  const match = (ids: string[], value: string) =>
-    !value || (value === "none" ? ids.length === 0 : ids.includes(value));
-  return match(context.employmentIds, role) && match(context.projectIds, project);
+export function matchesContext(context: Context, roles: string[], projects: string[]): boolean {
+  const match = (ids: string[], values: string[]) =>
+    values.length === 0 ||
+    values.some((value) => (value === "none" ? ids.length === 0 : ids.includes(value)));
+  return match(context.employmentIds, roles) && match(context.projectIds, projects);
 }

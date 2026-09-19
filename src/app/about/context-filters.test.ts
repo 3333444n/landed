@@ -32,11 +32,14 @@ describe("career context filters", () => {
   });
   it("combines filters with AND and distinguishes no context from all", () => {
     const context = { employmentIds: ["r1"], projectIds: ["p1"] };
-    expect(matchesContext(context, "r1", "p1")).toBe(true);
-    expect(matchesContext(context, "r2", "p1")).toBe(false);
-    expect(matchesContext(context, "none", "")).toBe(false);
-    expect(matchesContext({ employmentIds: [], projectIds: [] }, "none", "none")).toBe(true);
-    expect(matchesContext(context, "", "")).toBe(true);
-    expect(matchesContext(context, "missing", "")).toBe(false);
+    expect(matchesContext(context, ["r1"], ["p1"])).toBe(true);
+    expect(matchesContext(context, ["r2"], ["p1"])).toBe(false);
+    expect(matchesContext(context, ["none"], [])).toBe(false);
+    expect(matchesContext({ employmentIds: [], projectIds: [] }, ["none"], ["none"])).toBe(true);
+    expect(matchesContext(context, [], [])).toBe(true);
+    expect(matchesContext(context, ["r2", "r1"], ["p2", "p1"])).toBe(true);
+    expect(matchesContext(context, ["r2", "r1"], ["p2"])).toBe(false);
+    expect(matchesContext(context, ["none", "r1"], [])).toBe(true);
+    expect(matchesContext(context, ["missing"], [])).toBe(false);
   });
 });

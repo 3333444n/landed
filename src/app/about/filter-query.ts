@@ -5,11 +5,12 @@ export const careerFilterKeys = [
   "achievementsRole",
   "achievementsProject",
 ] as const;
-export function careerFilterQuery(search: { get: (name: string) => string | null }): string {
+export function careerFilterQuery(search: { getAll: (name: string) => string[] }): string {
   const query = new URLSearchParams();
   for (const key of careerFilterKeys) {
-    const value = search.get(key);
-    if (value && (value === "none" || /^[0-9a-f-]{36}$/i.test(value))) query.set(key, value);
+    for (const value of new Set(search.getAll(key))) {
+      if (value === "none" || /^[0-9a-f-]{36}$/i.test(value)) query.append(key, value);
+    }
   }
   return query.toString();
 }

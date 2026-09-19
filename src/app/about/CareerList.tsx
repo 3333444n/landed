@@ -2,10 +2,9 @@
 
 import { SlidersHorizontal } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useId } from "react";
 import { CardList } from "@/components/Card";
-import { AddLink, Toolbar } from "@/components/Toolbar";
-import { Combobox } from "@/components/Combobox";
+import { AddLink } from "@/components/Toolbar";
+import { FilterChips } from "@/components/FilterChips";
 import type {
   AchievementWithSkills,
   EmploymentRecord,
@@ -34,16 +33,16 @@ export function CareerList({
   const search = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
-  const id = useId();
   const roleKey = `${kind}Role`;
   const projectKey = `${kind}Project`;
-  const role = search.get(roleKey) ?? "";
-  const project = search.get(projectKey) ?? "";
-  const update = (updates: Record<string, string>) => {
+  const role = search.getAll(roleKey);
+  const project = search.getAll(projectKey);
+  const update = (updates: Record<string, string[]>) => {
     const next = new URLSearchParams(search.toString());
-    Object.entries(updates).forEach(([key, value]) =>
-      value ? next.set(key, value) : next.delete(key),
-    );
+    Object.entries(updates).forEach(([key, values]) => {
+      next.delete(key);
+      values.forEach((value) => next.append(key, value));
+    });
     router.replace(`${pathname}${next.size ? `?${next}` : ""}`, { scroll: false });
   };
   const label = kind === "skills" ? "Skills" : "Achievements";
@@ -97,60 +96,56 @@ export function CareerList({
   };
   return (
     <div className={styles.root}>
-      <Toolbar
-        left={
-          <details className={styles.filters}>
-            <summary
-              aria-label={`Filter ${kind}`}
-              title={`Filter ${kind}`}
-              className={styles.trigger}
+      <div className={styles.controls}>
+        <details className={styles.filters}>
+          <summary
+            aria-label={`Filter ${kind}`}
+            title={`Filter ${kind}`}
+            className={styles.trigger}
+          >
+            <SlidersHorizontal aria-hidden="true" />
+            {role.length || project.length ? <span className={styles.dot} /> : null}
+          </summary>
+          <div className={styles.panel} aria-label={`${label} filters`}>
+            <FilterChips
+              label="Roles"
+              allLabel="All roles"
+              value={role}
+              onChange={(values) => update({ [roleKey]: values })}
+              options={[
+                ...roles.map((r) => ({ value: r.id, label: `${r.role} at ${r.employerName}` })),
+                { value: "none", label: "No role" },
+              ]}
+            />
+            <FilterChips
+              label="Projects"
+              allLabel="All projects"
+              value={project}
+              onChange={(values) => update({ [projectKey]: values })}
+              options={[
+                ...projects.map((p) => ({ value: p.id, label: p.name })),
+                { value: "none", label: "No project" },
+              ]}
+            />
+            <button
+              type="button"
+              className={styles.clear}
+              onClick={() => update({ [roleKey]: [], [projectKey]: [] })}
             >
-              <SlidersHorizontal aria-hidden="true" />
-              {role || project ? <span className={styles.dot} /> : null}
-            </summary>
-            <div className={styles.panel} aria-label={`${label} filters`}>
-              <Combobox
-                name={`${id}-role`}
-                label="Filter by role"
-                value={role || "all"}
-                onChange={(value) => update({ [roleKey]: value === "all" ? "" : value })}
-                options={[
-                  { value: "all", label: "All roles" },
-                  { value: "none", label: "No role" },
-                  ...roles.map((r) => ({ value: r.id, label: `${r.role} at ${r.employerName}` })),
-                ]}
-              />
-              <Combobox
-                name={`${id}-project`}
-                label="Filter by project"
-                value={project || "all"}
-                onChange={(value) => update({ [projectKey]: value === "all" ? "" : value })}
-                options={[
-                  { value: "all", label: "All projects" },
-                  { value: "none", label: "No project" },
-                  ...projects.map((p) => ({ value: p.id, label: p.name })),
-                ]}
-              />
-              <button
-                type="button"
-                className={styles.clear}
-                onClick={() => update({ [roleKey]: "", [projectKey]: "" })}
-              >
-                Clear filters
-              </button>
-            </div>
-          </details>
-        }
-        right={
+              Clear filters
+            </button>
+          </div>
+        </details>
+        <div className={styles.add}>
           <AddLink
             href={`/about/${kind}/new`}
             label={kind === "skills" ? "Add skill" : "Add achievement"}
           />
-        }
-      />
+        </div>
+      </div>
       <p className="text-secondary" aria-live="polite">
         {count} of {total} {kind}
-        {role || project ? " · Filtered" : ""}
+        {role.length || project.length ? " · Filtered" : ""}
       </p>
       {count ? (
         <CardList label={nested ? `${label} overview` : label}>
