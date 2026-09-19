@@ -26,13 +26,7 @@
   flex-wrap: wrap;
   gap: var(--space-2);
 }
-.manage {
-  align-self: flex-start;
-  text-decoration: underline;
-  min-height: var(--size-control);
-  display: inline-flex;
-  align-items: center;
-}
+
 @media (max-width: 640px) {
   .facts > div {
     grid-template-columns: 1fr;

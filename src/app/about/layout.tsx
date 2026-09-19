@@ -1,5 +1,4 @@
 import { Award, Briefcase, FolderKanban, GraduationCap, Lightbulb, UserRound } from "lucide-react";
-import Link from "next/link";
 import type { ReactNode } from "react";
 import { deps, requireProfile } from "@/app/current-profile";
 import { CardList } from "@/components/Card";
@@ -174,9 +173,6 @@ export default async function AboutLayout({ children }: { children: ReactNode })
                 editHref={section.href}
                 editLabel={`Manage ${section.title.toLowerCase()}`}
               >
-                <Link href={section.href} className={styles.manage}>
-                  Manage {section.title.toLowerCase()}
-                </Link>
                 {section.content.length ? (
                   <CardList label={`${section.title} overview`}>{section.content}</CardList>
                 ) : (
