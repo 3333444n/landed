@@ -82,3 +82,5 @@ Logs identify operation/run and error category without copying career content or
 ## Browsing career facts
 
 About me expands each section in place. Profile shows compact contact and preference fields and a 240-character summary preview; the edit column contains the full summary. Other sections contain expandable record cards. A separate pencil link opens a record's edit URL without changing its disclosure; section management links retain the dedicated lists and add controls. Multiple disclosures can stay open during client navigation; reloading starts them closed. List cards share the same read-only details as the overview. Empty sections link to their management page.
+
+Desired roles are entered as removable pills above the input. Enter or Add appends values; a comma-separated paste adds several. Saving includes an unfinished entry, and a refused save retains additions and removals. Storage remains the profile preferences array.
