@@ -83,3 +83,8 @@ Add rounds, dates, participants, notes, tasks, outcomes, and preparation when us
 ## Non-goals for the first release
 
 Hosted accounts, billing, multi-user tenancy, automatic application submission, email sending, unrestricted agent filesystem/shell access, multiple frontend stacks, mandatory local model installation, and generalized plugin infrastructure.
+
+
+## Career browsing refinement (local implementation, 2026-09-19)
+
+The About me hub and career lists allow reading facts inside expandable cards, with a separate pencil action for editing. Dedicated section pages retain add controls and large-list management. Skills and Achievements can be filtered by role/project, including existing evidence-derived associations; skills also support direct role/project assignment. Desired roles are edited as removable pills. Document review is presented as approval of the current revision, with a circular PDF action and underlined Evidence/Runs links. See [ADR 010](adr/010-career-browsing-and-skill-context.md); this work awaits local acceptance and merge.

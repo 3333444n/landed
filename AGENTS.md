@@ -38,6 +38,13 @@
 - The `nextjs-agent-rules` block at the end of this file is written by `next dev`; leave it in place and commit it as is.
 - A running `next dev` regenerates typed-route files under `.next/dev/types` for whatever is checked out; after switching branches, delete that folder if `pnpm typecheck` or `pnpm build` complains about routes that no longer exist.
 
+## Career browsing refinement (ADR 010, local and pending acceptance)
+
+- `ExpandableCard` uses a native disclosure for read-only details and a separate pencil link for editing. `src/app/about/RecordCards.tsx` supplies shared record content to nested About me sections and dedicated lists. Forms remain in URL-driven columns. Disclosure state is ephemeral; filter state lives in scoped search parameters.
+- Skills own explicit many-to-many links in `skill_employment` and `skill_projects` (migration 0007). Skill reads return coherent `employmentIds` and `projectIds` arrays; full saves replace them transactionally, partial updates preserve omitted lists. MCP names them `role_ids` and `project_ids`. Linked roles/projects cannot be deleted until detached. Derived skill context through achievements and project parent roles is computed for browsing in `context-filters.ts`, never backfilled. Document snapshots and grounding rules still use the existing projection.
+- `CareerList` filters Skills/Achievements in both overview and dedicated lists. `CareerLink` and `_careerFilters` form fields preserve scoped filters through career navigation and create/delete redirects; `filter-query.ts` allows only the known filter keys. Desired roles use `PillInput` over the existing comma-list form contract.
+- Document columns place PDF download in the header, Evidence/Runs text links beneath the generation summary, and icon-labelled generation/paste/approval controls below. `Approve?`/`Approved` map to the existing revision review timestamp; a new edited/generated revision is unapproved. This UI work is local, not released.
+
 ## Product rules
 
 - Career facts are user-supplied evidence. Generated content may reorganize them but must not invent accomplishments, metrics, qualifications, or employment history. The grounding check (`documents/rules.ts`) is the guardrail, not the prompt: evidence ids must exist, numbers must appear in cited records, resume headings must name real records, and a resume bullet may cite only its own entry's records. Valid ids prove existence, not ownership.

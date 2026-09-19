@@ -110,3 +110,10 @@ Implemented and locally accepted on the feature branch; merge remains pending, s
 Achievement statements use regular body typography (15/22, weight 400). A shared controlled `Combobox` supports searchable single or multiple selection, labelled listbox options, keyboard navigation and hidden form inputs. Achievement skills use multiple selection and preserve both selected and cleared values across validation errors. The public component contract is in DESIGN.md; reuse and state ownership guidance is in AGENTS.md. No dependency, schema, module operation or Server Action changes are required.
 
 Implementation is locally accepted and pending merge. `pnpm verify:full` passed on 2026-09-18: 145 unit tests, 76 integration tests, migration consistency, the production build and all 8 browser journeys. The achievement journey covers search, no matches, keyboard selection, regular card typography, saving and reloading, and preserving both selected and cleared skills across validation errors. All model calls in the checks use the fake adapter.
+
+
+## Career browsing and document controls (2026-09-19, local implementation)
+
+Accepted under [ADR 010](adr/010-career-browsing-and-skill-context.md): expandable cards with separate edit controls; nested About me previews with dedicated management pages retained; desired-role pills; direct many-to-many skill links to roles/projects with derived evidence associations; URL-based Skills/Achievements filters; circular PDF download controls, Evidence/Runs text links and yellow `Approve?` / green `Approved` controls. Migration 0007 adds skill context tables without rewriting career facts or generation snapshots. No provider, prompt or output-schema change is included.
+
+Implementation is on six local branches. User acceptance and PR publication remain pending; no PR for this refinement has been opened. Browser checks use fictional data and the fake adapter. Existing release/platform gaps above remain; local acceptance does not establish packaged-install coverage.

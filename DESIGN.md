@@ -6,7 +6,7 @@ This file governs every user interface in Landed. Coding agents and contributors
 
 Landed is a review tool. People read generated resumes, compare them with their own facts, and decide. The interface must stay out of the way: a near-black (or off-white) canvas lit by a soft glow in two corners in the accent's hue, flat translucent panels and cards with a thin gradient edge, generous whitespace, one accent color, and typography that carries the hierarchy on its own.
 
-The interface is a set of columns. Each column lists cards; opening a card opens the next column. The URL is the navigation stack, so every screen is reachable by address and the back link always exists.
+The interface is a set of columns. Each column lists cards. Navigation cards open the next column; career cards expand read-only details and have a separate pencil link to edit. The URL is the navigation stack, so every screen is reachable by address and the back link always exists.
 
 Minimalism here means fewer elements, not smaller ones. Remove before you decorate.
 
@@ -173,7 +173,7 @@ Durations: 150ms for hover and focus, 250ms for reveal and dismiss, 400ms for th
 
 **Buttons.** Primary: `accent` background, `accent.contrast` text, `radius.md`, 40px tall. Secondary: `bg.surface.raised` background, `text.primary`. Tertiary: text only. Destructive: `danger` text on secondary style, filled only inside a confirmation. No outline-style buttons. Round icon buttons (add, filter, sort, back) are layered glass and turn `accent.soft` on hover.
 
-**Cards.** Layered glass (`glass.card` in a list column, `glass.card.raised` inside the detail column), `radius.lg`, no border, 24px padding. An optional icon tile sits at the left of the header. Title in `title.md`; achievement statements use `body` (15px, weight 400) because they are prose. Optional subtitle in `body.sm` `text.secondary` below the title, optional metadata lines in `body.sm`, chips last. A card that opens the next column is one link covering the whole card, with the hover elevation above; the selected card, when its column is visible next to its detail, uses `accent.soft` fill. Actions such as delete live in the detail column, not on list cards. Blocks inside a card use `bg.surface.raised` and `radius.md`.
+**Cards.** Layered glass (`glass.card` in a list column, `glass.card.raised` inside the detail column), `radius.lg`, no border, 24px padding. An optional icon tile sits at the left of the header. Title in `title.md`; achievement statements use `body` (15px, weight 400) because they are prose. Optional subtitle in `body.sm` `text.secondary` below the title, optional metadata lines in `body.sm`, chips last. A navigation card that opens the next column is one link covering the whole card, with the hover elevation above; the selected card, when its column is visible next to its detail, uses `accent.soft` fill. Destructive actions such as delete live in the detail column. Career cards have a separate circular edit link. Blocks inside a card use `bg.surface.raised` and `radius.md`.
 
 **Inputs.** `bg.input` fill, no border, `radius.md`, 40px tall, focus ring 2px accent with 2px offset. Labels above in `label` style, sentence case. Helper and error text below in `body.sm`. Textareas share the fill and radius and grow with their content; `rows` is only the minimum, so long text never scrolls inside a short box. Selects and checkboxes use the same fill; the checkbox is 18px with `radius.sm` and the accent as its checked color.
 
@@ -197,7 +197,7 @@ The component accepts `name`, `label`, `options`, `value`, `onChange`, optional 
 
 **Empty states.** One sentence in `text.secondary` and, where an action exists, the toolbar's add control. No illustrations, no separate button.
 
-**Forms.** A form sits directly on the detail column's surface, never inside a card: fields stacked with 16px gaps, then an actions row aligned right with the save status text on its left. A form for a new record opens from the add control at a `new` route; a form for an existing record opens from its card. Delete lives at the bottom of the edit form as the destructive button with its inline confirmation.
+**Forms.** A form sits directly on the detail column's surface, never inside a card: fields stacked with 16px gaps, then an actions row aligned right with the save status text on its left. A form for a new record opens from the add control at a `new` route; a form for an existing career record opens from its pencil link. Delete lives at the bottom of the edit form as the destructive button with its inline confirmation.
 
 ## Accessibility
 

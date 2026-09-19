@@ -51,3 +51,8 @@ Personal inputs and development notes must not be included in release artifacts.
 [ADR 009 — Profile management over MCP](adr/009-profile-management-over-mcp.md) extends ADR 008 with 18 tools: profile read/create/update and add/update/delete for roles, education, projects, skills and achievements. The feature branch uses module-owned partial updates, required version checks, client ids for retries, serialized first-profile creation and individual-record deletion only. The portable skill routes profile tasks independently of jobs. Existing snapshots remain unchanged. No new provider access, dependency or schema migration was added for this extension.
 
 Implementation, `pnpm verify:full` and local assistant acceptance are complete on this branch; merge and release remain pending. See doc 09 for the verification details and remaining platform coverage. Do not infer that the original ADR 008 verification covers the additional tools. Contracts: [doc 06](06-ai-and-integrations.md#profile-tools-adr-009-feature-branch-pending-merge); workflow: [doc 05](05-workflows-and-failures.md#profile-management-from-an-assistant-adr-009-pending-merge).
+
+
+## Career browsing refinement (local implementation, pending acceptance)
+
+[ADR 010](adr/010-career-browsing-and-skill-context.md) adds expandable career cards, nested About me browsing, direct skill links to roles/projects and context filters (migration 0007). Desired roles use removable pills. Document controls use a header download action, evidence/run text links and an approval toggle. These changes are local and not released; see doc 09 for validation status.
