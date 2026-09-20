@@ -9,6 +9,8 @@ import { and, asc, desc, eq, getTableColumns, inArray, sql, type SQL } from "dri
 import type { PgColumn, PgTable } from "drizzle-orm/pg-core";
 import type { DbHandle } from "@/infrastructure/database";
 import {
+  skillEmployment,
+  skillProjects,
   achievementSkills,
   achievements,
   education,
@@ -352,4 +354,66 @@ export async function touchAchievementsForSkill(
 /** Keep achievement row/skill-link edits ordered with cascading skill removal. */
 export async function lockAchievementSkills(db: DbHandle, profileId: string): Promise<void> {
   await db.execute(sql`select pg_advisory_xact_lock(174813, hashtext(${profileId}))`);
+}
+
+export type SkillWithContexts = SkillRecord & { employmentIds: string[]; projectIds: string[] };
+
+/** One statement gives the skill version and both link lists a coherent snapshot. */
+export async function listSkillsWithContexts(
+  db: DbHandle,
+  profileId: string,
+  id?: string,
+): Promise<SkillWithContexts[]> {
+  return db
+    .select({
+      ...getTableColumns(skills),
+      employmentIds: sql<
+        string[]
+      >`array(select ${skillEmployment.employmentId} from ${skillEmployment} where ${skillEmployment.profileId} = ${skills.profileId} and ${skillEmployment.skillId} = ${skills.id} order by ${skillEmployment.employmentId})`,
+      projectIds: sql<
+        string[]
+      >`array(select ${skillProjects.projectId} from ${skillProjects} where ${skillProjects.profileId} = ${skills.profileId} and ${skillProjects.skillId} = ${skills.id} order by ${skillProjects.projectId})`,
+    })
+    .from(skills)
+    .where(and(eq(skills.profileId, profileId), id === undefined ? undefined : eq(skills.id, id)))
+    .orderBy(...ownedTables.skills.order);
+}
+
+export async function replaceSkillContexts(
+  db: DbHandle,
+  profileId: string,
+  skillId: string,
+  employmentIds: string[],
+  projectIds: string[],
+) {
+  await db
+    .delete(skillEmployment)
+    .where(and(eq(skillEmployment.profileId, profileId), eq(skillEmployment.skillId, skillId)));
+  await db
+    .delete(skillProjects)
+    .where(and(eq(skillProjects.profileId, profileId), eq(skillProjects.skillId, skillId)));
+  if (employmentIds.length)
+    await db
+      .insert(skillEmployment)
+      .values(employmentIds.map((employmentId) => ({ profileId, skillId, employmentId })));
+  if (projectIds.length)
+    await db
+      .insert(skillProjects)
+      .values(projectIds.map((projectId) => ({ profileId, skillId, projectId })));
+}
+
+export async function hasSkillContext(
+  db: DbHandle,
+  profileId: string,
+  kind: "role" | "project",
+  id: string,
+): Promise<boolean> {
+  const table = kind === "role" ? skillEmployment : skillProjects;
+  const column = kind === "role" ? skillEmployment.employmentId : skillProjects.projectId;
+  const rows = await db
+    .select({ skillId: table.skillId })
+    .from(table)
+    .where(and(eq(table.profileId, profileId), eq(column, id)))
+    .limit(1);
+  return rows.length > 0;
 }

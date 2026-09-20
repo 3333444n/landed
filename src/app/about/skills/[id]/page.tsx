@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { deps, requireProfile } from "@/app/current-profile";
 import { Column } from "@/components/Column";
 import { ConfirmDelete } from "@/components/ConfirmDelete";
-import { getSkill } from "@/modules/profile";
+import { getSkill, listEmployment, listProjects } from "@/modules/profile";
 import { deleteSkillAction, saveSkillAction } from "../actions";
 import { SkillForm } from "../SkillForm";
 
@@ -14,6 +14,10 @@ export default async function EditSkillPage({ params }: { params: Promise<{ id: 
   const profile = await requireProfile();
   const skill = await getSkill(deps(), profile.id, id);
   if (!skill) notFound();
+  const [roles, projects] = await Promise.all([
+    listEmployment(deps(), profile.id),
+    listProjects(deps(), profile.id),
+  ]);
 
   return (
     <Column
@@ -25,6 +29,11 @@ export default async function EditSkillPage({ params }: { params: Promise<{ id: 
       width="detail"
     >
       <SkillForm
+        key={skill.id}
+        roles={roles.map((r) => ({ value: r.id, label: `${r.role} at ${r.employerName}` }))}
+        projects={projects.map((p) => ({ value: p.id, label: p.name }))}
+        employmentIds={skill.employmentIds}
+        projectIds={skill.projectIds}
         action={saveSkillAction.bind(null, skill.id)}
         submitLabel="Save changes"
         record={{

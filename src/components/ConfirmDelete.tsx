@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { idleState, type ActionState } from "@/app/form-state";
+import { CareerFilterFields } from "@/components/CareerLink";
 import { Button } from "./Button";
 import styles from "./ConfirmDelete.module.css";
 
@@ -36,6 +37,7 @@ export function ConfirmDelete({
   }
   return (
     <form action={formAction} className={styles.inline}>
+      <CareerFilterFields />
       <span className={styles.question}>Delete this {what}?</span>
       <Button variant="secondary" onClick={() => setOpen(false)} disabled={pending}>
         Cancel

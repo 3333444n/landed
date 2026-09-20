@@ -20,6 +20,10 @@ erDiagram
   projects |o--o{ achievements : "optional context"
   achievements ||--o{ achievement_skills : links
   skills ||--o{ achievement_skills : links
+  skills ||--o{ skill_employment : links
+  employment ||--o{ skill_employment : context
+  skills ||--o{ skill_projects : links
+  projects ||--o{ skill_projects : context
 ```
 
 Crow's-foot notation: `||` exactly one, `|o` zero or one, `o{` zero or many. An achievement has at most one of employment or project as context.
@@ -123,3 +127,10 @@ The database stores editable structured content and input snapshots. PDFs live i
 PostgreSQL remains the source of truth. Later pgvector stores derived embeddings alongside it; a separate vector database is not required. Model choice, vector dimensions, retrieval strategy, and index tuning wait for a measured retrieval need.
 
 Sources: [PostgreSQL constraints](https://www.postgresql.org/docs/current/ddl-constraints.html), [pgvector](https://github.com/pgvector/pgvector).
+
+
+## Direct skill contexts (migration 0007, local implementation pending acceptance)
+
+`skill_employment` links a skill to multiple roles; `skill_projects` links it to multiple projects. Both carry `profile_id`, a composite primary key `(skill_id, context_id)`, owner-aware foreign keys and a reverse context lookup index. A skill owns these lists: row and links are saved together, and reads return their version and associations in one SQL statement. Skill deletion cascades to its joins; linked roles and projects require explicit detachment before deletion.
+
+Achievement-derived skill connections and parent roles of linked projects are computed for browsing, never backfilled into direct link tables. Existing skills begin with empty direct lists; existing achievement links are preserved. Direct links currently support career browsing only: the document snapshot projection and grounding rules remain unchanged, so a context link alone does not become achievement evidence.

@@ -13,15 +13,9 @@ import {
 
 import { ExpandableCard } from "@/components/ExpandableCard";
 import { Chip } from "@/components/Chip";
-import {
-  Facts,
-  RoleCard,
-  EducationCard,
-  ProjectCard,
-  SkillCard,
-  AchievementCard,
-} from "./RecordCards";
+import { Facts, RoleCard, EducationCard, ProjectCard } from "./RecordCards";
 import styles from "./about.module.css";
+import { CareerList } from "./CareerList";
 
 export const dynamic = "force-dynamic";
 
@@ -78,28 +72,34 @@ export default async function AboutLayout({ children }: { children: ReactNode })
       href: "/about/skills",
       icon: Lightbulb,
       subtitle: count(skills.length, "skill"),
-      content: skills.map((record) => (
-        <li key={record.id}>
-          <SkillCard record={record} nested />
-        </li>
-      )),
+      content: [],
+      filtered: (
+        <CareerList
+          kind="skills"
+          roles={employment}
+          projects={projects}
+          skills={skills}
+          achievements={achievements}
+          nested
+        />
+      ),
     },
     {
       title: "Achievements",
       href: "/about/achievements",
       icon: Award,
       subtitle: count(achievements.length, "achievement"),
-      content: achievements.map((record) => (
-        <li key={record.id}>
-          <AchievementCard
-            record={record}
-            roles={employment}
-            projects={projects}
-            skills={skills}
-            nested
-          />
-        </li>
-      )),
+      content: [],
+      filtered: (
+        <CareerList
+          kind="achievements"
+          roles={employment}
+          projects={projects}
+          skills={skills}
+          achievements={achievements}
+          nested
+        />
+      ),
     },
   ];
   const summary =
@@ -173,11 +173,12 @@ export default async function AboutLayout({ children }: { children: ReactNode })
                 editHref={section.href}
                 editLabel={`Manage ${section.title.toLowerCase()}`}
               >
-                {section.content.length ? (
-                  <CardList label={`${section.title} overview`}>{section.content}</CardList>
-                ) : (
-                  <p className="text-secondary">Nothing added yet.</p>
-                )}
+                {section.filtered ??
+                  (section.content.length ? (
+                    <CardList label={`${section.title} overview`}>{section.content}</CardList>
+                  ) : (
+                    <p className="text-secondary">Nothing added yet.</p>
+                  ))}
               </ExpandableCard>
             </li>
           ))}

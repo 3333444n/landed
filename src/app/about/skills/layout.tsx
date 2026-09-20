@@ -1,41 +1,35 @@
 import { Lightbulb } from "lucide-react";
 import type { ReactNode } from "react";
 import { deps, requireProfile } from "@/app/current-profile";
-import { CardList } from "@/components/Card";
-import { Column, EmptyState } from "@/components/Column";
-import { AddLink, Toolbar } from "@/components/Toolbar";
-import { listSkills } from "@/modules/profile";
-
-import { SkillCard } from "../RecordCards";
-
+import { Column } from "@/components/Column";
+import { listAchievements, listEmployment, listProjects, listSkills } from "@/modules/profile";
+import { CareerList } from "../CareerList";
 export const dynamic = "force-dynamic";
-
-export default async function SkillsLayout({ children }: { children: ReactNode }) {
+export default async function Layout({ children }: { children: ReactNode }) {
   const profile = await requireProfile();
-  const skills = await listSkills(deps(), profile.id);
-
+  const [achievements, roles, projects, skills] = await Promise.all([
+    listAchievements(deps(), profile.id),
+    listEmployment(deps(), profile.id),
+    listProjects(deps(), profile.id),
+    listSkills(deps(), profile.id),
+  ]);
   return (
     <>
       <Column
         icon={<Lightbulb />}
         title="Skills"
         count={skills.length}
-        subtitle="Named capabilities you can point achievements at."
+        subtitle="Named capabilities and where you use them."
         parentHref="/about"
         parentTitle="About me"
-        toolbar={<Toolbar right={<AddLink href="/about/skills/new" label="Add skill" />} />}
       >
-        {skills.length === 0 ? (
-          <EmptyState>No skills yet. Add the first one with the plus.</EmptyState>
-        ) : (
-          <CardList label="Skills">
-            {skills.map((skill) => (
-              <li key={skill.id}>
-                <SkillCard record={skill} />
-              </li>
-            ))}
-          </CardList>
-        )}
+        <CareerList
+          kind="skills"
+          roles={roles}
+          projects={projects}
+          skills={skills}
+          achievements={achievements}
+        />
       </Column>
       {children}
     </>

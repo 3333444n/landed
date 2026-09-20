@@ -54,14 +54,18 @@ const failure = (message: string): ToolResult => ({
 });
 
 function externalName(key: string): string {
-  return key === "employmentId"
-    ? "role_id"
-    : key.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+  return key === "employmentIds"
+    ? "role_ids"
+    : key === "employmentId"
+      ? "role_id"
+      : key.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
 }
 function internalName(key: string): string {
-  return key === "role_id"
-    ? "employmentId"
-    : key.replace(/_([a-z])/g, (_, letter: string) => letter.toUpperCase());
+  return key === "role_ids"
+    ? "employmentIds"
+    : key === "role_id"
+      ? "employmentId"
+      : key.replace(/_([a-z])/g, (_, letter: string) => letter.toUpperCase());
 }
 function inputFields(fields: Record<string, unknown>, creating = false): Record<string, unknown> {
   return Object.fromEntries(

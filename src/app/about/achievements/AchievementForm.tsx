@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { CareerFilterFields } from "@/components/CareerLink";
 import { Button } from "@/components/Button";
 import { Checkbox } from "@/components/Checkbox";
 import { Field } from "@/components/Field";
@@ -42,6 +43,7 @@ export function AchievementForm({
 
   return (
     <form action={formAction} className={formStyles.form} noValidate>
+      <CareerFilterFields />
       <Fields
         key={fieldsKey(state)}
         values={values}

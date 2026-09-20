@@ -80,5 +80,6 @@ export type {
   ProfileRecord,
   ProjectRecord,
   SkillRecord,
+  SkillWithContexts,
 } from "./repository";
 export type { ProfileLinkRecord, ProfilePreferences } from "./schema";
