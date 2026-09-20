@@ -190,3 +190,60 @@
   flex-direction: column;
   gap: var(--space-1);
 }
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+.detailLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-top: var(--space-1);
+}
+.detailLinks a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--size-control);
+  font-size: 13px;
+  line-height: 18px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  color: var(--text-secondary);
+}
+.detailLinks a:hover {
+  color: var(--accent);
+}
+.actionIcon {
+  display: inline-flex;
+}
+.actionIcon svg,
+.toolbarLink svg {
+  width: 16px;
+  height: 16px;
+}
+.toolbarLink {
+  gap: var(--space-2);
+}
+.actions .success {
+  background: color-mix(in srgb, var(--success) 18%, var(--bg-surface));
+  color: var(--text-primary);
+}
+.actions .warning {
+  background: color-mix(in srgb, var(--warning) 22%, var(--bg-surface));
+  color: var(--text-primary);
+}
+.actions .success:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--success) 28%, var(--bg-surface));
+}
+.actions .warning:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--warning) 32%, var(--bg-surface));
+}
+
+.actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}

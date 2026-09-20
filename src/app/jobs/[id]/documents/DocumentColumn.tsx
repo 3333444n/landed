@@ -1,9 +1,18 @@
 import Link from "next/link";
+import {
+  Check,
+  CircleHelp,
+  ClipboardPaste,
+  Download,
+  RefreshCw,
+  Sparkles,
+  Settings,
+} from "lucide-react";
+import { RoundLink } from "@/components/RoundLink";
 import { deps } from "@/app/current-profile";
 import { getModelStatus } from "@/infrastructure/server";
 import { Chip } from "@/components/Chip";
 import { Column, EmptyState } from "@/components/Column";
-import { Toolbar } from "@/components/Toolbar";
 import { failureLabels, getRun, type DocumentType } from "@/modules/documents";
 import { editUnitAction, generateDocumentAction, markReviewedAction } from "../document-actions";
 import { ActionButton } from "./ActionButton";
@@ -36,50 +45,51 @@ export async function DocumentColumn({ jobId, type }: { jobId: string; type: Doc
       parentHref={`/jobs/${job.id}`}
       parentTitle={job.title}
       width="detail"
+      headerAction={
+        revision && type !== "recruiter_message" ? (
+          <RoundLink href={`${href}/pdf`} label="Download PDF" download>
+            <Download />
+          </RoundLink>
+        ) : undefined
+      }
+      headerDetails={
+        <nav aria-label={`${label} details`} className={styles.detailLinks}>
+          <Link href={`${href}/evidence`}>Evidence</Link>
+          <Link href={`${href}/runs`}>Runs</Link>
+        </nav>
+      }
       toolbar={
-        <Toolbar
-          left={
-            <>
-              {canGenerate ? (
-                <ActionButton
-                  action={generateDocumentAction.bind(null, job.id, type)}
-                  label={revision ? "Regenerate" : "Generate"}
-                  pendingLabel="Generating"
-                />
-              ) : (
-                <Link href="/settings/model" className={styles.toolbarLink}>
-                  Set up a model
-                </Link>
-              )}
-              <Link href={`${href}/paste`} className={styles.toolbarLink}>
-                Paste back
-              </Link>
-              {revision && type !== "recruiter_message" ? (
-                <a href={`${href}/pdf`} className={styles.toolbarLink}>
-                  Download PDF
-                </a>
-              ) : null}
-              {revision ? (
-                <ActionButton
-                  action={markReviewedAction.bind(null, revision.id, !revision.reviewedAt)}
-                  label={revision.reviewedAt ? "Mark unreviewed" : "Mark reviewed"}
-                  pendingLabel="Saving"
-                  variant="secondary"
-                />
-              ) : null}
-            </>
-          }
-          right={
-            <>
-              <Link href={`${href}/evidence`} className={styles.toolbarLink}>
-                Evidence
-              </Link>
-              <Link href={`${href}/runs`} className={styles.toolbarLink}>
-                Runs
-              </Link>
-            </>
-          }
-        />
+        <div className={styles.actions}>
+          {canGenerate ? (
+            <ActionButton
+              action={generateDocumentAction.bind(null, job.id, type)}
+              label={revision ? "Regenerate" : "Generate"}
+              pendingLabel="Generating"
+              icon={revision ? <RefreshCw /> : <Sparkles />}
+            />
+          ) : (
+            <Link href="/settings/model" className={styles.toolbarLink}>
+              <Settings aria-hidden="true" />
+              Set up a model
+            </Link>
+          )}
+          <Link href={`${href}/paste`} className={styles.toolbarLink}>
+            <ClipboardPaste aria-hidden="true" />
+            Paste back
+          </Link>
+          {revision ? (
+            <ActionButton
+              action={markReviewedAction.bind(null, revision.id, !revision.reviewedAt)}
+              label={revision.reviewedAt ? "Approved" : "Approve?"}
+              pendingLabel="Saving"
+              variant="secondary"
+              tone={revision.reviewedAt ? "success" : "warning"}
+              pressed={!!revision.reviewedAt}
+              title={revision.reviewedAt ? "Remove approval" : "Approve this revision"}
+              icon={revision.reviewedAt ? <Check /> : <CircleHelp />}
+            />
+          ) : null}
+        </div>
       }
     >
       {view.latestRun?.state === "failed" && view.latestRun.failureKind ? (
