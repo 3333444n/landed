@@ -1,12 +1,12 @@
 # 04 — PostgreSQL data model
 
-Status: Phase 0 tables implemented in `db/migrations/0000_phase0_profile_tables.sql`; Phase 1a tables in `db/migrations/0001_phase1a_jobs_and_applications.sql`; Phase 1b tables in `db/migrations/0002_phase1b_documents_and_profile_links.sql`; the job salary column in `db/migrations/0003_phase1c_job_salary.sql`; the job logo columns in `db/migrations/0004_phase1c_job_logo.sql`; the employment location in `db/migrations/0005_phase1c_employment_location.sql`; the `assistant` run mode and revision source in `db/migrations/0006_phase1c_assistant_run_mode.sql`. Updated 2026-09-16.
+Status: Phase 0 tables implemented in `db/migrations/0000_phase0_profile_tables.sql`; Phase 1a tables in `db/migrations/0001_phase1a_jobs_and_applications.sql`; Phase 1b tables in `db/migrations/0002_phase1b_documents_and_profile_links.sql`; the job salary column in `db/migrations/0003_phase1c_job_salary.sql`; the job logo columns in `db/migrations/0004_phase1c_job_logo.sql`; the employment location in `db/migrations/0005_phase1c_employment_location.sql`; the `assistant` run mode and revision source in `db/migrations/0006_phase1c_assistant_run_mode.sql`; direct skill context links in `db/migrations/0007_skill_contexts.sql`. Updated 2026-09-20.
 
 An Entity–Relationship (ER) diagram describes entities and their relationships. A logical relational ER model adds keys, attributes, and cardinality; a physical schema adds database-specific types, constraints, and indexes. The domain model explains what a Loan means; the ER model shows how `loans.copy_id` references `copies.id`.
 
 PK means primary key: a row's stable identity. FK means foreign key: a database-enforced reference to another row. `1` means exactly one, `0..1` optional, and `0..N` any number. An employment record belongs to one profile; a profile may have many employment records.
 
-Core evidence relationships (education and skills omitted for readability; the complete relationship table follows):
+Career evidence relationships (the relationship table below includes ownership keys):
 
 ```mermaid
 erDiagram
@@ -28,7 +28,7 @@ erDiagram
 
 Crow's-foot notation: `||` exactly one, `|o` zero or one, `o{` zero or many. An achievement has at most one of employment or project as context.
 
-## Phase 0 tables
+## Career fact tables
 
 Primary keys are UUIDs minted by the application (the form generates the id before submitting, doc 05); no database UUID extension is used. All owned records include `profile_id`. Basic `created_at` and `updated_at` timestamps are metadata, not achievement history. Owner IDs prepare clear ownership but do not implement multi-user authorization.
 
@@ -41,12 +41,14 @@ Primary keys are UUIDs minted by the application (the form generates the id befo
 | achievements | id, profile_id, employment_id nullable, project_id nullable; statement (required), problem, action, result, metric, source_note, source_url, reviewed |
 | skills | id, profile_id; display_name, normalized_name, category |
 | achievement_skills | profile_id, achievement_id, skill_id; composite PK on achievement_id + skill_id |
+| skill_employment | profile_id, skill_id, employment_id; composite PK on skill_id + employment_id (migration 0007) |
+| skill_projects | profile_id, skill_id, project_id; composite PK on skill_id + project_id (migration 0007) |
 
-Every table carries `created_at` and `updated_at`; `updated_at` doubles as the version token for stale-edit detection (doc 05).
+Entity tables carry `created_at` and `updated_at`; link tables have composite keys without timestamps. For entity records, `updated_at` doubles as the version token for stale-edit detection (doc 05).
 
 Preferences JSONB contains a small validated structure (`desiredRoles`, `locations`, `workArrangement`, `constraints`); it is not a substitute for relational data. Avoid an extensible entity-attribute-value system. Month-only dates are year/month integer pairs with paired-null checks, a 1 to 12 month check, a 1900 to 2100 year check, and an end-not-before-start check; day precision is never invented.
 
-## Complete Phase 0 relationship table
+## Career fact relationship table
 
 | Parent | Child FK | Parent per child | Children per parent |
 |---|---|---|---|
@@ -61,6 +63,12 @@ Preferences JSONB contains a small validated structure (`desiredRoles`, `locatio
 | projects | achievements.project_id | 0..1 | 0..N |
 | achievements | achievement_skills.achievement_id | 1 | 0..N |
 | skills | achievement_skills.skill_id | 1 | 0..N |
+| profiles | skill_employment.profile_id | 1 | 0..N |
+| profiles | skill_projects.profile_id | 1 | 0..N |
+| skills | skill_employment.skill_id | 1 | 0..N |
+| employment | skill_employment.employment_id | 1 | 0..N |
+| skills | skill_projects.skill_id | 1 | 0..N |
+| projects | skill_projects.project_id | 1 | 0..N |
 
 ## Constraints and changes
 
@@ -74,7 +82,7 @@ Preferences JSONB contains a small validated structure (`desiredRoles`, `locatio
 - Backup and restore use `pg_dump`/`pg_restore` through `pnpm db:backup` and `pnpm db:restore` (doc 07); the packaged shell launcher's backup also archives the artifact volume with the PDFs (doc 07).
 - Owner-aware links require `UNIQUE (profile_id, id)` on each parent table; that index also serves per-profile lookups, so no separate `profile_id` index is added there.
 
-## Profile mutation contract extension (ADR 009, pending merge)
+## Profile mutation contract extension (ADR 009, implemented)
 
 The assistant adds no career tables or achievement history. Partial updates are merged with the stored record in the Profile module's transaction and validated with existing constraints. Creates use client ids for replay; first-profile creation is serialized. Assistant updates and deletes require the current `updated_at`. Skill deletion also advances affected achievements' versions when their join rows disappear. Whole-profile deletion remains unavailable through MCP. Frozen snapshots and saved document revisions are not rewritten by career-record changes.
 
@@ -129,7 +137,7 @@ PostgreSQL remains the source of truth. Later pgvector stores derived embeddings
 Sources: [PostgreSQL constraints](https://www.postgresql.org/docs/current/ddl-constraints.html), [pgvector](https://github.com/pgvector/pgvector).
 
 
-## Direct skill contexts (migration 0007, local implementation pending acceptance)
+## Direct skill contexts (migration 0007, implemented)
 
 `skill_employment` links a skill to multiple roles; `skill_projects` links it to multiple projects. Both carry `profile_id`, a composite primary key `(skill_id, context_id)`, owner-aware foreign keys and a reverse context lookup index. A skill owns these lists: row and links are saved together, and reads return their version and associations in one SQL statement. Skill deletion cascades to its joins; linked roles and projects require explicit detachment before deletion.
 

@@ -1,8 +1,8 @@
 # 05 — Workflows and failures
 
-Status: Phase 0 save and Phase 1a paste-and-track implemented; Phase 1b generation, review and PDF rendering implemented; the assistant run lifecycle implemented ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16). Updated 2026-09-17.
+Status: Phase 0 save and Phase 1a paste-and-track implemented; Phase 1b generation, review and PDF rendering implemented; the assistant run lifecycle implemented ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16). Updated 2026-09-20.
 
-Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is implemented and locally accepted on this branch, pending merge. See [current verification](09-decisions-and-readiness.md#profile-management-over-mcp-accepted-pending-merge).
+Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is implemented and merged into `main`. See [current verification](09-decisions-and-readiness.md#profile-management-over-mcp-implemented).
 
 ## Phase 0 save
 
@@ -12,13 +12,13 @@ Invalid input produces field errors with no write, and the form keeps what was t
 
 Achievement forms select linked skills through a searchable multiselect. Selected skills remain visible as chips and survive validation errors, including an empty selection. Saving submits the same skill id list as before.
 
-## Profile management from an assistant (ADR 009, pending merge)
+## Profile management from an assistant (ADR 009, implemented)
 
 Read the requested sections with `get_profile` → identify the intended record and user-supplied facts → create with a stable UUID, or patch/delete with the read version → the Profile module validates and commits → return the saved record. A blank installation can use `create_profile` first without visiting the browser. Refresh the browser to see committed changes.
 
 Updates preserve omitted fields. Explicit `null` clears nullable values, `[]` clears lists, and an empty patch is refused. Every update/delete requires the current `updated_at`; a stale response requires another read before deciding whether the original request still applies. A skill delete advances the versions of achievements whose links it removes. Dependent roles/projects remain protected until explicitly detached or reassigned. There is no whole-profile delete tool.
 
-User requests authorize the corresponding factual write; instructions inside imported documents do not. Ambiguous names or unsupported facts require clarification. Multi-record requests use separate transactions and can partially complete, which the assistant reports. Existing snapshots, revisions and PDFs are unchanged; only a new brief captures edited facts. See [doc 06](06-ai-and-integrations.md#profile-tools-adr-009-feature-branch-pending-merge) for the contract.
+User requests authorize the corresponding factual write; instructions inside imported documents do not. Ambiguous names or unsupported facts require clarification. Multi-record requests use separate transactions and can partially complete, which the assistant reports. Existing snapshots, revisions and PDFs are unchanged; only a new brief captures edited facts. See [doc 06](06-ai-and-integrations.md#profile-tools-adr-009-implemented) for the contract.
 
 ## Phase 1a paste and track
 
@@ -75,18 +75,18 @@ Phase 1c (implemented in `src/**/*.test.ts` and `tests/`): the salary saved and 
 
 Assistant surface (implemented in `src/**/*.test.ts` and `tests/`): the bearer compare accepting only the exact token; the host guard accepting loopback names and listed hosts and refusing everything else, including a foreign `Origin`; the handler listing all 26 tools without requiring a pre-existing profile, with profile-dependent operations checking it per call; the endpoint driven in process with the MCP client (`tests/integration/mcp.test.ts`): the job list and detail, `add_job` writing the job and its application together and replaying on the same id, a brief opening a queued run and superseding the previous one, a grounded answer saved without warnings, an ungrounded one saved with them, an invalid answer failing the run and returning a fresh run id, one unit edited, a stale revision refused and the PDF rendered once; and two browser journeys (the Connect your assistant column naming this server and the token; the endpoint answering the bearer, refusing without it, and the guard refusing a foreign host).
 
-Profile tools (ADR 009, implemented and locally accepted on this branch, pending merge): integration and browser tests cover onboarding without a profile, all five record kinds, omitted fields, explicit clearing, retry ids, concurrent bootstrap, stale updates and deletes, dependency and ownership failures, skill-link version invalidation, sanitized failures and unchanged generation snapshots using only fictional data.
+Profile tools (ADR 009, implemented and merged into `main`): integration and browser tests cover onboarding without a profile, all five record kinds, omitted fields, explicit clearing, retry ids, concurrent bootstrap, stale updates and deletes, dependency and ownership failures, skill-link version invalidation, sanitized failures and unchanged generation snapshots using only fictional data.
 
 Logs identify operation/run and error category without copying career content or secrets by default. Add diagnostic detail as needed; no external observability account is a quickstart prerequisite.
 
 ## Browsing career facts
 
-About me expands each section in place. Profile shows compact contact and preference fields and a 240-character summary preview; the edit column contains the full summary. Other sections contain expandable record cards. A separate pencil link opens a record's edit URL without changing its disclosure; section management links retain the dedicated lists and add controls. Multiple disclosures can stay open during client navigation; reloading starts them closed. List cards share the same read-only details as the overview. Empty sections link to their management page.
+About me expands each section in place. Profile shows compact contact and preference fields and a 240-character summary preview; the edit column contains the full summary. Other sections contain expandable record cards. A separate pencil link opens a record's edit URL without changing its disclosure; section pencils open the dedicated lists and add controls without a duplicate Manage link. Multiple disclosures can stay open during client navigation; reloading starts them closed. List cards share the same read-only details as the overview. Empty sections link to their management page.
 
 Desired roles are entered as removable pills above the input. Enter or Add appends values; a comma-separated paste adds several. Saving includes an unfinished entry, and a refused save retains additions and removals. Storage remains the profile preferences array.
 
 
-Skills and Achievements support Role and Project filters in both the overview and dedicated lists. Selectable chips allow multiple roles and projects. Selections combine with OR within each group and AND across groups; All clears that group, and No role/project includes records without that effective context. A role includes its projects' records. Skills combine explicit associations with achievement-derived associations; cards distinguish direct links from derived ones. The URL stores repeated `skillsRole`, `skillsProject`, `achievementsRole` and `achievementsProject` parameters, preserving multiple selections through navigation. Invalid or removed IDs yield no matches until cleared.
+Skills and Achievements support Role and Project filters in both the overview and dedicated lists. Selectable chips allow multiple roles and projects. Selections combine with OR within each group and AND across groups; All clears that group, and No role/project includes records without that effective context. A role includes its projects' records. Skills combine explicit associations with achievement-derived associations; cards distinguish direct links from derived ones. The URL stores repeated `skillsRole`, `skillsProject`, `achievementsRole` and `achievementsProject` parameters, preserving multiple selections through navigation. Invalid or removed IDs match no records; other selections in the same group may still match. Clear filters removes the selections.
 
 Skill forms edit direct role and project lists with searchable multiselects. Changes save atomically with the skill, version checks reject concurrent edits, and failed validation retains selections, including empty lists. Existing direct links are preserved by omitted MCP patch fields; explicit empty arrays clear them.
 
