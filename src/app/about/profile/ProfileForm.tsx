@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { Button } from "@/components/Button";
 import { Checkbox } from "@/components/Checkbox";
+import { PillInput } from "@/components/PillInput";
 import { Field } from "@/components/Field";
 import fieldStyles from "@/components/Field.module.css";
 import formStyles from "@/components/forms.module.css";
@@ -145,10 +146,9 @@ function Fields({
         defaultValue={values.websiteUrl}
         errors={errors.websiteUrl}
       />
-      <Field
+      <PillInput
         label="Desired roles"
         name="desiredRoles"
-        helper="Separate several with commas"
         defaultValue={values.desiredRoles}
         errors={errors.desiredRoles}
       />
