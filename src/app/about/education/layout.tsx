@@ -1,25 +1,14 @@
 import { GraduationCap } from "lucide-react";
 import type { ReactNode } from "react";
 import { deps, requireProfile } from "@/app/current-profile";
-import { dateRange } from "@/app/form-state";
-import { Card, CardList } from "@/components/Card";
-import { Chip } from "@/components/Chip";
+import { CardList } from "@/components/Card";
 import { Column, EmptyState } from "@/components/Column";
 import { AddLink, Toolbar } from "@/components/Toolbar";
-import { listEducation, type EducationStatus } from "@/modules/profile";
+import { listEducation } from "@/modules/profile";
+
+import { EducationCard } from "../RecordCards";
 
 export const dynamic = "force-dynamic";
-
-const statusLabels: Record<EducationStatus, string> = {
-  in_progress: "In progress",
-  completed: "Completed",
-  incomplete: "Incomplete",
-};
-const statusTones: Record<EducationStatus, "accent" | "success" | "warning"> = {
-  in_progress: "accent",
-  completed: "success",
-  incomplete: "warning",
-};
 
 export default async function EducationLayout({ children }: { children: ReactNode }) {
   const profile = await requireProfile();
@@ -40,24 +29,11 @@ export default async function EducationLayout({ children }: { children: ReactNod
           <EmptyState>No education yet. Add the first record with the plus.</EmptyState>
         ) : (
           <CardList label="Education">
-            {records.map((record) => {
-              const range = dateRange(record);
-              const detail = [record.qualification, record.subject].filter(Boolean).join(", ");
-              return (
-                <li key={record.id}>
-                  <Card
-                    icon={<GraduationCap />}
-                    href={`/about/education/${record.id}`}
-                    title={record.institution}
-                    subtitle={detail || undefined}
-                    meta={range ? [range] : []}
-                    chips={
-                      <Chip tone={statusTones[record.status]}>{statusLabels[record.status]}</Chip>
-                    }
-                  />
-                </li>
-              );
-            })}
+            {records.map((record) => (
+              <li key={record.id}>
+                <EducationCard record={record} />
+              </li>
+            ))}
           </CardList>
         )}
       </Column>
