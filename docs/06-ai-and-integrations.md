@@ -110,7 +110,7 @@ Generated claims cite input snapshot entries, but valid IDs alone do not establi
 Skill context extension (local implementation pending acceptance): `add_skill` accepts optional `role_ids` and `project_ids` arrays; `update_skill.changes` accepts the same fields. `get_profile` and saved skill records return both arrays as explicit links. Omit preserves on update; `[]` clears; null is invalid. Derived associations through achievements/projects are not written to these lists. Roles/projects with direct skill links refuse deletion until detached. These browsing links do not change generation briefs or historical snapshots.
 
 
-## Writing context, company and source tools (ADR 010, local feature branch)
+## Writing context, company and source tools (ADR 011, local feature branch)
 
 The local feature branch has **42 tools**: the original eight, 18 profile tools, one Interest tool, four Job Source tools and 11 company/context tools. This extension is implemented locally and pending acceptance/merge; historical verification counts above describe their original milestones.
 
