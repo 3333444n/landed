@@ -94,7 +94,7 @@ export async function updateApplication(
           status: input.status,
           notes: input.notes ?? null,
           submittedAt: submittedAtAfter(current, input.status, at),
-          updatedAt: at,
+          updatedAt: new Date(Math.max(at.getTime(), current.updatedAt.getTime() + 1)),
         },
         expected(input.expectedUpdatedAt),
       );

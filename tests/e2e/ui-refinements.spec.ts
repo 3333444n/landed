@@ -54,14 +54,16 @@ test("browse nested facts, edit role pills, and filter direct and derived skill 
     });
 
     await page.goto("/about");
-    const hub = page.getByRole("list", { name: "About me", exact: true });
+    const hub = page.getByRole("list", { name: "Profile", exact: true });
     const profile = hub.locator(":scope > li").first();
     await profile.locator("summary").focus();
     await page.keyboard.press("Enter");
     await expect(profile.locator("details")).toHaveAttribute("open", "");
     await expect(profile.getByText("Name", { exact: true })).toBeVisible();
     await expect(hub.getByText(/^Manage /)).toHaveCount(0);
-    const work = hub.locator(":scope > li").nth(1);
+    const work = hub
+      .locator(":scope > li")
+      .filter({ has: page.getByRole("heading", { name: "Work history", exact: true }) });
     await work.locator("summary").first().click();
     await expect(profile.locator("details")).toHaveAttribute("open", "");
     const nestedRole = work
@@ -71,7 +73,7 @@ test("browse nested facts, edit role pills, and filter direct and derived skill 
     await nestedRole.locator("summary").click();
     await expect(nestedRole.getByText("Built accessible catalogues.")).toBeVisible();
     await expect(page).toHaveURL(/\/about$/);
-    await profile.getByRole("link", { name: "Edit Profile", exact: true }).click();
+    await profile.getByRole("link", { name: "Edit General info", exact: true }).click();
     await expect(page).toHaveURL(/\/about\/profile$/);
 
     const desired = page.getByLabel("Desired roles", { exact: true });

@@ -79,3 +79,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+
+## Profile-writing-context feature branch (pending merge)
+
+The career hub is Profile, its former Profile block is General info, and /about URLs remain unchanged. Migration 0008 adds profile.aboutMe and application.interest; narrative forms use version-checked partial writes. get_profile/update_profile expose about_me; update_job_interest uses the application version from get_job. This layer has 27 MCP tools. It stores the new context without changing generation snapshots/prompts, which belong to a subsequent layer.
