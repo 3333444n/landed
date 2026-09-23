@@ -11,6 +11,7 @@ const sources = (): SnapshotSources => ({
     displayName: "Alex Rivera",
     headline: "Software developer",
     summary: null,
+    aboutMe: null,
     email: "alex@example.com",
     phone: null,
     location: "Mexico City",

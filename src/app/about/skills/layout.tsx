@@ -21,7 +21,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
         count={skills.length}
         subtitle="Named capabilities and where you use them."
         parentHref="/about"
-        parentTitle="About me"
+        parentTitle="Profile"
       >
         <CareerList
           kind="skills"

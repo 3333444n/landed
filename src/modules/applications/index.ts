@@ -35,6 +35,7 @@ export {
   getApplicationForJob,
   listApplications,
   updateApplication,
+  updateInterest,
   type ApplicationsDeps,
 } from "./service";
 export type { ApplicationRecord } from "./repository";
