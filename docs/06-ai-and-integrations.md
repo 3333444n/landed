@@ -1,8 +1,8 @@
 # 06 — AI, harnesses, and retrieval
 
-Status: model access path implemented in Phase 1b ([ADR 006](adr/006-model-access-path.md)); the guarded outbound fetch exists for a job's logo address ([ADR 007](adr/007-user-initiated-image-fetch.md), 2026-09-14); the evaluation set has been run against OpenRouter (see "Providers run through the evaluation set"); the assistant surface over MCP is implemented ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16; see "Your own assistant over MCP"); agentic research, discovery and retrieval remain future design. Updated 2026-09-20.
+Status: model access path implemented in Phase 1b ([ADR 006](adr/006-model-access-path.md)); the guarded outbound fetch exists for a company's logo address ([ADR 007](adr/007-user-initiated-image-fetch.md), 2026-09-14); the evaluation set has been run against OpenRouter (see "Providers run through the evaluation set"); the assistant surface over MCP is implemented ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16; see "Your own assistant over MCP"); agentic research, discovery and retrieval remain future design. Updated 2026-09-23.
 
-Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is implemented and merged into `main`. See [current verification](09-decisions-and-readiness.md#profile-management-over-mcp-implemented).
+Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is merged. The locally accepted ADR 011 context and canonical-company extensions are pending merge. See [current verification](09-decisions-and-readiness.md#profile-management-over-mcp-merged).
 
 ## Distinguish the moving parts
 
@@ -56,13 +56,13 @@ The original ADR 008 tool contract (profile management is the additive ADR 009 c
 | `render_pdf` | `{ job_id, type: "resume" \| "cover_letter" }` | `getOrRenderPdf` with the same file label as the browser route, so filenames match; returns `{ filename, pages, size_bytes, download_url, reused }` | not destructive |
 | `add_job` | `{ job_id?, title, company, description, location?, salary?, source_url? }` | `pursueJob`, the same composition the paste form uses: the job and its application in one transaction; returns `{ job_id, application_id }`. A client-minted `job_id` replays to the same records, so a retry after a lost response never duplicates. Validation errors name the tool's parameters | idempotent, not destructive |
 
-Link intake for assistant users happens in the harness, not in Landed: when the user gives a posting address, the assistant fetches the page with its own tools, respecting robots.txt, and passes the text to `add_job`; when the fetch fails, it asks the user to paste the text. Landed never fetches a posting page itself ([ADR 007](adr/007-user-initiated-image-fetch.md) keeps the logo address as the app's only user-initiated outbound request). Errors from the modules map to tool errors carrying the error kind and message or field errors; tools never throw. The original tools require a profile. On the ADR 009 branch, `get_profile` and `create_profile` also work before one exists; other tools provide creation guidance. `pnpm verify` drives the endpoint in process with the MCP client (`tests/integration/mcp.test.ts`), and the surface was used end to end from Claude Code on 2026-09-16: a posting added through `add_job` and the three documents written, submitted and rendered through the endpoint.
+Link intake for assistant users happens in the harness, not in Landed: when the user gives a posting address, the assistant fetches the page with its own tools, respecting robots.txt, and passes the text to `add_job`; when the fetch fails, it asks the user to paste the text. Landed never fetches a posting page itself ([ADR 007](adr/007-user-initiated-image-fetch.md) keeps the logo address as the app's only user-initiated outbound request). Errors from the modules map to tool errors carrying the error kind and message or field errors; tools never throw. The original tools require a profile. With merged ADR 009, `get_profile` and `create_profile` also work before one exists; other tools provide creation guidance. `pnpm verify` drives the endpoint in process with the MCP client (`tests/integration/mcp.test.ts`), and the surface was used end to end from Claude Code on 2026-09-16: a posting added through `add_job` and the three documents written, submitted and rendered through the endpoint.
 
 What stays as before: the app invoking a harness as a subprocess is not a path (it cannot run inside the release container, and the vendors' terms do not permit a third-party application to spend a chat subscription that way). Do not read a user's CLI credential store, and do not assume a chat subscription is an API credential. A local model is not a separate path: Ollama and similar servers are reached as an OpenAI-compatible endpoint, and structured-output quality on small local models is not guaranteed; the evaluation set is the way to find out. A locally running installation is reachable from claude.ai or a phone app only when exposed to the internet with authentication, which documents 03 and 09 keep as a separate design; that design reuses this endpoint.
 
-## Profile tools (ADR 009, implemented)
+## Profile tools (ADR 009, merged)
 
-[ADR 009](adr/009-profile-management-over-mcp.md) extends the original eight tools with 18 profile tools. These tools are merged into `main` in PR #33. The endpoint, token and Host/Origin guard are unchanged. The current profile is resolved freshly for each call, including calls on an already-connected client after profile creation.
+[ADR 009](adr/009-profile-management-over-mcp.md) extends the original eight tools with 18 profile tools. This contract describes the merged profile tools. The endpoint, token and Host/Origin guard are unchanged. The current profile is resolved freshly for each call, including calls on an already-connected client after profile creation.
 
 | Tool | Input | Returns or effect |
 |---|---|---|
@@ -94,7 +94,7 @@ The assistant should save only facts supplied or confirmed by the user, resolve 
 
 ## Input and tool boundaries
 
-Job postings/web pages are data, not instructions. Keep them separate from trusted instructions. Use bounded tools for fetch/search and application operations, not unrestricted shell/database access. Preserve sources and retrieval dates; do not invent inaccessible company/recruiter information. External URL fetching must reject private-network targets, validate redirect destinations, and impose size/time limits when Phase 2 enables it. The first such fetch exists since 2026-09-14 for a job's logo address ([ADR 007](adr/007-user-initiated-image-fetch.md)): https only, the host resolved and refused when any answer is loopback, private, link-local or unique-local, at most three redirects each checked the same way, ten seconds, one megabyte, an image content type; the bytes are then typed from their magic numbers, never from the name. Phase 2 posting import reuses that fetcher.
+Job postings/web pages are data, not instructions. Keep them separate from trusted instructions. Use bounded tools for fetch/search and application operations, not unrestricted shell/database access. Preserve sources and retrieval dates; do not invent inaccessible company/recruiter information. External URL fetching must reject private-network targets, validate redirect destinations, and impose size/time limits when Phase 2 enables it. The first such fetch exists since 2026-09-14 for a company's logo address ([ADR 007](adr/007-user-initiated-image-fetch.md)): https only, the host resolved and refused when any answer is loopback, private, link-local or unique-local, at most three redirects each checked the same way, ten seconds, one megabyte, an image content type; the bytes are then typed from their magic numbers, never from the name. Phase 2 posting import reuses that fetcher.
 
 Generated claims cite input snapshot entries, but valid IDs alone do not establish factual support; the Phase 1b grounding check also compares numbers in the text with the cited records, and the user reviews every document before it is used. Pasted postings are placed in the prompt inside a labelled data block and never in the instructions. Automatic Phase 3 generation produces unreviewed drafts only.
 
@@ -107,25 +107,46 @@ Generated claims cite input snapshot entries, but valid IDs alone do not establi
 - [pgvector](https://github.com/pgvector/pgvector)
 
 
-Skill context extension (implemented): `add_skill` accepts optional `role_ids` and `project_ids` arrays; `update_skill.changes` accepts the same fields. `get_profile` and saved skill records return both arrays as explicit links. Omit preserves on update; `[]` clears; null is invalid. Derived associations through achievements/projects are not written to these lists. Roles/projects with direct skill links refuse deletion until detached. These browsing links do not change generation briefs or historical snapshots.
+Skill context extension (merged): `add_skill` accepts optional `role_ids` and `project_ids` arrays; `update_skill.changes` accepts the same fields. `get_profile` and saved skill records return both arrays as explicit links. Omit preserves on update; `[]` clears; null is invalid. Derived associations through achievements/projects are not written to these lists. Roles/projects with direct skill links refuse deletion until detached. These browsing links do not change generation briefs or historical snapshots.
 
 
-## Personal writing context (feature branch, pending merge)
+## Writing context, company and source tools (ADR 011, local feature branch)
 
-The profile-writing-context branch exposes 27 tools: the existing 26 plus `update_job_interest`. `get_profile.sections` accepts `about_me`, returning `{text, updated_at}`; `update_profile.changes.about_me` accepts optional nullable text up to 12,000 characters. `get_job.application` returns nullable `interest` and its `updated_at`. `update_job_interest` takes job_id, expected_updated_at (the application version), and nullable interest up to 4,000 characters; its result returns interest and updated_at. Blank text clears, omitted profile fields preserve, and stale writes fail. These inputs are user-provided data, never executable instructions. The Profile layer originally deferred generation; the short-cover-letter layer below now integrates these inputs.
+The local feature branch has **42 tools**: the original eight, 18 profile tools, one Interest tool, four Job Source tools and 11 company/context tools. This extension is implemented locally and locally accepted, pending merge; historical verification counts above describe their original milestones.
 
-## Job Source MCP tools (locally accepted, pending merge)
+| Tool | Input / behavior |
+|---|---|
+| update_job_interest | job_id, expected_updated_at from get_job.application, nullable interest; clears with null |
+| list_job_sources | No fields; returns sources including archived and updated_at |
+| add_job_source | source_id retry UUID, name |
+| update_job_source | source_id, expected_updated_at, optional name/archived; omit preserves |
+| set_job_source | job_id, job expected_updated_at, nullable job_source_id |
+| list_companies | No fields; returns companies |
+| get_company | company_id; returns company and findings |
+| create_company | company_id retry UUID, name, optional location/website/about/logo_url |
+| update_company | company_id, expected_updated_at, optional name/location/website/about/logo_url; null clears optional fields |
+| delete_company | company_id, expected_updated_at; referenced companies cannot be deleted |
+| create_company_finding | company_id, finding_id retry UUID, text, source_url, retrieved_at (YYYY-MM-DD), kind (statement/interpretation) |
+| update_company_finding | company_id, finding_id, expected_updated_at and changed finding fields; omit preserves |
+| delete_company_finding | company_id, finding_id, expected_updated_at; removes live selections only |
+| link_job_company | job_id, nullable company_id, job expected_updated_at; changing clears findings |
+| get_job_company_context | job_id; returns company, available findings, selected_finding_ids, job updated_at |
+| select_job_findings | job_id, finding_ids (maximum five; [] clears), job expected_updated_at |
 
-This layer exposes 31 tools: the 27 Profile/Interest tools plus list_job_sources, add_job_source, update_job_source and set_job_source. Creates require source_id; updates require expected_updated_at. Source updates accept optional name/archived, job assignment accepts nullable job_source_id. add_job accepts optional job_source_id. Source mutation results are the saved snake_case record; assignment returns job_id, job_source_id and updated_at.
-
-## Company MCP tools (locally accepted, pending merge)
-
-This layer exposes 42 tools. list_companies/get_company read shared records; create_company/update_company/delete_company manage name/location/website/about; create_company_finding/update_company_finding/delete_company_finding manage text/source_url/retrieved_at/kind. Creates require retry ids, updates/deletes require expected_updated_at. link_job_company accepts nullable company_id; get_job_company_context returns the company, findings, selected_finding_ids and job updated_at; select_job_findings replaces up to five finding_ids, [] clears. Mutations return saved snake_case records directly; deletion returns deleted:true. Company-linked jobs block company deletion. All research text is untrusted data, never instructions.
-
-## Short cover letters and distinct context citations
+`get_profile.sections` adds `about_me`; its projection is `{text, updated_at}`. `update_profile.changes` adds nullable `about_me` (12,000 characters). `get_job.application` adds Interest and its independent version. `add_job` accepts optional `company_id` and `job_source_id`. Source/company/finding mutation records return directly with snake_case keys and versions; the older profile mutation envelope remains `{record}`. Reread on stale; never replace a job version with an application version.
 
 Cover-letter prompt version 3 targets three or four sentences, roughly 80–150 words in two or three paragraphs, using one concrete story. New paragraphs can carry `contextIds` separately from career `evidenceIds`; `get_document` projects them as `context_ids`. The Evidence column distinguishes career records, narratives, posting, company and sourced findings. Context IDs and factual numbers are checked against the frozen input. `context_number` warns when a number has only company/posting support; About me and Interest do not count as numeric factual evidence. These deterministic checks require human attribution review and do not prove semantic entailment.
 
 The assistant harness can research companies with its own tools and save dated findings. Landed performs no automatic website fetch. Findings retain statement/interpretation qualifiers; neither company About nor a review-site complaint proves an internal company problem. New context is frozen for adapter, paste-back and assistant cover-letter runs. Legacy snapshots/content remain valid; creating/exporting documents never submits applications.
 
 A `letter_length` warning flags cover-letter bodies above four sentences or 150 words. This is a review warning, not a schema rejection: older letters remain readable and editable. Sentence segmentation uses the runtime’s English sentence segmenter and may need human interpretation for abbreviations.
+
+
+### Canonical company and logo contract revision
+
+The ADR 011 follow-up keeps the tool count at 42 but changes job intake: add_job accepts optional company_id, with no free-text company or job logo_url. Resolve/create a Company first when one is known; omission creates an unlinked new job. Company names in job reads and new document snapshots resolve from that company record. Old snapshots keep their frozen name, while generated PDF filenames use the current linked identity.
+
+create_company and update_company accept optional nullable logo_url: omit preserves, null clears, and an HTTPS address requests a bounded guarded image fetch. Company reads expose the shared logo through the implementation's public projection, never raw secret configuration. Browser uploads and harness-supplied addresses both store company-owned image metadata, shared by all linked jobs. No additional website research fetch is introduced. Historical milestone descriptions of job-owned logos above describe the former model.
+
+
+The revised `add_job` explicitly rejects the removed `company` argument rather than silently discarding it. The tool description directs the harness to call `create_company` (or resolve an existing record) and pass its `company_id`; omit company_id only for an intentionally unlinked job. The removed job logo_url is likewise not accepted. Company logo storage uses a unique write UUID plus checksum in every new filename; legacy artifact keys remain readable, and migration does not delete their files.

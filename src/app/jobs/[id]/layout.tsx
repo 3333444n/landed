@@ -1,3 +1,4 @@
+import { getJob } from "@/app/jobs/company-job";
 import { Briefcase, Heart } from "lucide-react";
 import { Building2, FileText } from "lucide-react";
 import { notFound } from "next/navigation";
@@ -16,7 +17,7 @@ import {
   getDocumentView,
   sweepInterruptedRuns,
 } from "@/modules/documents";
-import { buildWordCloud, getJob, jobSummary, logoHref } from "@/modules/jobs";
+import { buildWordCloud, jobSummary } from "@/modules/jobs";
 import { listSkills } from "@/modules/profile";
 import { LogoImage } from "../LogoImage";
 import { deleteJobAction, saveApplicationAction } from "../actions";
@@ -42,7 +43,7 @@ export default async function JobLayout({
   const profile = await requireProfile();
   const job = await getJob(deps(), profile.id, id);
   if (!job) notFound();
-  const logo = logoHref(job);
+  const logo = job.logoHref;
   const [application, skills] = await Promise.all([
     getApplicationForJob(deps(), profile.id, job.id),
     listSkills(deps(), profile.id),
@@ -63,7 +64,7 @@ export default async function JobLayout({
       <Column
         icon={logo ? <LogoImage src={logo} /> : <Briefcase />}
         title={job.title}
-        subtitle={job.companyName}
+        subtitle={job.companyName || "No company selected"}
         parentHref="/jobs"
         parentTitle="Jobs"
         width="detail"
@@ -102,7 +103,7 @@ export default async function JobLayout({
               href={job.companyId ? `/companies/${job.companyId}` : `/jobs/${job.id}/company`}
               icon={<Building2 />}
               title="Company"
-              subtitle={job.companyName}
+              subtitle={job.companyName || "No company selected"}
             />
           </li>
           <li>

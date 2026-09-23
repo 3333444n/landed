@@ -4,7 +4,7 @@
  * a prompt reproducible from its run record.
  */
 import type { Snapshot } from "@/modules/documents";
-import type { JobRecord } from "@/modules/jobs";
+import type { CompanyJob } from "./company-job";
 import type {
   AchievementWithSkills,
   EducationRecord,
@@ -21,7 +21,7 @@ export interface SnapshotSources {
   projects: ProjectRecord[];
   skills: SkillRecord[];
   achievements: AchievementWithSkills[];
-  job: JobRecord;
+  job: CompanyJob;
   capturedAt: Date;
 }
 

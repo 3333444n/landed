@@ -1,13 +1,13 @@
-import { Building2 } from "lucide-react";
+import { LogoPicker } from "@/components/LogoPicker";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { deps, requireProfile } from "@/app/current-profile";
-import { getCompany, listCompanyFindings, findingKindLabel } from "@/modules/companies";
+import { getCompany, listCompanyFindings, findingKindLabel, logoHref } from "@/modules/companies";
 import { Column } from "@/components/Column";
 import { ConfirmDelete } from "@/components/ConfirmDelete";
 import { Toolbar, AddLink } from "@/components/Toolbar";
-import { CompanyForm } from "../CompanyForm";
+import { CompanyForm, companyFormId } from "../CompanyForm";
 import { saveCompanyAction, deleteCompanyAction } from "../actions";
 import styles from "../companies.module.css";
 export default async function Layout({
@@ -26,7 +26,13 @@ export default async function Layout({
     <>
       <Column
         title={company.name}
-        icon={<Building2 />}
+        control={
+          <LogoPicker
+            key={company.updatedAt.toISOString()}
+            formId={companyFormId}
+            current={logoHref(company)}
+          />
+        }
         parentHref="/companies"
         parentTitle="Companies"
         width="detail"

@@ -5,6 +5,8 @@ import { Select } from "@/components/Select";
 import { Button } from "@/components/Button";
 import styles from "@/components/forms.module.css";
 import { idleState, prefill, fieldsKey, type ActionState, type FormValues } from "@/app/form-state";
+export const companyFormId = "company-form";
+
 export function CompanyForm({
   action,
   record,
@@ -18,8 +20,19 @@ export function CompanyForm({
   const values = prefill(state, record ?? {});
   const errors = state.status === "error" ? state.fieldErrors : {};
   return (
-    <form action={formAction} className={styles.form} noValidate>
+    <form
+      id={finding ? undefined : companyFormId}
+      action={formAction}
+      className={styles.form}
+      noValidate
+    >
       <Fields key={fieldsKey(state)} values={values} errors={errors} finding={finding} />
+      {errors.logoFile || errors.logoUrl ? (
+        <p className={styles.failed} role="alert">
+          Logo: {[...(errors.logoFile ?? []), ...(errors.logoUrl ?? [])].join(" ")}. Choose it again
+          from the tile next to the title.
+        </p>
+      ) : null}
       {errors.form ? (
         <p role="alert" className={styles.failed}>
           {errors.form.join(" ")}

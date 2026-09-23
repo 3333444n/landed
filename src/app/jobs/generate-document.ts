@@ -18,7 +18,7 @@ import {
   type GenerationRunRecord,
   type Snapshot,
 } from "@/modules/documents";
-import { getCompany, listCompanyFindings } from "@/modules/companies";
+import { getCompany, listCompanyFindings, logoHref } from "@/modules/companies";
 import { getJob, getSelectedFindingIds } from "@/modules/jobs";
 import {
   listAchievements,
@@ -59,6 +59,7 @@ export async function prepareGeneration(
     listSkills(deps, profileId),
     listAchievements(deps, profileId),
   ]);
+  const company = job.companyId ? await getCompany(deps, profileId, job.companyId) : null;
   const snapshot = buildSnapshot({
     profile,
     employment,
@@ -66,11 +67,10 @@ export async function prepareGeneration(
     projects,
     skills,
     achievements,
-    job,
+    job: { ...job, companyName: company?.name ?? "", logoHref: company ? logoHref(company) : null },
     capturedAt: now(deps),
   });
   if (type === "cover_letter") {
-    const company = job.companyId ? await getCompany(deps, profileId, job.companyId) : null;
     const [availableFindings, selectedIds] = company
       ? await Promise.all([
           listCompanyFindings(deps, profileId, company.id),

@@ -1,3 +1,4 @@
+import { createJobCompany } from "./company-helpers";
 import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 
@@ -21,7 +22,7 @@ test("a document is generated, reviewed in place, and another is pasted back", a
 
   await page.goto("/jobs/new");
   await page.getByLabel("Title").fill(demo.title);
-  await page.getByLabel("Company", { exact: true }).fill(demo.companyName);
+  await createJobCompany(page, demo.companyName);
   await page.getByLabel("Description").fill(demo.rawDescription);
   await page.getByRole("button", { name: "Save job" }).click();
   await expect(page).toHaveURL(/\/jobs\/[0-9a-f-]+$/);

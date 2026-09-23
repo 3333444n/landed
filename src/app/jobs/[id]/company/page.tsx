@@ -1,8 +1,9 @@
+import { getJob } from "@/app/jobs/company-job";
 import { Building2 } from "lucide-react";
 import { notFound } from "next/navigation";
 import { deps, requireProfile } from "@/app/current-profile";
 import { Column } from "@/components/Column";
-import { getJob } from "@/modules/jobs";
+
 import { listCompanies } from "@/modules/companies";
 import { JobCompanyForm } from "../../JobCompanyForm";
 import { saveJobCompanyAction } from "../../company-actions";

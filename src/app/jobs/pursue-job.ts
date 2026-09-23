@@ -5,7 +5,7 @@
  */
 import type { Database } from "@/infrastructure/database";
 import { createApplication } from "@/modules/applications";
-import { saveJob, type JobRecord, type JobsDeps, type LogoChange } from "@/modules/jobs";
+import { saveJob, type JobRecord, type JobsDeps } from "@/modules/jobs";
 import type { Result } from "@/modules/shared/contracts";
 
 class RolledBack {
@@ -16,12 +16,11 @@ export async function pursueJob(
   deps: JobsDeps,
   profileId: string,
   rawInput: unknown,
-  logo?: LogoChange,
 ): Promise<Result<JobRecord>> {
   try {
     return await deps.db.transaction(async (tx) => {
       const inner = { ...deps, db: tx as unknown as Database };
-      const job = await saveJob(inner, profileId, rawInput, undefined, logo);
+      const job = await saveJob(inner, profileId, rawInput);
       if (!job.ok) return job;
       const application = await createApplication(inner, profileId, { jobId: job.value.id });
       if (!application.ok) throw new RolledBack(application);

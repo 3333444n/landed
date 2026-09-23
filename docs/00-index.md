@@ -1,8 +1,8 @@
 # 00 — Documentation index
 
-Status: Phase 0 complete (career data entry, packaged Docker installation, column interface since 2026-09-14); Phase 1a complete (manual jobs and application tracking, 2026-09-14); Phase 1b complete (generated materials, review, PDFs, model access, 2026-09-14); Phase 1c additions to the paste flow complete (salary, company logo, word cloud, 2026-09-14); the assistant surface over MCP complete ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16); Phases 2 to 4 are design. Updated 2026-09-20.
+Status: Phase 0 complete (career data entry, packaged Docker installation, column interface since 2026-09-14); Phase 1a complete (manual jobs and application tracking, 2026-09-14); Phase 1b complete (generated materials, review, PDFs, model access, 2026-09-14); Phase 1c additions to the paste flow complete (salary, company logo, word cloud, 2026-09-14); the assistant surface over MCP complete ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16); Phases 2 to 4 are design. Updated 2026-09-23.
 
-Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is implemented and merged into `main`. See [current verification](09-decisions-and-readiness.md#profile-management-over-mcp-implemented).
+Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is merged. The locally accepted ADR 011 context and canonical-company extensions are pending merge. See [current verification](09-decisions-and-readiness.md#profile-management-over-mcp-merged).
 
 Numbers establish reading order, not software release versions. Accepted choices are distinguished from proposals, and each document says which parts are implemented; a diagram describes the intended structure, and its labels say which phase each part belongs to.
 
@@ -13,7 +13,7 @@ Numbers establish reading order, not software release versions. Accepted choices
 | [03 — System and modules](03-system-and-modules.md) | Where does code run, and who owns behavior? | Profile, Jobs and Applications modules, column interface and packaged runtime implemented; Documents module, model adapter and PDF rendering implemented; the `/mcp` endpoint and the host guard implemented |
 | [04 — Data model](04-data-model.md) | How does PostgreSQL represent those concepts? | Phase 0, 1a, 1b and 1c schemas migrated (0000 to 0006) |
 | [05 — Workflows and failures](05-workflows-and-failures.md) | What happens on success, failure, and retry? | Phases 0, 1a and 1b and the assistant run lifecycle implemented; Phase 2 and 3 workflows proposed |
-| [06 — AI and integrations](06-ai-and-integrations.md) | How do models, harnesses, RAG, and agents fit? | Model access path implemented (ADR 006); OpenRouter run through the evaluation set; eight original tools implemented (ADR 008), plus 18 implemented profile tools (ADR 009); later integrations proposed |
+| [06 — AI and integrations](06-ai-and-integrations.md) | How do models, harnesses, RAG, and agents fit? | Model access path implemented (ADR 006); OpenRouter run through the evaluation set; eight original tools implemented (ADR 008), 18 merged profile tools (ADR 009), and locally accepted context/company extensions (42 tools total), pending merge; later integrations proposed |
 | [07 — Quickstart](07-quickstart-contract.md) | How do you run it, and what does the packaged install guarantee? | Both paths tested on macOS; the assistant path tested from Claude Code on a contributor install, not yet in Docker; Windows and Linux untested |
 | [08 — Contributions and documentation](08-contributions-and-documentation.md) | How do changes stay understandable and documented? | CI, conventions, the skill sync check and SECURITY in place |
 | [09 — Decisions and readiness](09-decisions-and-readiness.md) | What is accepted, open, or deferred? | Current decision register |
@@ -33,6 +33,8 @@ Numbers establish reading order, not software release versions. Accepted choices
 | [009 — Profile management over MCP](adr/009-profile-management-over-mcp.md) | Profile creation and partial updates; individual career-record CRUD with retry ids and version checks | Implemented and merged into `main` |
 | [010 — Career browsing and skill context](adr/010-career-browsing-and-skill-context.md) | Expandable records, direct skill associations and derived context filters | Accepted, implementation merged (PRs #35–39) |
 
+| [011 — Writing context, Companies and Job Sources](adr/011-writing-company-context-and-job-sources.md) | Profile narratives, application Interest, shared company context and logos, configurable sources and grounded short cover letters | Locally accepted, pending merge |
+
 ## Architecture diagrams
 
 Diagrams are Mermaid blocks inside the numbered documents, so they render on GitHub and change in the same commit as the text they describe. Interface rules live in [DESIGN.md](../DESIGN.md); rules for the produced resume and cover-letter PDFs live in [DESIGN-DOCS.md](../DESIGN-DOCS.md).
@@ -46,13 +48,16 @@ Change the relevant numbered document and its Mermaid diagram in the same change
 
 Personal inputs and development notes must not be included in release artifacts.
 
-## Profile management over MCP (implemented)
+## Profile management over MCP (merged)
 
-[ADR 009 — Profile management over MCP](adr/009-profile-management-over-mcp.md) extends ADR 008 with 18 tools: profile read/create/update and add/update/delete for roles, education, projects, skills and achievements. The implementation uses module-owned partial updates, required version checks, client ids for retries, serialized first-profile creation and individual-record deletion only. The portable skill routes profile tasks independently of jobs. Existing snapshots remain unchanged. No new provider access, dependency or schema migration was added for this extension.
+[ADR 009 — Profile management over MCP](adr/009-profile-management-over-mcp.md) extends ADR 008 with 18 tools: profile read/create/update and add/update/delete for roles, education, projects, skills and achievements. The merged profile extension uses module-owned partial updates, required version checks, client ids for retries, serialized first-profile creation and individual-record deletion only. The portable skill routes profile tasks independently of jobs. Existing snapshots remain unchanged. No new provider access, dependency or schema migration was added for this extension.
 
-Implementation and local assistant acceptance are complete; PR #33 is merged into `main`. See doc 09 for the verification details and remaining platform coverage. Do not infer that the original ADR 008 verification covers the additional tools. Contracts: [doc 06](06-ai-and-integrations.md#profile-tools-adr-009-implemented); workflow: [doc 05](05-workflows-and-failures.md#profile-management-from-an-assistant-adr-009-implemented).
-
+Implementation, `pnpm verify:full`, local assistant acceptance and merge are complete for ADR 009. See doc 09 for the verification details and remaining platform coverage. Do not infer that the original ADR 008 verification covers the additional tools. Contracts: [doc 06](06-ai-and-integrations.md#profile-tools-adr-009-merged); workflow: [doc 05](05-workflows-and-failures.md#profile-management-from-an-assistant-adr-009-merged).
 
 ## Career browsing refinement (implemented)
 
-[ADR 010](adr/010-career-browsing-and-skill-context.md) adds expandable career cards, nested About me browsing, direct skill links to roles/projects and context filters (migration 0007). Desired roles use removable pills. Document controls use a header download action, evidence/run text links and an approval toggle. The implementation is merged into `main` through PRs #35–39; see doc 09 for validation status and remaining coverage gaps.
+[ADR 010](adr/010-career-browsing-and-skill-context.md) adds expandable career cards, nested Profile browsing, direct skill links to roles/projects and context filters (migration 0007). Desired roles use removable pills. Document controls use a header download action, evidence/run text links and an approval toggle. The implementation is merged into `main` through PRs #35–39; see doc 09 for validation status and remaining coverage gaps.
+
+## Writing context and company research
+
+[ADR 011](adr/011-writing-company-context-and-job-sources.md) adds Profile narratives, application Interest, shared Companies and sourced findings, customizable Job Sources and shorter cover letters with separate context citations. Implemented on local feature branches; local acceptance is complete; merge remains pending. See doc 09 for actual validation results.

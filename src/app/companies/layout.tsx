@@ -1,7 +1,8 @@
 import { Building2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { deps, requireProfile } from "@/app/current-profile";
-import { listCompanies } from "@/modules/companies";
+import { LogoImage } from "@/app/jobs/LogoImage";
+import { listCompanies, logoHref } from "@/modules/companies";
 import { Column, EmptyState } from "@/components/Column";
 import { Card, CardList } from "@/components/Card";
 import { Toolbar, AddLink } from "@/components/Toolbar";
@@ -25,7 +26,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
                   href={`/companies/${company.id}`}
                   title={company.name}
                   subtitle={company.location ?? undefined}
-                  icon={<Building2 />}
+                  icon={logoHref(company) ? <LogoImage src={logoHref(company)!} /> : <Building2 />}
                 />
               </li>
             ))}

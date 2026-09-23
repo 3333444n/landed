@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useDeferredValue, useMemo, useState } from "react";
+import { useActionState, useDeferredValue, useMemo, useState, type ReactNode } from "react";
 import { SourcePicker, type SourceOption } from "./SourcePicker";
 import { CompanyPicker } from "./CompanyPicker";
 import type { ComboboxOption } from "@/components/Combobox";
@@ -19,7 +19,7 @@ import { buildWordCloud, type SkillLike } from "@/modules/jobs/rules";
  * Paste and edit share one form. Fields remount on every result (React resets forms after an
  * action): after a save they clear with a new record id, after an error they keep the input.
  */
-/** The logo picker in the column header binds its inputs to the form through this id. */
+/** Stable form id for the posting editor. */
 export const jobFormId = "job-form";
 
 export function JobForm({
@@ -52,19 +52,15 @@ export function JobForm({
         editing={!!record}
         skills={skills}
         companies={companies}
+        sourceControl={
+          <SourcePicker
+            sources={sources}
+            value={sourceId}
+            onChange={setSourceId}
+            errors={errors.jobSourceId}
+          />
+        }
       />
-      <SourcePicker
-        sources={sources}
-        value={sourceId}
-        onChange={setSourceId}
-        errors={errors.jobSourceId}
-      />
-      {errors.logoFile || errors.logoUrl ? (
-        <p className={`${formStyles.status} ${formStyles.failed}`} role="alert">
-          Logo: {[...(errors.logoFile ?? []), ...(errors.logoUrl ?? [])].join(" ")}. Choose it again
-          from the tile next to the title.
-        </p>
-      ) : null}
       {errors.form ? (
         <p className={`${formStyles.status} ${formStyles.failed}`} role="alert">
           {errors.form.join(" ")}
@@ -90,11 +86,13 @@ function Fields({
   editing,
   skills,
   companies,
+  sourceControl,
 }: {
   values: FormValues;
   errors: Record<string, string[]>;
   editing: boolean;
   companies: ComboboxOption[];
+  sourceControl: ReactNode;
   skills: SkillLike[];
 }) {
   const [companyId, setCompanyId] = useState(values.companyId ?? "");
@@ -122,19 +120,23 @@ function Fields({
         errors={errors.title}
         required
       />
-      <Field
-        label="Company"
-        name="companyName"
-        defaultValue={values.companyName}
-        errors={errors.companyName}
-        required
-      />
       <CompanyPicker
         companies={companies}
         value={companyId}
         onChange={setCompanyId}
         errors={errors.companyId}
       />
+      {editing ? (
+        <Select
+          label="Availability"
+          name="availability"
+          defaultValue={values.availability ?? "active"}
+          options={jobAvailabilities.map((value) => ({ value, label: availabilityLabels[value] }))}
+          helper="Whether the posting is still open. It never changes your application's status."
+          errors={errors.availability}
+        />
+      ) : null}
+      {sourceControl}
       <Field
         label="Location"
         name="location"
@@ -170,16 +172,6 @@ function Fields({
         required
       />
       <WordCloud items={cloud} variant="inline" />
-      {editing ? (
-        <Select
-          label="Availability"
-          name="availability"
-          defaultValue={values.availability ?? "active"}
-          options={jobAvailabilities.map((value) => ({ value, label: availabilityLabels[value] }))}
-          helper="Whether the posting is still open. It never changes your application's status."
-          errors={errors.availability}
-        />
-      ) : null}
     </>
   );
 }
