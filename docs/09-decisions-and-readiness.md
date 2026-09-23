@@ -124,3 +124,5 @@ The implementation PRs #35–39 are merged into `main`; PR #40 consolidates docu
 ## Profile narratives and Interest (2026-09-23, feature branch pending merge)
 
 Rename the main About me hub to Profile and its existing Profile block to General info, retaining URLs. Add one optional About me narrative and per-application Interest, each with placeholder questions and persistent guidance, partial saves and required version checks. Migration 0008 adds the nullable fields without populating user data. Browser and MCP support read/write/clear; endpoint count is 27. This layer does not yet change generation snapshots or prompts. Integrated context work was locally accepted; this smaller rebased layer is verified separately before publication.
+
+Verification for this scoped layer (2026-09-23): `pnpm verify:full` passed with 150 unit tests, 84 integration tests, migration consistency, the production build and 10 browser journeys. The checks include narrative save/reload/clear in the browser, MCP round trips and stale application edits. Generation prompts are unchanged in this layer.
