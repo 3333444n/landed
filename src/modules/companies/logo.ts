@@ -3,6 +3,7 @@
  * the row that references it. The key carries a content hash, so a replaced logo gets a new
  * address and the old one can be cached forever. Reading and removing go through here too.
  */
+import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { Result } from "@/modules/shared/contracts";
@@ -18,7 +19,7 @@ export const logoFieldErrors = {
 
 /**
  * Checks and stores an image for a company. `field` names the form field a refusal is reported on
- * (the file input or the address). The file is written to `<profile>/logos/<company>-<hash>.<ext>`.
+ * (the file input or the address). The file is written to `<profile>/logos/<company>-<upload-id>-<hash>.<ext>`.
  */
 export async function storeLogo(
   artifactDir: string,
@@ -33,7 +34,7 @@ export async function storeLogo(
   const storageKey = path.join(
     profileId,
     "logos",
-    `${companyId}-${sha256(bytes).slice(0, 8)}.${logoExtensions[contentType]}`,
+    `${companyId}-${randomUUID()}-${sha256(bytes).slice(0, 8)}.${logoExtensions[contentType]}`,
   );
   await writeFileAtomically(path.join(artifactDir, storageKey), bytes);
   return { ok: true, value: { storageKey, contentType } };

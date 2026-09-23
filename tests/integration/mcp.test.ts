@@ -126,6 +126,15 @@ describe("list_jobs and get_job", () => {
 });
 
 describe("add_job", () => {
+  it("rejects legacy company text instead of silently losing identity", async () => {
+    const error = await callExpectingError("add_job", {
+      title: "Engineer",
+      company: "Example Labs",
+      description: "Build useful tools",
+    });
+    expect(error).toContain("company");
+    expect((await call<{ jobs: unknown[] }>("list_jobs")).jobs).toHaveLength(1);
+  });
   it("creates the job and its application together, and replays on the same id", async () => {
     const jobId = crypto.randomUUID();
     const company = await call<{ id: string }>("create_company", {

@@ -1,4 +1,3 @@
-import { getJob } from "@/app/jobs/company-job";
 /*
  * Composition boundary (docs/03) for Phase 1b: reads the profile, the job and its application
  * through their public surfaces, freezes the snapshot, and hands it with the adapter's answer
@@ -19,8 +18,8 @@ import {
   type GenerationRunRecord,
   type Snapshot,
 } from "@/modules/documents";
-import { getCompany, listCompanyFindings } from "@/modules/companies";
-import { getSelectedFindingIds } from "@/modules/jobs";
+import { getCompany, listCompanyFindings, logoHref } from "@/modules/companies";
+import { getJob, getSelectedFindingIds } from "@/modules/jobs";
 import {
   listAchievements,
   listEducation,
@@ -60,6 +59,7 @@ export async function prepareGeneration(
     listSkills(deps, profileId),
     listAchievements(deps, profileId),
   ]);
+  const company = job.companyId ? await getCompany(deps, profileId, job.companyId) : null;
   const snapshot = buildSnapshot({
     profile,
     employment,
@@ -67,11 +67,10 @@ export async function prepareGeneration(
     projects,
     skills,
     achievements,
-    job,
+    job: { ...job, companyName: company?.name ?? "", logoHref: company ? logoHref(company) : null },
     capturedAt: now(deps),
   });
   if (type === "cover_letter") {
-    const company = job.companyId ? await getCompany(deps, profileId, job.companyId) : null;
     const [availableFindings, selectedIds] = company
       ? await Promise.all([
           listCompanyFindings(deps, profileId, company.id),

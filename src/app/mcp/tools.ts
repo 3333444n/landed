@@ -319,8 +319,8 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
     {
       title: "Add job",
       description:
-        "Saves a posting the user wants to pursue and opens its application, as pasting one in the browser does. Pass the posting text as the harness fetched or received it; Landed never fetches a posting page itself. Supply `job_id` (a UUID you mint) to make a retry safe: the same id replays to the same job instead of creating a second one. Returns `{ job_id, application_id }`.",
-      inputSchema: z.object({
+        "Saves a posting the user wants to pursue and opens its application, as pasting one in the browser does. Pass the posting text as the harness fetched or received it; Landed never fetches a posting page itself. Supply `job_id` (a UUID you mint) to make a retry safe: the same id replays to the same job instead of creating a second one. Use create_company then company_id for company identity; the former free-text company argument is rejected. Returns `{ job_id, application_id }`.",
+      inputSchema: z.strictObject({
         job_id: z.uuid().optional().describe("A UUID minted by the client, so a retry replays"),
         title: z.string().describe("The job title as the posting states it"),
         company_id: z.uuid().optional(),

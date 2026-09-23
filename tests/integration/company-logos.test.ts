@@ -57,7 +57,7 @@ afterEach(async () => {
 it("stores, preserves, replaces, clears, and deletes company logo files with version checks", async () => {
   const first = unwrap(await storeLogo(artifactDir, profileId, companyId, png));
   expect(first.storageKey).toMatch(
-    new RegExp(`^${profileId}/logos/${companyId}-[0-9a-f]{8}\\.png$`),
+    new RegExp(`^${profileId}/logos/${companyId}-[0-9a-f-]{36}-[0-9a-f]{8}\\.png$`),
   );
   expect(await exists(first.storageKey)).toBe(true);
   const company = unwrap(await saveCompany(deps(), profileId, input(), undefined, first));
@@ -74,6 +74,10 @@ it("stores, preserves, replaces, clears, and deletes company logo files with ver
     ),
   );
   expect(await exists(first.storageKey)).toBe(false);
+  // Restoring the same bytes must not reuse a key a previous save may still be cleaning up.
+  const restoredUpload = unwrap(await storeLogo(artifactDir, profileId, companyId, png));
+  expect(restoredUpload.storageKey).not.toBe(first.storageKey);
+  expect((await readLogo(artifactDir, restoredUpload))?.bytes).toEqual(Buffer.from(png));
   expect(await exists(second.storageKey)).toBe(true);
   const kept = unwrap(
     await saveCompany(
