@@ -4,6 +4,7 @@ test("companies retain sourced findings and can be selected for a job", async ({
   if (await page.getByLabel("Your name").isVisible()) {
     await page.getByLabel("Your name").fill("Alex Example");
     await page.getByRole("button", { name: "Create profile" }).click();
+    await expect(page.getByRole("heading", { name: "Alex Example", exact: true })).toBeVisible();
   }
   await page.goto("/companies/new");
   await page.getByLabel("Name", { exact: true }).fill("Example Labs");
@@ -35,25 +36,31 @@ test("companies retain sourced findings and can be selected for a job", async ({
   await page.goto(`${jobUrl}/interest`);
   await page.getByRole("combobox", { name: "Company findings" }).fill("Released");
   await page.getByRole("option", { name: "Released a public tool in 2026.", exact: true }).click();
-  const saved = page.waitForResponse(
-    (r) => r.request().method() === "POST" && r.url().endsWith("/interest") && r.ok(),
-  );
+  const findingForm = page
+    .locator("form")
+    .filter({ has: page.getByRole("button", { name: "Save findings", exact: true }) });
+  const versionField = findingForm.locator('input[name="expectedUpdatedAt"]');
+  const previousVersion = await versionField.inputValue();
   await page.getByRole("button", { name: "Save findings", exact: true }).click();
-  await (await saved).finished();
+  await expect(versionField).not.toHaveValue(previousVersion);
   await page.reload();
   await expect(
     page.getByText("Released a public tool in 2026.", { exact: true }).last(),
   ).toBeVisible();
+  await page.screenshot({ path: test.info().outputPath("interest.png"), fullPage: true });
   await page.goto(jobUrl);
   await page
     .getByRole("list", { name: "Materials" })
     .getByRole("link")
-    .filter({ hasText: "Company" })
+    .filter({ hasText: /^Company/ })
     .click();
   await expect(page).toHaveURL(companyUrl);
+  await page.screenshot({ path: test.info().outputPath("company.png"), fullPage: true });
   await page.getByRole("button", { name: "Delete", exact: true }).click();
-  await page.getByRole("button", { name: "Delete", exact: true }).click();
-  await expect(page.getByRole("alert")).toContainText("reference");
+  await page.getByRole("button", { name: "Delete", exact: true }).last().click();
+  await expect(
+    page.getByRole("alert").filter({ hasText: "Other records still reference" }),
+  ).toBeVisible();
   await page.goto(jobUrl);
   await page.getByRole("button", { name: "Delete", exact: true }).click();
   await page.getByRole("button", { name: "Delete", exact: true }).last().click();

@@ -119,3 +119,21 @@ Implementation is locally accepted and pending merge. `pnpm verify:full` passed 
 Cover letters target three or four body sentences and retain the single-column monochrome PDF. Career evidence and context citations stay distinct, with context-only number attribution explicitly flagged for review. Source lists begin empty and archive preserves existing assignments. Browser and MCP support the same operations; this branch extends the endpoint to 42 tools.
 
 Implementation is local, pending user acceptance and merge. No PR is opened before the user reviews the combined preview. Verification results for this extension must be recorded after integrated checks; earlier milestone counts are not evidence for these changes. No personal sourcebook import, data reset or remote service exposure is part of this work.
+
+### Real-provider evaluation, 2026-09-23 (local context branch)
+
+Final synthetic `pnpm eval`: OpenRouter / `google/gemini-3.1-flash-lite`, nine schema checks passed. Each generated cover-letter PDF rendered on one Letter page; the fit-case PDF was visually reviewed as a single column with no clipping. The body target is guidance plus a review warning, not an automatic rewrite. The fit letter had five sentences and was correctly flagged; the other letters had three and four sentences. Shorter than 80 words is allowed.
+
+| Case | Document | Warnings | Input tokens | Output tokens | Body words | Latency ms | Cost USD |
+|---|---|---|---:|---:|---:|---:|---:|
+| fit | resume | none | 3123 | 799 | — | 3055 | 0.00197925 |
+| fit | cover_letter | letter_length=1 | 2443 | 383 | 100 | 1983 | 0.00118525 |
+| fit | recruiter_message | none | 1885 | 237 | — | 1582 | 0.00082675 |
+| mismatch | resume | none | 3123 | 934 | — | 3585 | 0.00218175 |
+| mismatch | cover_letter | none | 2170 | 266 | 72 | 1741 | 0.0009415 |
+| mismatch | recruiter_message | none | 1885 | 235 | — | 1768 | 0.00082375 |
+| partial-fit | resume | none | 3120 | 862 | — | 3089 | 0.002073 |
+| partial-fit | cover_letter | none | 2167 | 233 | 75 | 2444 | 0.00089125 |
+| partial-fit | recruiter_message | none | 1882 | 124 | — | 1420 | 0.0006565 |
+
+An earlier evaluation of this prompt iteration returned one fit-letter schema validation failure; a targeted repeat and the final full run passed. Provider output is nondeterministic. Saved drafts still need review for semantic attribution, tone and brevity; zero grounding warnings do not prove every claim is supported. `EVAL_REPORT_PATH` optionally saves the synthetic evaluation report and generated letter PDFs for inspection.
