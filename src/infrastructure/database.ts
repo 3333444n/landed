@@ -2,12 +2,14 @@ import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import * as applicationsSchema from "@/modules/applications/schema";
 import * as documentsSchema from "@/modules/documents/schema";
+import * as companiesSchema from "@/modules/companies/schema";
 import * as jobsSchema from "@/modules/jobs/schema";
 import * as profileSchema from "@/modules/profile/schema";
 
 export const schema = {
   ...profileSchema,
   ...jobsSchema,
+  ...companiesSchema,
   ...applicationsSchema,
   ...documentsSchema,
 };

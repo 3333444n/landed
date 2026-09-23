@@ -42,3 +42,9 @@ export {
   updateJobSourceLink,
 } from "./service";
 export type { JobSourceRecord } from "./repository";
+export {
+  updateJobCompany,
+  setJobFindingSelection,
+  getSelectedFindingIds,
+  invalidateJobsForFinding,
+} from "./service";
