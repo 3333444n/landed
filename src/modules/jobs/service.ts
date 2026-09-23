@@ -186,7 +186,8 @@ export async function updateJobSource(
   if (!parsed.success) return validation(fieldErrorsFromZod(parsed.error));
   try {
     return await deps.db.transaction(async (tx) => {
-      if (!(await repo.findJobSource(tx, profileId, id))) return notFound("Source");
+      const current = await repo.findJobSource(tx, profileId, id);
+      if (!current) return notFound("Source");
       const { expectedUpdatedAt, ...patch } = parsed.data;
       const value = await repo.updateJobSource(tx, profileId, id, new Date(expectedUpdatedAt), {
         ...patch,
@@ -219,7 +220,10 @@ export async function updateJobSourceLink(
         tx,
         profileId,
         id,
-        { jobSourceId: parsed.data.jobSourceId, updatedAt: now(deps) },
+        {
+          jobSourceId: parsed.data.jobSourceId,
+          updatedAt: new Date(Math.max(now(deps).getTime(), current.updatedAt.getTime() + 1)),
+        },
         new Date(parsed.data.expectedUpdatedAt),
       );
       return value ? { ok: true, value } : stale();

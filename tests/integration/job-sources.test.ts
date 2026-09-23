@@ -99,12 +99,7 @@ describe("Job Sources", () => {
     const source = unwrap(
       await createJobSource(deps(), profileId, { id: sourceId, name: "Local board" }),
     );
-    const other = unwrap(
-      await createProfile(deps(), {
-        id: "10000000-0000-4000-8000-000000000002",
-        displayName: "Sam Example",
-      }),
-    );
+    const other = { id: "10000000-0000-4000-8000-000000000002" };
     expect(
       await saveJob(deps(), other.id, {
         title: "Engineer",
