@@ -20,6 +20,7 @@ import {
   prompts,
   type DocumentContent,
   type Snapshot,
+  type CoverLetterContent,
 } from "@/modules/documents";
 
 const casesDir = path.join("examples", "generation", "cases");
@@ -158,6 +159,15 @@ describe.each(caseNames)("case %s", (name) => {
       const profile = JSON.parse(await readFile(path.join(casesDir, name, "profile.json"), "utf8"));
       const job = JSON.parse(await readFile(path.join(casesDir, name, "job.json"), "utf8"));
       const snapshot = snapshotFromCase(profile, job);
+      if (type === "cover_letter") {
+        try {
+          snapshot.writingContext = JSON.parse(
+            await readFile(path.join(casesDir, name, "writing-context.json"), "utf8"),
+          );
+        } catch (error) {
+          if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+        }
+      }
       const prompt = prompts[type];
       const outcome = await adapter!.generate({
         promptName: prompt.name,
@@ -185,6 +195,15 @@ describe.each(caseNames)("case %s", (name) => {
             .join(" ") || "none",
         inputTokens: outcome.usage.inputTokens,
         outputTokens: outcome.usage.outputTokens,
+        ...(type === "cover_letter"
+          ? {
+              bodyWords: (outcome.value as CoverLetterContent).paragraphs
+                .map((p) => p.text)
+                .join(" ")
+                .trim()
+                .split(/\s+/).length,
+            }
+          : {}),
         latencyMs: outcome.usage.latencyMs,
         costUsd: outcome.usage.costUsd,
       });
