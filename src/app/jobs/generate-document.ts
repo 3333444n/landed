@@ -18,6 +18,8 @@ import {
   type GenerationRunRecord,
   type Snapshot,
 } from "@/modules/documents";
+import { getCompany } from "@/modules/companies";
+import { getSelectedJobFindings } from "./company-context";
 import { getJob } from "@/modules/jobs";
 import {
   listAchievements,
@@ -68,15 +70,32 @@ export async function prepareGeneration(
     job,
     capturedAt: now(deps),
   });
-  if (type === "cover_letter")
+  if (type === "cover_letter") {
+    const company = job.companyId ? await getCompany(deps, profileId, job.companyId) : null;
+    const findings = company ? await getSelectedJobFindings(deps, profileId, jobId) : [];
     snapshot.writingContext = {
       aboutMe: profile.aboutMe ? { id: `about:${profile.id}`, text: profile.aboutMe } : null,
       interest: application.interest
         ? { id: `interest:${application.id}`, text: application.interest }
         : null,
-      company: null,
-      findings: [],
+      company: company
+        ? {
+            id: company.id,
+            name: company.name,
+            location: company.location,
+            website: company.website,
+            about: company.about,
+          }
+        : null,
+      findings: findings.map(({ id, text, sourceUrl, retrievedAt, kind }) => ({
+        id,
+        text,
+        sourceUrl,
+        retrievedAt,
+        kind,
+      })),
     };
+  }
   return { ok: true, value: { applicationId: application.id, snapshot } };
 }
 

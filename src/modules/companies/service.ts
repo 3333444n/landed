@@ -49,7 +49,12 @@ export async function saveCompany(
           profileId,
           id,
           new Date(input.expectedUpdatedAt!),
-          { ...values, updatedAt: now(deps) },
+          {
+            ...values,
+            updatedAt: new Date(
+              Math.max(now(deps).getTime(), new Date(input.expectedUpdatedAt!).getTime() + 1),
+            ),
+          },
         );
         return record ? { ok: true as const, value: record } : stale();
       }
@@ -114,7 +119,12 @@ export async function saveCompanyFinding(
           companyId,
           id,
           new Date(input.expectedUpdatedAt!),
-          { ...values, updatedAt: now(deps) },
+          {
+            ...values,
+            updatedAt: new Date(
+              Math.max(now(deps).getTime(), new Date(input.expectedUpdatedAt!).getTime() + 1),
+            ),
+          },
         );
         return record ? { ok: true as const, value: record } : stale();
       }

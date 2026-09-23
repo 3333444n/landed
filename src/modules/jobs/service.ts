@@ -90,7 +90,7 @@ export async function saveJob(
         rawInput &&
         typeof rawInput === "object" &&
         "jobSourceId" in rawInput &&
-        !input.jobSourceId
+        rawInput.jobSourceId === ""
       )
         Object.assign(values, { jobSourceId: null });
       // The profile_id foreign key backs ownership; the route already resolved the profile.
@@ -105,7 +105,11 @@ export async function saveJob(
           tx,
           profileId,
           id,
-          { ...values, ...logoValues, updatedAt: now(deps) },
+          {
+            ...values,
+            ...logoValues,
+            updatedAt: new Date(Math.max(now(deps).getTime(), current.updatedAt.getTime() + 1)),
+          },
           expected(input.expectedUpdatedAt),
         );
         if (!updated) return stale();
@@ -198,7 +202,7 @@ export async function updateJobSource(
       const { expectedUpdatedAt, ...patch } = parsed.data;
       const value = await repo.updateJobSource(tx, profileId, id, new Date(expectedUpdatedAt), {
         ...patch,
-        updatedAt: now(deps),
+        updatedAt: new Date(Math.max(now(deps).getTime(), current.updatedAt.getTime() + 1)),
       });
       return value ? { ok: true, value } : stale();
     });
@@ -262,7 +266,10 @@ export async function updateJobCompany(
         tx,
         profileId,
         jobId,
-        { companyId: parsed.data.companyId, updatedAt: now(deps) },
+        {
+          companyId: parsed.data.companyId,
+          updatedAt: new Date(Math.max(now(deps).getTime(), job.updatedAt.getTime() + 1)),
+        },
         new Date(parsed.data.expectedUpdatedAt),
       );
       return updated ? { ok: true as const, value: updated } : stale();
@@ -271,6 +278,8 @@ export async function updateJobCompany(
     return mapDatabaseError(e, async () => null);
   }
 }
+export const lockJobFindingContext = (deps: JobsDeps, profileId: string) =>
+  repo.lockFindingContext(deps.db, profileId);
 export async function setJobFindingSelection(
   deps: JobsDeps,
   profileId: string,
@@ -281,6 +290,7 @@ export async function setJobFindingSelection(
   if (!parsed.success) return validation(fieldErrorsFromZod(parsed.error));
   try {
     return await deps.db.transaction(async (tx) => {
+      await repo.lockFindingContext(tx, profileId);
       const job = await repo.lockJob(tx, profileId, jobId);
       if (!job) return notFound("Job");
       if (job.updatedAt.toISOString() !== parsed.data.expectedUpdatedAt) return stale();
@@ -298,7 +308,7 @@ export async function setJobFindingSelection(
         tx,
         profileId,
         jobId,
-        { updatedAt: now(deps) },
+        { updatedAt: new Date(Math.max(now(deps).getTime(), job.updatedAt.getTime() + 1)) },
         new Date(parsed.data.expectedUpdatedAt),
       );
       return updated ? { ok: true as const, value: updated } : stale();

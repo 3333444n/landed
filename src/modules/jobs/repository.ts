@@ -1,7 +1,7 @@
 /*
  * Drizzle queries for the jobs table over a database or transaction handle. No rules live here.
  */
-import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import type { DbHandle } from "@/infrastructure/database";
 import { jobs, jobSourceOptions, jobFindingSelections } from "./schema";
 
@@ -161,7 +161,9 @@ export async function invalidateFindingJobs(
   if (rows.length)
     await db
       .update(jobs)
-      .set({ updatedAt: at })
+      .set({
+        updatedAt: sql`greatest(${at.toISOString()}::timestamptz, ${jobs.updatedAt} + interval '1 millisecond')`,
+      })
       .where(
         and(
           eq(jobs.profileId, profileId),
@@ -171,4 +173,8 @@ export async function invalidateFindingJobs(
           ),
         ),
       );
+}
+
+export async function lockFindingContext(db: DbHandle, profileId: string) {
+  await db.execute(sql`select pg_advisory_xact_lock(hashtextextended(${profileId}, 0))`);
 }
