@@ -137,3 +137,7 @@ Final synthetic `pnpm eval`: OpenRouter / `google/gemini-3.1-flash-lite`, nine s
 | partial-fit | recruiter_message | none | 1882 | 124 | — | 1420 | 0.0006565 |
 
 An earlier evaluation of this prompt iteration returned one fit-letter schema validation failure; a targeted repeat and the final full run passed. Provider output is nondeterministic. Saved drafts still need review for semantic attribution, tone and brevity; zero grounding warnings do not prove every claim is supported. `EVAL_REPORT_PATH` optionally saves the synthetic evaluation report and generated letter PDFs for inspection.
+
+### Integrated local validation, 2026-09-23
+
+`pnpm verify:full` passed on the integrated context branch: formatting, lint, types, 159 unit tests, skill synchronization, 98 PostgreSQL integration tests, migration consistency, production build and all 10 Chromium browser journeys. The browser journeys include Profile narratives, Interest, shared company findings, protected deletion and Source archive/restore. Fictional Companies and Interest screenshots were visually reviewed. Tests use the isolated test database and fake provider; the separate real-provider evaluation is recorded above. Local acceptance remains pending, with no PR opened.
