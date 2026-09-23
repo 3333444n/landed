@@ -1,6 +1,6 @@
 # 06 — AI, harnesses, and retrieval
 
-Status: model access path implemented in Phase 1b ([ADR 006](adr/006-model-access-path.md)); the guarded outbound fetch exists for a job's logo address ([ADR 007](adr/007-user-initiated-image-fetch.md), 2026-09-14); the evaluation set has been run against OpenRouter (see "Providers run through the evaluation set"); the assistant surface over MCP is implemented ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16; see "Your own assistant over MCP"); agentic research, discovery and retrieval remain future design. Updated 2026-09-17.
+Status: model access path implemented in Phase 1b ([ADR 006](adr/006-model-access-path.md)); the guarded outbound fetch exists for a company's logo address ([ADR 007](adr/007-user-initiated-image-fetch.md), 2026-09-14); the evaluation set has been run against OpenRouter (see "Providers run through the evaluation set"); the assistant surface over MCP is implemented ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16; see "Your own assistant over MCP"); agentic research, discovery and retrieval remain future design. Updated 2026-09-17.
 
 Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is implemented and locally accepted on this branch, pending merge. See [current verification](09-decisions-and-readiness.md#profile-management-over-mcp-accepted-pending-merge).
 
@@ -94,7 +94,7 @@ The assistant should save only facts supplied or confirmed by the user, resolve 
 
 ## Input and tool boundaries
 
-Job postings/web pages are data, not instructions. Keep them separate from trusted instructions. Use bounded tools for fetch/search and application operations, not unrestricted shell/database access. Preserve sources and retrieval dates; do not invent inaccessible company/recruiter information. External URL fetching must reject private-network targets, validate redirect destinations, and impose size/time limits when Phase 2 enables it. The first such fetch exists since 2026-09-14 for a job's logo address ([ADR 007](adr/007-user-initiated-image-fetch.md)): https only, the host resolved and refused when any answer is loopback, private, link-local or unique-local, at most three redirects each checked the same way, ten seconds, one megabyte, an image content type; the bytes are then typed from their magic numbers, never from the name. Phase 2 posting import reuses that fetcher.
+Job postings/web pages are data, not instructions. Keep them separate from trusted instructions. Use bounded tools for fetch/search and application operations, not unrestricted shell/database access. Preserve sources and retrieval dates; do not invent inaccessible company/recruiter information. External URL fetching must reject private-network targets, validate redirect destinations, and impose size/time limits when Phase 2 enables it. The first such fetch exists since 2026-09-14 for a company's logo address ([ADR 007](adr/007-user-initiated-image-fetch.md)): https only, the host resolved and refused when any answer is loopback, private, link-local or unique-local, at most three redirects each checked the same way, ten seconds, one megabyte, an image content type; the bytes are then typed from their magic numbers, never from the name. Phase 2 posting import reuses that fetcher.
 
 Generated claims cite input snapshot entries, but valid IDs alone do not establish factual support; the Phase 1b grounding check also compares numbers in the text with the cited records, and the user reviews every document before it is used. Pasted postings are placed in the prompt inside a labelled data block and never in the instructions. Automatic Phase 3 generation produces unreviewed drafts only.
 
@@ -123,8 +123,8 @@ The local feature branch has **42 tools**: the original eight, 18 profile tools,
 | set_job_source | job_id, job expected_updated_at, nullable job_source_id |
 | list_companies | No fields; returns companies |
 | get_company | company_id; returns company and findings |
-| create_company | company_id retry UUID, name, optional location/website/about |
-| update_company | company_id, expected_updated_at, optional name/location/website/about; null clears optional fields |
+| create_company | company_id retry UUID, name, optional location/website/about/logo_url |
+| update_company | company_id, expected_updated_at, optional name/location/website/about/logo_url; null clears optional fields |
 | delete_company | company_id, expected_updated_at; referenced companies cannot be deleted |
 | create_company_finding | company_id, finding_id retry UUID, text, source_url, retrieved_at (YYYY-MM-DD), kind (statement/interpretation) |
 | update_company_finding | company_id, finding_id, expected_updated_at and changed finding fields; omit preserves |
@@ -140,3 +140,10 @@ Cover-letter prompt version 3 targets three or four sentences, roughly 80–150 
 The assistant harness can research companies with its own tools and save dated findings. Landed performs no automatic website fetch. Findings retain statement/interpretation qualifiers; neither company About nor a review-site complaint proves an internal company problem. New context is frozen for adapter, paste-back and assistant cover-letter runs. Legacy snapshots/content remain valid; creating/exporting documents never submits applications.
 
 A `letter_length` warning flags cover-letter bodies above four sentences or 150 words. This is a review warning, not a schema rejection: older letters remain readable and editable. Sentence segmentation uses the runtime’s English sentence segmenter and may need human interpretation for abbreviations.
+
+
+### Canonical company and logo contract revision
+
+The ADR 010 follow-up keeps the tool count at 42 but changes job intake: add_job accepts optional company_id, with no free-text company or job logo_url. Resolve/create a Company first when one is known; omission creates an unlinked new job. Company names in job reads and new document snapshots resolve from that company record. Old snapshots keep their frozen name, while generated PDF filenames use the current linked identity.
+
+create_company and update_company accept optional nullable logo_url: omit preserves, null clears, and an HTTPS address requests a bounded guarded image fetch. Company reads expose the shared logo through the implementation's public projection, never raw secret configuration. Browser uploads and harness-supplied addresses both store company-owned image metadata, shared by all linked jobs. No additional website research fetch is introduced. Historical milestone descriptions of job-owned logos above describe the former model.

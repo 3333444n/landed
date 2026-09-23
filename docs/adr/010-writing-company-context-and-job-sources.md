@@ -23,3 +23,12 @@ New cover-letter runs freeze personal narratives, all company fields and selecte
 The company link and sourced findings support reuse without changing original posting data. Free narrative entry is easy to use but still requires selection and human review; prompts and ID checks cannot establish semantic truth. Existing resumes and recruiter messages retain their snapshot behavior. No private sourcebook is imported automatically.
 
 Use additive generated migrations. Test ownership, retries, stale writes, clear/archive behavior, company dependency checks, finding selection and deletion, immutable snapshots, browser/MCP parity, and legacy documents. Required integrated validation is pnpm verify:full plus the real-provider pnpm eval for changed generation contracts/prompts. Record actual results in doc 09 after running them. Keep local worktrees and commits for user testing; no PR before review.
+
+
+## Superseding decision — canonical company identity and shared logo
+
+Accepted follow-up after local review, 2026-09-23. This replaces the decision above to retain an independent posting-company name and job logo. A Company now owns the canonical name and shared logo. A job has one optional Company selector, and no separate editable company text or logo. Resolve linked identity consistently in job lists/details, MCP reads, new snapshots and PDF filenames. Keep form order Title, Company, Availability, Source, Location, Salary, Posting URL, Description.
+
+Company forms own image uploads, HTTPS logo addresses and removal. The same guarded fetch and inert image serving rules apply. MCP company create/update accepts logo_url (omit preserves, null clears); add_job uses optional company_id and removes free-text company/job logo_url. New jobs may remain unlinked. Clearing/changing company still clears findings; company deletion is blocked while linked.
+
+The migration preserves all existing links. Each previously unlinked legacy job receives its own company record, with no automatic name matching. Companies without a logo inherit the newest available linked-job logo; existing company logos are preserved. It reuses stored artifacts and does not unlink legacy files. It never edits frozen snapshots or saved revisions. Add follow-up checks for canonical identity propagation, shared logo replace/clear, migration preservation, new unlinked jobs and the revised MCP inputs; prior validation does not establish this follow-up's correctness.

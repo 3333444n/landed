@@ -100,8 +100,15 @@ The Profile hub contains General info and About me. About me is a single optiona
 
 ## Company context and discovery sources (local feature branch)
 
-Create or choose a company from the job form, then maintain its Name, Location, Website, About and findings in Companies. Existing jobs remain unlinked until the user or harness links them. In Interest, select up to five findings from the current company; changing/clearing the company clears incompatible selections. Deleting a referenced company requires detaching its jobs first. Deleting a finding removes live selections while frozen runs retain it.
+Create or choose a company from the job form, then maintain its Name, Location, Website, About and findings in Companies. Migration retains existing links and gives each unlinked legacy job its own company, without matching names; new jobs may omit a company. In Interest, select up to five findings from the current company; changing/clearing the company clears incompatible selections. Deleting a referenced company requires detaching its jobs first. Deleting a finding removes live selections while frozen runs retain it.
 
 Settings → Job Sources supports add, rename, archive and restore. The Source selector on job forms offers inline creation; it is optional and initially empty. Archived sources remain displayed on already assigned jobs and are unavailable for new assignments. Source edits and assignments require current versions; creates accept retry IDs. Empty selection clears a job's Source without changing its posting URL.
 
 Cover-letter generation freezes career evidence, the posting, personal narratives, all linked company fields and selected findings. The prompt targets three or four body sentences and a concrete career story. Citation and number checks produce review warnings; `context_number` specifically marks a number supported only by company/posting context. The user verifies its attribution rather than treating a valid ID as proof. Narratives cannot supply accomplishment metrics. Missing optional context does not block generation. All text supplied by users or research remains data, never instructions; Landed does not browse company websites.
+
+
+## Canonical company follow-up
+
+Jobs use one optional Company selector and inline creation; remove the free-text Company field and job logo upload/address controls. Order fields Title, Company, Availability, Source, Location, Salary, Posting URL, Description. Company forms own logo uploads, pasted HTTPS addresses and clearing. A shared company's current name and logo appear on all linked jobs; changing a company name also affects new generation snapshots and PDF filenames. Existing snapshots and document text remain unchanged.
+
+For MCP intake, resolve or create the company first, then pass optional company_id to add_job. The former free-text company and job logo_url inputs are removed. Company create/update accepts logo_url with the same guarded fetch as browser address entry; omit preserves and null clears. Upload remains a browser flow. Invalid image/URL or stale-version failures cannot overwrite the saved company logo. Linked-company deletion is refused; job deletion does not remove the shared company or its image.

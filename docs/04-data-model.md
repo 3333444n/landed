@@ -144,9 +144,9 @@ Migration 0008 adds nullable `profiles.about_me` and `applications.interest`. Ea
 
 | Table / field | Content and relationships |
 |---|---|
-| companies | Profile-owned id, required name, nullable location/website/about; created_at and updated_at |
+| companies | Profile-owned id, required name, nullable location/website/about; shared logo_storage_key/logo_content_type pair; created_at and updated_at |
 | company_findings | Profile and company ownership, text, source_url, retrieved_at date, kind (`statement`, `interpretation`), timestamps |
-| jobs.company_id | Nullable owner-aware company link; existing rows remain null and company_name stays intact |
+| jobs.company_id | Nullable owner-aware canonical company link; legacy rows receive distinct companies without name matching |
 | job_finding_selections | Job/finding join with composite keys enforcing both owner and company agreement; at most five via the module contract |
 | job_source_options | Profile-owned id, name, archived boolean, timestamps; no seeded rows |
 | jobs.job_source_id | Nullable owner-aware source link, independent of source and source_url |
@@ -154,3 +154,10 @@ Migration 0008 adds nullable `profiles.about_me` and `applications.interest`. Ea
 Company deletion is blocked while referenced by jobs. Changing a job's company clears its selections. Finding deletion cascades its live selections and invalidates affected job versions. Source options are archived/restored rather than deleted; existing assignments remain available. Schema changes use generated additive SQL migrations, never a data reset.
 
 New cover-letter snapshots additionally freeze optional `writingContext`: About me and Interest with their citation IDs, all linked company fields, and the selected findings with their sources, dates and kinds. Old snapshots omit this optional object and remain valid. Career `evidenceIds` and optional paragraph `contextIds` are separate namespaces. Live edits and deletes cannot alter saved snapshots or revisions.
+
+
+## Canonical company identity and shared logos (ADR 010 follow-up)
+
+This supersedes the historical job-owned company-name/logo description above. Remove the separate jobs.company_name and job logo columns after migration; company records own the canonical name and logo metadata. Application composition resolves company identity for job lists/detail, MCP, new snapshots and PDF filenames. New jobs may have a null company_id.
+
+Migration preserves existing linked Companies. For each legacy job without a company link it creates a distinct company using that job's stored company name, then links the job; it never groups records merely because their names match. A company whose logo is empty inherits the newest linked job's stored logo when available, while an existing company logo wins. Metadata can reference the existing artifact file: migration does not remove legacy files. Future company-logo changes use atomic file-first/row-second storage and safe replacement cleanup. Deleting one job leaves its company and shared logo intact. No historical snapshot or saved document revision is rewritten.

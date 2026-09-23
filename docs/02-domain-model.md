@@ -17,7 +17,7 @@ In this application, a Job is an external opening; an Application is a person's 
 | Skill | A named capability recorded by the person; not proof of a specific accomplishment |
 | Achievement | A factual statement, optionally elaborated as problem/action/result/metric, with an optional source note |
 | Evidence | The facts supplied to support generated claims; includes more than achievements, such as education and employment |
-| Job | Original posting plus source and normalized attributes, a salary as free text and an optional company logo file; its contents are untrusted input, and an uploaded image is typed from its bytes |
+| Job | Original posting plus source and normalized attributes, a salary as free text and an optional link to its canonical Company; its contents are untrusted input, and an uploaded image is typed from its bytes |
 | Application | A tracked pursuit, including preparation before submission; one per profile/job initially |
 | Document | A resume, cover letter, or recruiter message belonging to an application |
 | Document revision | Saved generated, pasted or explicitly saved edited content; immutable, so previous generated/submitted material stays intact |
@@ -49,6 +49,6 @@ An aggregate groups data/rules that must remain consistent during an operation. 
 
 The **Profile** navigation hub contains **General info** (identity, contact, summary and preferences), career evidence sections and **About me** (the user's optional story, values and motivation). **Interest** belongs to an application: the user's reason for pursuing its role and company. Neither narrative is a substitute for evidence of an accomplishment.
 
-A **Company** is shared context for zero or more jobs, with Name, Location, Website and About. A job keeps the company name supplied by its posting separately from its optional company link. Existing jobs are never matched automatically. A **Finding** is a dated, sourced statement or interpretation associated with one company. An application can use up to five company findings selected on its job; selection does not imply verification. People and built-in web research remain deferred.
+A **Company** is shared context for zero or more jobs, with Name, Location, Website and About. A job optionally links to its canonical company, which supplies its name and shared logo throughout the app. There is no separate editable posting-company name. Migration preserves existing links and creates one company per unlinked legacy job without matching names. A **Finding** is a dated, sourced statement or interpretation associated with one company. An application can use up to five company findings selected on its job; selection does not imply verification. People and built-in web research remain deferred.
 
 **Source** on a job identifies where the user found it. **Job Sources** in Settings is the user-managed vocabulary, empty by default; archived sources retain historical assignments. This is separate from the posting URL and the technical ingestion method (`pasted`). See ADR 010 for the accepted boundaries. Implementation is local and pending acceptance/merge.

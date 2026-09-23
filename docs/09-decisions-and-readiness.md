@@ -114,7 +114,7 @@ Implementation is locally accepted and pending merge. `pnpm verify:full` passed 
 
 ## Personal and company writing context (2026-09-23, local implementation)
 
-[ADR 010](adr/010-writing-company-context-and-job-sources.md) records the accepted scope: Profile/General info naming, an optional About me narrative, application Interest, shared Companies with sourced findings, and customizable Job Sources. Companies have only Name, Location, Website, About and Findings. Up to five findings are selected per job; all company fields are available to cover letters. Existing jobs remain unlinked. People and built-in research remain deferred.
+[ADR 010](adr/010-writing-company-context-and-job-sources.md) records the accepted scope: Profile/General info naming, an optional About me narrative, application Interest, shared Companies with sourced findings, and customizable Job Sources. Companies have Name, Location, Website, About and Findings, with shared company logo controls added by the accepted identity follow-up. Up to five findings are selected per job; all company fields are available to cover letters. The identity follow-up preserves existing company links and creates one distinct company for each unlinked legacy job, without name matching. People and built-in research remain deferred.
 
 Cover letters target three or four body sentences and retain the single-column monochrome PDF. Career evidence and context citations stay distinct, with context-only number attribution explicitly flagged for review. Source lists begin empty and archive preserves existing assignments. Browser and MCP support the same operations; this branch extends the endpoint to 42 tools.
 
@@ -141,3 +141,10 @@ An earlier evaluation of this prompt iteration returned one fit-letter schema va
 ### Integrated local validation, 2026-09-23
 
 `pnpm verify:full` passed on the integrated context branch: formatting, lint, types, 159 unit tests, skill synchronization, 98 PostgreSQL integration tests, migration consistency, production build and all 10 Chromium browser journeys. The browser journeys include Profile narratives, Interest, shared company findings, protected deletion and Source archive/restore. Fictional Companies and Interest screenshots were visually reviewed. Tests use the isolated test database and fake provider; the separate real-provider evaluation is recorded above. Local acceptance remains pending, with no PR opened.
+
+
+## Canonical company identity follow-up (accepted, local implementation pending verification)
+
+Company is the single source for employer name and shared logo. Jobs use one optional Company selector; the separate free-text name and job-owned logo controls are removed. The form order is Title, Company, Availability, Source, Location, Salary, Posting URL, Description. Names and logos resolve consistently for lists, job details, MCP, new generation snapshots and PDF filenames. Company create/update MCP accepts nullable logo_url; add_job accepts optional company_id and removes company/job logo_url.
+
+The migration preserves existing linked companies, creates a distinct company for each unlinked legacy job (no name matching), and fills an empty company logo from its newest linked job's available logo. Existing company logos win. Legacy artifact files and historical snapshots are not removed or rewritten. Prior full-verification results above cover the preceding context implementation; this follow-up requires its own relevant validation and remains subject to local user review before any PR.
