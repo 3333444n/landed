@@ -1,0 +1,26 @@
+{
+  "aboutMe": {
+    "id": "about:example",
+    "text": "I enjoy turning complicated workflows into tools people can understand. I want to learn with an engineering team."
+  },
+  "interest": {
+    "id": "interest:example",
+    "text": "I am drawn to the focus on reporting tools used by non-technical colleagues."
+  },
+  "company": {
+    "id": "90000000-0000-4000-8000-000000000001",
+    "name": "Example Analytics",
+    "location": "Remote",
+    "website": "https://example.com",
+    "about": "Builds reporting tools for community organizations."
+  },
+  "findings": [
+    {
+      "id": "90000000-0000-4000-8000-000000000002",
+      "text": "The company describes plain-language reporting as a product priority.",
+      "sourceUrl": "https://example.com/product",
+      "retrievedAt": "2026-09-23",
+      "kind": "statement"
+    }
+  ]
+}

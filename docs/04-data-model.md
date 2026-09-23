@@ -154,3 +154,7 @@ Migration 0009 adds profile-owned job_sources with name, archived and version ti
 ## Companies and selected findings (locally accepted, pending merge)
 
 Migration 0010 adds profile-owned companies (name, location, website, about), company_findings (text, source URL, retrieval date, statement/interpretation kind), nullable jobs.company_id and the job_finding_selections join table. Ownership uses composite foreign keys. Existing jobs retain their company text and stay unlinked at this layer. Company deletion is refused while referenced; finding deletion clears live selections and advances affected job versions. Historical snapshots are unchanged.
+
+## Frozen writing context
+
+Cover-letter snapshots optionally freeze About me, application Interest, company fields and selected sourced findings alongside career records and the posting. Existing snapshots remain readable. Paragraph contextIds cite context separately from career evidenceIds. Stored URLs do not trigger network requests.

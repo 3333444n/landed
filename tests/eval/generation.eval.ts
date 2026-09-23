@@ -7,7 +7,7 @@
  * or the answer failed schema validation, so a schema a provider cannot compile shows up here
  * rather than in someone's Runs column. Optional filter: EVAL_CASES=fit,mismatch.
  */
-import { readFile, readdir } from "node:fs/promises";
+import { readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { z } from "zod";
@@ -20,7 +20,10 @@ import {
   prompts,
   type DocumentContent,
   type Snapshot,
+  type CoverLetterContent,
 } from "@/modules/documents";
+
+import { renderCoverLetterPdf, letterHeaderFrom, pdfPageCount } from "@/modules/documents/pdf";
 
 const casesDir = path.join("examples", "generation", "cases");
 
@@ -120,6 +123,7 @@ function snapshotFromCase(
 }
 
 const rows: Row[] = [];
+const letters: Record<string, unknown> = {};
 let adapter: ModelAdapter | null = null;
 let totalCost = 0;
 let costKnown = true;
@@ -135,10 +139,15 @@ beforeAll(async () => {
   }
 });
 
-afterAll(() => {
+afterAll(async () => {
   if (!adapter) return;
   console.log(`Provider ${adapter.provider}, model ${adapter.model}`);
   console.table(rows);
+  if (process.env.EVAL_REPORT_PATH)
+    await writeFile(
+      process.env.EVAL_REPORT_PATH,
+      JSON.stringify({ provider: adapter.provider, model: adapter.model, rows, letters }, null, 2),
+    );
   console.log(
     costKnown
       ? `Total cost reported: $${totalCost.toFixed(4)}`
@@ -158,6 +167,15 @@ describe.each(caseNames)("case %s", (name) => {
       const profile = JSON.parse(await readFile(path.join(casesDir, name, "profile.json"), "utf8"));
       const job = JSON.parse(await readFile(path.join(casesDir, name, "job.json"), "utf8"));
       const snapshot = snapshotFromCase(profile, job);
+      if (type === "cover_letter") {
+        try {
+          snapshot.writingContext = JSON.parse(
+            await readFile(path.join(casesDir, name, "writing-context.json"), "utf8"),
+          );
+        } catch (error) {
+          if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+        }
+      }
       const prompt = prompts[type];
       const outcome = await adapter!.generate({
         promptName: prompt.name,
@@ -167,8 +185,23 @@ describe.each(caseNames)("case %s", (name) => {
         schema: contentSchemas[type] as z.ZodType<DocumentContent>,
       });
       if (!outcome.ok) {
+        if (process.env.EVAL_REPORT_PATH)
+          letters[`${name}/${type}/failure`] = { rawText: outcome.rawText };
         rows.push({ case: name, document: type, outcome: `${outcome.kind}: ${outcome.message}` });
         expect.fail(`${name}/${type}: ${outcome.kind} failure, ${outcome.message}`);
+      }
+      if (type === "cover_letter") {
+        const pdf = await renderCoverLetterPdf(
+          outcome.value as CoverLetterContent,
+          letterHeaderFrom(snapshot, new Date(snapshot.capturedAt)),
+        );
+        expect(pdfPageCount(pdf)).toBe(1);
+        letters[name] = { content: outcome.value, snapshot, pdfPages: pdfPageCount(pdf) };
+        if (process.env.EVAL_REPORT_PATH)
+          await writeFile(
+            path.join(path.dirname(process.env.EVAL_REPORT_PATH), `landed-eval-${name}.pdf`),
+            pdf,
+          );
       }
       const warnings = groundingCheck(type, outcome.value, snapshot);
       const byKind: Record<string, number> = {};
@@ -185,6 +218,15 @@ describe.each(caseNames)("case %s", (name) => {
             .join(" ") || "none",
         inputTokens: outcome.usage.inputTokens,
         outputTokens: outcome.usage.outputTokens,
+        ...(type === "cover_letter"
+          ? {
+              bodyWords: (outcome.value as CoverLetterContent).paragraphs
+                .map((p) => p.text)
+                .join(" ")
+                .trim()
+                .split(/\s+/).length,
+            }
+          : {}),
         latencyMs: outcome.usage.latencyMs,
         costUsd: outcome.usage.costUsd,
       });
