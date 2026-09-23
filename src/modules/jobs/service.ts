@@ -15,7 +15,13 @@ import {
   type BaseDeps,
 } from "@/modules/shared/service";
 import { fieldErrorsFromZod, type Result } from "@/modules/shared/contracts";
-import { jobInput, type StoredLogo } from "./contracts";
+import {
+  createJobSourceInput,
+  updateJobSourceInput,
+  updateJobSourceLinkInput,
+  jobInput,
+  type StoredLogo,
+} from "./contracts";
 import { removeLogoFile } from "./logo";
 import * as repo from "./repository";
 
@@ -55,6 +61,7 @@ export async function saveJob(
     location: input.location ?? null,
     salary: input.salary ?? null,
     sourceUrl: input.sourceUrl ?? null,
+    ...(input.jobSourceId !== undefined ? { jobSourceId: input.jobSourceId } : {}),
     rawDescription: input.rawDescription,
     availability: input.availability,
   };
@@ -66,6 +73,23 @@ export async function saveJob(
   let replaced: string | null = null;
   try {
     const result = await deps.db.transaction(async (tx) => {
+      if (!existingId) {
+        const replay = await repo.findJob(tx, profileId, id);
+        if (replay) return { ok: true as const, value: replay };
+      }
+      const currentSourceJob = existingId ? await repo.findJob(tx, profileId, id) : null;
+      if (input.jobSourceId) {
+        const source = await repo.findJobSource(tx, profileId, input.jobSourceId);
+        if (!source || (source.archived && currentSourceJob?.jobSourceId !== source.id))
+          return validation({ jobSourceId: ["Choose an active source from your Job Sources"] });
+      }
+      if (
+        rawInput &&
+        typeof rawInput === "object" &&
+        "jobSourceId" in rawInput &&
+        rawInput.jobSourceId === ""
+      )
+        Object.assign(values, { jobSourceId: null });
       // The profile_id foreign key backs ownership; the route already resolved the profile.
       if (existingId) {
         const current = await repo.findJob(tx, profileId, id);
@@ -74,7 +98,11 @@ export async function saveJob(
           tx,
           profileId,
           id,
-          { ...values, ...logoValues, updatedAt: now(deps) },
+          {
+            ...values,
+            ...logoValues,
+            updatedAt: new Date(Math.max(now(deps).getTime(), current.updatedAt.getTime() + 1)),
+          },
           expected(input.expectedUpdatedAt),
         );
         if (!updated) return stale();
@@ -118,6 +146,92 @@ export async function deleteJob(
       await removeLogoFile(deps.artifactDir, current.logoStorageKey);
     }
     return { ok: true, value: undefined };
+  } catch (error) {
+    return mapDatabaseError(error, async () => null);
+  }
+}
+
+export async function listJobSources(deps: JobsDeps, profileId: string) {
+  return repo.listJobSources(deps.db, profileId);
+}
+export async function getJobSource(deps: JobsDeps, profileId: string, id: string) {
+  return repo.findJobSource(deps.db, profileId, id);
+}
+export async function createJobSource(
+  deps: JobsDeps,
+  profileId: string,
+  raw: unknown,
+): Promise<Result<repo.JobSourceRecord>> {
+  const parsed = createJobSourceInput.safeParse(raw);
+  if (!parsed.success) return validation(fieldErrorsFromZod(parsed.error));
+  try {
+    return await deps.db.transaction(async (tx) => {
+      const prior = await repo.findJobSource(tx, profileId, parsed.data.id);
+      if (prior) return { ok: true, value: prior };
+      return {
+        ok: true,
+        value: await repo.insertJobSource(tx, { ...parsed.data, profileId, ...stamps(deps) }),
+      };
+    });
+  } catch (error) {
+    return mapDatabaseError(error, async () => {
+      const prior = await repo.findJobSource(deps.db, profileId, parsed.data.id);
+      return prior ? { ok: true, value: prior } : null;
+    });
+  }
+}
+export async function updateJobSource(
+  deps: JobsDeps,
+  profileId: string,
+  id: string,
+  raw: unknown,
+): Promise<Result<repo.JobSourceRecord>> {
+  const parsed = updateJobSourceInput.safeParse(raw);
+  if (!parsed.success) return validation(fieldErrorsFromZod(parsed.error));
+  try {
+    return await deps.db.transaction(async (tx) => {
+      const current = await repo.findJobSource(tx, profileId, id);
+      if (!current) return notFound("Source");
+      const { expectedUpdatedAt, ...patch } = parsed.data;
+      const value = await repo.updateJobSource(tx, profileId, id, new Date(expectedUpdatedAt), {
+        ...patch,
+        updatedAt: new Date(Math.max(now(deps).getTime(), current.updatedAt.getTime() + 1)),
+      });
+      return value ? { ok: true, value } : stale();
+    });
+  } catch (error) {
+    return mapDatabaseError(error, async () => null);
+  }
+}
+export async function updateJobSourceLink(
+  deps: JobsDeps,
+  profileId: string,
+  id: string,
+  raw: unknown,
+): Promise<Result<repo.JobRecord>> {
+  const parsed = updateJobSourceLinkInput.safeParse(raw);
+  if (!parsed.success) return validation(fieldErrorsFromZod(parsed.error));
+  try {
+    return await deps.db.transaction(async (tx) => {
+      const current = await repo.findJob(tx, profileId, id);
+      if (!current) return notFound("Job");
+      if (parsed.data.jobSourceId) {
+        const source = await repo.findJobSource(tx, profileId, parsed.data.jobSourceId);
+        if (!source || (source.archived && current.jobSourceId !== source.id))
+          return validation({ jobSourceId: ["Choose an active source from your Job Sources"] });
+      }
+      const value = await repo.updateJob(
+        tx,
+        profileId,
+        id,
+        {
+          jobSourceId: parsed.data.jobSourceId,
+          updatedAt: new Date(Math.max(now(deps).getTime(), current.updatedAt.getTime() + 1)),
+        },
+        new Date(parsed.data.expectedUpdatedAt),
+      );
+      return value ? { ok: true, value } : stale();
+    });
   } catch (error) {
     return mapDatabaseError(error, async () => null);
   }

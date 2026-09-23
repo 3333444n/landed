@@ -1,5 +1,15 @@
 import { sql } from "drizzle-orm";
-import { check, index, pgTable, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  foreignKey,
+  check,
+  index,
+  pgTable,
+  text,
+  timestamp,
+  unique,
+  uuid,
+} from "drizzle-orm/pg-core";
 import { profiles } from "@/modules/profile/schema";
 import { jobAvailabilities, jobSources, logoContentTypes } from "./contracts";
 
@@ -11,6 +21,24 @@ import { jobAvailabilities, jobSources, logoContentTypes } from "./contracts";
 
 const notBlank = (column: string) =>
   check(`jobs_${column}_not_blank`, sql.raw(`btrim(${column}) <> ''`));
+
+export const jobSourceOptions = pgTable(
+  "job_source_options",
+  {
+    id: uuid("id").primaryKey(),
+    profileId: uuid("profile_id")
+      .notNull()
+      .references(() => profiles.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    archived: boolean("archived").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("job_source_options_profile_id_id_unique").on(t.profileId, t.id),
+    check("job_source_options_name_not_blank", sql`btrim(name) <> ''`),
+  ],
+);
 
 export const jobs = pgTable(
   "jobs",
@@ -26,6 +54,7 @@ export const jobs = pgTable(
     salary: text("salary"),
     source: text("source", { enum: jobSources }).notNull().default("pasted"),
     sourceUrl: text("source_url"),
+    jobSourceId: uuid("job_source_id"),
     rawDescription: text("raw_description").notNull(),
     availability: text("availability", { enum: jobAvailabilities }).notNull().default("active"),
     /** A company logo stored as a file under the artifact directory (docs/04); both or neither. */
@@ -35,6 +64,11 @@ export const jobs = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
+    foreignKey({
+      columns: [t.profileId, t.jobSourceId],
+      foreignColumns: [jobSourceOptions.profileId, jobSourceOptions.id],
+      name: "jobs_source_owner_fk",
+    }),
     unique("jobs_profile_id_id_unique").on(t.profileId, t.id),
     index("jobs_profile_id_updated_at_idx").on(t.profileId, t.updatedAt),
     notBlank(t.title.name),

@@ -32,3 +32,13 @@ export {
 } from "./rules";
 export { deleteJob, getJob, listJobs, saveJob, type JobsDeps, type LogoChange } from "./service";
 export type { JobRecord } from "./repository";
+
+export { createJobSourceInput, updateJobSourceInput, updateJobSourceLinkInput } from "./contracts";
+export {
+  listJobSources,
+  getJobSource,
+  createJobSource,
+  updateJobSource,
+  updateJobSourceLink,
+} from "./service";
+export type { JobSourceRecord } from "./repository";

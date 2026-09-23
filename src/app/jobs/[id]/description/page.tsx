@@ -1,3 +1,4 @@
+import { listJobSources } from "@/modules/jobs";
 import { notFound } from "next/navigation";
 import { deps, requireProfile } from "@/app/current-profile";
 import { Column } from "@/components/Column";
@@ -14,6 +15,7 @@ export default async function JobDescriptionPage({ params }: { params: Promise<{
   const profile = await requireProfile();
   const job = await getJob(deps(), profile.id, id);
   if (!job) notFound();
+  const sources = await listJobSources(deps(), profile.id);
   const skills = await listSkills(deps(), profile.id);
 
   return (
@@ -29,12 +31,14 @@ export default async function JobDescriptionPage({ params }: { params: Promise<{
         action={saveJobAction.bind(null, job.id)}
         submitLabel="Save changes"
         skills={skills}
+        sources={sources.map(({ id, name, archived }) => ({ id, name, archived }))}
         record={{
           title: job.title,
           companyName: job.companyName,
           location: job.location ?? "",
           salary: job.salary ?? "",
           sourceUrl: job.sourceUrl ?? "",
+          jobSourceId: job.jobSourceId ?? "",
           rawDescription: job.rawDescription,
           availability: job.availability,
           expectedUpdatedAt: job.updatedAt.toISOString(),

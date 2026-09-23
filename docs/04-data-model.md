@@ -143,6 +143,10 @@ Sources: [PostgreSQL constraints](https://www.postgresql.org/docs/current/ddl-co
 
 Achievement-derived skill connections and parent roles of linked projects are computed for browsing, never backfilled into direct link tables. Existing skills begin with empty direct lists; existing achievement links are preserved. Direct links currently support career browsing only: the document snapshot projection and grounding rules remain unchanged, so a context link alone does not become achievement evidence.
 
-## Writing context (feature branch, pending local acceptance)
+## Writing context (locally accepted, pending merge)
 
 Migration 0008 adds nullable `profiles.about_me` and `applications.interest`. Each is edited in place with a version-checked partial update. About me accepts up to 12,000 characters and Interest 4,000; blank text clears the value. Updating General info or application status preserves these fields. Frozen generation snapshots remain independent of live edits.
+
+## Job Sources (locally accepted, pending merge)
+
+Migration 0009 adds profile-owned job_sources with name, archived and version timestamps, plus nullable jobs.job_source_id and an owner-aware foreign key. New installations have no sources. Sources are archived rather than deleted so old assignments remain readable; new assignments require an active source. Posting URL and technical ingestion method remain separate.

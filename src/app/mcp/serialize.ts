@@ -51,6 +51,8 @@ export function jobDetail(
     location: job.location,
     salary: job.salary,
     source_url: job.sourceUrl,
+    job_source_id: job.jobSourceId,
+    updated_at: job.updatedAt.toISOString(),
     availability: job.availability,
     application: application
       ? {

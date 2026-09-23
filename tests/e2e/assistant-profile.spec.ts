@@ -24,7 +24,7 @@ test("assistant profile writes appear in Profile and stale edits are refused", a
     if (!current.profile)
       await call("create_profile", { profile_id: randomUUID(), display_name: "Alex Rivera" });
     const { tools } = await client.listTools();
-    expect(tools).toHaveLength(27);
+    expect(tools).toHaveLength(31);
     expect(tools.some((tool) => tool.name === "delete_profile")).toBe(false);
     const created = (
       await call("add_skill", {

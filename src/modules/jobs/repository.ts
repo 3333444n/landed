@@ -1,9 +1,9 @@
 /*
  * Drizzle queries for the jobs table over a database or transaction handle. No rules live here.
  */
-import { and, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq } from "drizzle-orm";
 import type { DbHandle } from "@/infrastructure/database";
-import { jobs } from "./schema";
+import { jobs, jobSourceOptions } from "./schema";
 
 export type JobRecord = typeof jobs.$inferSelect;
 
@@ -60,4 +60,45 @@ export async function deleteJob(db: DbHandle, profileId: string, id: string): Pr
     .where(and(eq(jobs.profileId, profileId), eq(jobs.id, id)))
     .returning({ id: jobs.id });
   return rows.length === 1;
+}
+
+export type JobSourceRecord = typeof jobSourceOptions.$inferSelect;
+export async function listJobSources(db: DbHandle, profileId: string) {
+  return db
+    .select()
+    .from(jobSourceOptions)
+    .where(eq(jobSourceOptions.profileId, profileId))
+    .orderBy(asc(jobSourceOptions.name));
+}
+export async function findJobSource(db: DbHandle, profileId: string, id: string) {
+  const rows = await db
+    .select()
+    .from(jobSourceOptions)
+    .where(and(eq(jobSourceOptions.profileId, profileId), eq(jobSourceOptions.id, id)))
+    .limit(1);
+  return rows[0] ?? null;
+}
+export async function insertJobSource(db: DbHandle, values: typeof jobSourceOptions.$inferInsert) {
+  const rows = await db.insert(jobSourceOptions).values(values).returning();
+  return rows[0]!;
+}
+export async function updateJobSource(
+  db: DbHandle,
+  profileId: string,
+  id: string,
+  version: Date,
+  values: Partial<typeof jobSourceOptions.$inferInsert>,
+) {
+  const rows = await db
+    .update(jobSourceOptions)
+    .set(values)
+    .where(
+      and(
+        eq(jobSourceOptions.profileId, profileId),
+        eq(jobSourceOptions.id, id),
+        eq(jobSourceOptions.updatedAt, version),
+      ),
+    )
+    .returning();
+  return rows[0] ?? null;
 }

@@ -96,3 +96,7 @@ Document approval is the existing revision review timestamp, presented as `Appro
 ## Personal writing context (feature branch)
 
 The Profile hub contains General info and About me. About me is a single optional narrative; a job's Interest column records why its role and company appeal to the user. Each saves only its own field, requires the current version and preserves text on validation errors. The About me MCP projection exposes its text and profile version; `update_profile` accepts `about_me`, where null clears. `update_job_interest` accepts `job_id`, `expected_updated_at` (the application's version from `get_job`) and nullable `interest`. These operations do not mark documents reviewed or an application submitted.
+
+## Manage Job Sources
+
+Settings → Job Sources supports add, rename, archive and restore. Job forms offer an optional Source selector and inline creation. Clearing saves an explicit empty selection; omitted fields preserve the current assignment. Archived sources remain visible on existing jobs. Version checks reject stale edits and retry ids make creates safe to repeat.
