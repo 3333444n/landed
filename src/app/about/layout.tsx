@@ -109,15 +109,11 @@ export default async function AboutLayout({ children }: { children: ReactNode })
 
   return (
     <>
-      <Column
-        icon={<UserRound />}
-        title="About me"
-        subtitle="Your career facts, in your own words."
-      >
-        <CardList label="About me">
+      <Column icon={<UserRound />} title="Profile" subtitle="Your career facts, in your own words.">
+        <CardList label="Profile">
           <li>
             <ExpandableCard
-              title="Profile"
+              title="General info"
               subtitle={profile.headline ?? "How you appear on a resume"}
               icon={<UserRound />}
               editHref="/about/profile"
@@ -162,6 +158,22 @@ export default async function AboutLayout({ children }: { children: ReactNode })
                   ["Constraints", profile.preferences.constraints],
                 ]}
               />
+            </ExpandableCard>
+          </li>
+          <li>
+            <ExpandableCard
+              title="About me"
+              subtitle="Your story, values, and motivation"
+              icon={<UserRound />}
+              editHref="/about/story"
+            >
+              <p>
+                {profile.aboutMe
+                  ? profile.aboutMe.length > 240
+                    ? `${profile.aboutMe.slice(0, 237)}…`
+                    : profile.aboutMe
+                  : "Nothing added yet."}
+              </p>
             </ExpandableCard>
           </li>
           {lists.map((section) => (

@@ -1,4 +1,4 @@
-import { Briefcase } from "lucide-react";
+import { Briefcase, Heart } from "lucide-react";
 import { Building2, FileText } from "lucide-react";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
@@ -103,6 +103,18 @@ export default async function JobLayout({
               icon={<Building2 />}
               title="Company"
               subtitle={job.companyName}
+            />
+          </li>
+          <li>
+            <Card
+              href={`/jobs/${job.id}/interest`}
+              icon={<Heart />}
+              title="Interest"
+              subtitle={
+                application?.interest
+                  ? application.interest.slice(0, 160)
+                  : "Why this role and company?"
+              }
             />
           </li>
           {views.map(({ type, view }) => {

@@ -21,7 +21,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
         count={achievements.length}
         subtitle="Factual statements, each backed by a source you can point to."
         parentHref="/about"
-        parentTitle="About me"
+        parentTitle="Profile"
       >
         <CareerList
           kind="achievements"

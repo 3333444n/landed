@@ -119,3 +119,10 @@ Implementation is merged into `main` in PR #34. `pnpm verify:full` passed on 202
 Accepted under [ADR 010](adr/010-career-browsing-and-skill-context.md): expandable cards with separate edit controls; nested About me previews with dedicated management pages retained; desired-role pills; direct many-to-many skill links to roles/projects with derived evidence associations; URL-based Skills/Achievements filters; circular PDF download controls, Evidence/Runs text links and yellow `Approve?` / green `Approved` controls. Migration 0007 adds skill context tables without rewriting career facts or generation snapshots. No provider, prompt or output-schema change is included.
 
 The implementation PRs #35–39 are merged into `main`; PR #40 consolidates documentation and adds the combined browser journey. `pnpm verify:full` passed: 150 unit tests, 81 integration tests, migration consistency, production build and 9 browser journeys. Browser checks use fictional data and the fake adapter. Existing release/platform gaps above remain; local acceptance does not establish packaged-install coverage.
+
+
+## Profile narratives and Interest (2026-09-23, feature branch pending merge)
+
+Rename the main About me hub to Profile and its existing Profile block to General info, retaining URLs. Add one optional About me narrative and per-application Interest, each with placeholder questions and persistent guidance, partial saves and required version checks. Migration 0008 adds the nullable fields without populating user data. Browser and MCP support read/write/clear; endpoint count is 27. This layer does not yet change generation snapshots or prompts. Integrated context work was locally accepted; this smaller rebased layer is verified separately before publication.
+
+Verification for this scoped layer (2026-09-23): `pnpm verify:full` passed with 150 unit tests, 84 integration tests, migration consistency, the production build and 10 browser journeys. The checks include narrative save/reload/clear in the browser, MCP round trips and stale application edits. Generation prompts are unchanged in this layer.

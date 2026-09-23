@@ -13,10 +13,10 @@ export default async function ProfilePage() {
   return (
     <Column
       icon={<UserRound />}
-      title="Profile"
+      title="General info"
       subtitle="How you appear on a resume."
       parentHref="/about"
-      parentTitle="About me"
+      parentTitle="Profile"
       width="detail"
     >
       <ProfileForm

@@ -54,14 +54,16 @@ test("browse nested facts, edit role pills, and filter direct and derived skill 
     });
 
     await page.goto("/about");
-    const hub = page.getByRole("list", { name: "About me", exact: true });
+    const hub = page.getByRole("list", { name: "Profile", exact: true });
     const profile = hub.locator(":scope > li").first();
     await profile.locator("summary").focus();
     await page.keyboard.press("Enter");
     await expect(profile.locator("details")).toHaveAttribute("open", "");
     await expect(profile.getByText("Name", { exact: true })).toBeVisible();
     await expect(hub.getByText(/^Manage /)).toHaveCount(0);
-    const work = hub.locator(":scope > li").nth(1);
+    const work = hub
+      .locator(":scope > li")
+      .filter({ has: page.getByRole("heading", { name: "Work history", exact: true }) });
     await work.locator("summary").first().click();
     await expect(profile.locator("details")).toHaveAttribute("open", "");
     const nestedRole = work
@@ -71,7 +73,7 @@ test("browse nested facts, edit role pills, and filter direct and derived skill 
     await nestedRole.locator("summary").click();
     await expect(nestedRole.getByText("Built accessible catalogues.")).toBeVisible();
     await expect(page).toHaveURL(/\/about$/);
-    await profile.getByRole("link", { name: "Edit Profile", exact: true }).click();
+    await profile.getByRole("link", { name: "Edit General info", exact: true }).click();
     await expect(page).toHaveURL(/\/about\/profile$/);
 
     const desired = page.getByLabel("Desired roles", { exact: true });
@@ -89,7 +91,7 @@ test("browse nested facts, edit role pills, and filter direct and derived skill 
     await desired.press("Enter");
     await page.getByRole("button", { name: "Remove Temporary role", exact: true }).click();
     await page.getByLabel("Your name", { exact: true }).fill("");
-    await page.getByRole("button", { name: "Save profile", exact: true }).click();
+    await page.getByRole("button", { name: "Save general info", exact: true }).click();
     await expect(page.getByLabel("Your name", { exact: true })).toHaveAttribute(
       "aria-invalid",
       "true",
@@ -102,7 +104,7 @@ test("browse nested facts, edit role pills, and filter direct and derived skill 
     ).toHaveCount(0);
     await page.getByLabel("Your name", { exact: true }).fill("Alex Rivera");
     await desired.fill("Draft role saved without Add");
-    await page.getByRole("button", { name: "Save profile", exact: true }).click();
+    await page.getByRole("button", { name: "Save general info", exact: true }).click();
     await expect(page.getByRole("status")).toHaveText("Saved");
     await page.reload();
     await expect(
@@ -251,8 +253,13 @@ test("browse nested facts, edit role pills, and filter direct and derived skill 
     // Small screens keep controls and nested cards inside the viewport in both themes.
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/about");
-    await hub.locator(":scope > li").nth(1).locator("summary").first().click();
-    await hub.locator(":scope > li").nth(4).locator("summary").first().click();
+    await work.locator("summary").first().click();
+    await hub
+      .locator(":scope > li")
+      .filter({ has: page.getByRole("heading", { name: "Skills", exact: true }) })
+      .locator("summary")
+      .first()
+      .click();
     await expect(
       work.getByRole("heading", { name: "UI verification role", exact: true }),
     ).toBeVisible();

@@ -25,7 +25,7 @@ export default async function ProjectsLayout({ children }: { children: ReactNode
         count={projects.length}
         subtitle="Distinct bodies of work, inside a role or on your own."
         parentHref="/about"
-        parentTitle="About me"
+        parentTitle="Profile"
         toolbar={<Toolbar right={<AddLink href="/about/projects/new" label="Add project" />} />}
       >
         {projects.length === 0 ? (

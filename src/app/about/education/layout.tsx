@@ -22,7 +22,7 @@ export default async function EducationLayout({ children }: { children: ReactNod
         count={records.length}
         subtitle="Programmes and qualifications, finished or not."
         parentHref="/about"
-        parentTitle="About me"
+        parentTitle="Profile"
         toolbar={<Toolbar right={<AddLink href="/about/education/new" label="Add education" />} />}
       >
         {records.length === 0 ? (

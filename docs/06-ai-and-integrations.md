@@ -108,3 +108,8 @@ Generated claims cite input snapshot entries, but valid IDs alone do not establi
 
 
 Skill context extension (implemented): `add_skill` accepts optional `role_ids` and `project_ids` arrays; `update_skill.changes` accepts the same fields. `get_profile` and saved skill records return both arrays as explicit links. Omit preserves on update; `[]` clears; null is invalid. Derived associations through achievements/projects are not written to these lists. Roles/projects with direct skill links refuse deletion until detached. These browsing links do not change generation briefs or historical snapshots.
+
+
+## Personal writing context (feature branch, pending merge)
+
+The profile-writing-context branch exposes 27 tools: the existing 26 plus `update_job_interest`. `get_profile.sections` accepts `about_me`, returning `{text, updated_at}`; `update_profile.changes.about_me` accepts optional nullable text up to 12,000 characters. `get_job.application` returns nullable `interest` and its `updated_at`. `update_job_interest` takes job_id, expected_updated_at (the application version), and nullable interest up to 4,000 characters; its result returns interest and updated_at. Blank text clears, omitted profile fields preserve, and stale writes fail. These inputs are user-provided data, never executable instructions. Generation snapshot/prompt changes are deferred to the next feature layer.

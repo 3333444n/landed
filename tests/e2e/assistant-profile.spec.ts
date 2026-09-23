@@ -3,9 +3,7 @@ import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/cli
 import { expect, test } from "@playwright/test";
 
 // Playwright owns port 3417 and landed_test. Verify the server before using mutation tools.
-test("assistant profile writes appear in About me and stale edits are refused", async ({
-  page,
-}) => {
+test("assistant profile writes appear in Profile and stale edits are refused", async ({ page }) => {
   await page.goto("/settings/model");
   await expect(page.getByRole("heading", { name: "Test double", exact: true })).toBeVisible();
   const client = new Client({ name: "profile-browser-test", version: "1" });
@@ -26,7 +24,7 @@ test("assistant profile writes appear in About me and stale edits are refused", 
     if (!current.profile)
       await call("create_profile", { profile_id: randomUUID(), display_name: "Alex Rivera" });
     const { tools } = await client.listTools();
-    expect(tools).toHaveLength(26);
+    expect(tools).toHaveLength(27);
     expect(tools.some((tool) => tool.name === "delete_profile")).toBe(false);
     const created = (
       await call("add_skill", {

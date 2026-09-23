@@ -1,0 +1,35 @@
+import { expect, test } from "@playwright/test";
+
+test("About me and Interest save and clear", async ({ page }) => {
+  await page.goto("/about/story");
+  const story = page.getByLabel("Your story", { exact: true });
+  await story.fill("I enjoy making complicated workflows understandable.");
+  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(page.getByRole("status")).toHaveText("Saved");
+  await page.reload();
+  await expect(story).toHaveValue("I enjoy making complicated workflows understandable.");
+  await story.fill("");
+  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(page.getByRole("status")).toHaveText("Saved");
+  await page.reload();
+  await expect(story).toHaveValue("");
+  await page.goto("/jobs/new");
+  await page.getByLabel("Title", { exact: true }).fill("Workflow developer");
+  await page.getByLabel("Company", { exact: true }).fill("Example Systems");
+  await page.getByLabel("Description", { exact: true }).fill("Build understandable workflows.");
+  await page.getByRole("button", { name: "Save job", exact: true }).click();
+  await expect(page).toHaveURL(/\/jobs\/[0-9a-f-]+$/);
+  const jobUrl = page.url();
+  await page.goto(`${jobUrl}/interest`);
+  const interest = page.getByLabel("Why this role and company?", { exact: true });
+  await interest.fill("Their workflow tools connect with my reporting experience.");
+  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(page.getByRole("status")).toHaveText("Saved");
+  await page.reload();
+  await expect(interest).toHaveValue("Their workflow tools connect with my reporting experience.");
+  await interest.fill("");
+  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(page.getByRole("status")).toHaveText("Saved");
+  await page.reload();
+  await expect(interest).toHaveValue("");
+});

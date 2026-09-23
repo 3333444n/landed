@@ -92,3 +92,7 @@ Skill forms edit direct role and project lists with searchable multiselects. Cha
 
 
 Document approval is the existing revision review timestamp, presented as `Approve?` before review and `Approved` afterwards. The approved control can remove approval. Saving an inline edit or generating another revision returns that new revision to unapproved; downloading never approves or submits. Resume and Cover letter download from the circular header action. Evidence and Runs remain separate URL-driven columns, linked under the generation summary.
+
+## Personal writing context (feature branch)
+
+The Profile hub contains General info and About me. About me is a single optional narrative; a job's Interest column records why its role and company appeal to the user. Each saves only its own field, requires the current version and preserves text on validation errors. The About me MCP projection exposes its text and profile version; `update_profile` accepts `about_me`, where null clears. `update_job_interest` accepts `job_id`, `expected_updated_at` (the application's version from `get_job`) and nullable `interest`. These operations do not mark documents reviewed or an application submitted.
