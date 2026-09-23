@@ -123,7 +123,7 @@ The implementation PRs #35–39 are merged into `main`; PR #40 consolidates docu
 
 ## Profile narratives and Interest (2026-09-23, feature branch pending merge)
 
-Rename the main About me hub to Profile and its existing Profile block to General info, retaining URLs. Add one optional About me narrative and per-application Interest, each with placeholder questions and persistent guidance, partial saves and required version checks. Migration 0008 adds the nullable fields without populating user data. Browser and MCP support read/write/clear; endpoint count is 27. This layer does not yet change generation snapshots or prompts. Integrated context work was locally accepted; this smaller rebased layer is verified separately before publication.
+Rename the main About me hub to Profile and its existing Profile block to General info, retaining URLs. Add one optional About me narrative and per-application Interest, each with placeholder questions and persistent guidance, partial saves and required version checks. Migration 0008 adds the nullable fields without populating user data. Browser and MCP support read/write/clear; endpoint count is 27. This original Profile layer did not change generation snapshots or prompts; the later generation layer below adds that behavior. Integrated context work was locally accepted; this smaller rebased layer is verified separately before publication.
 
 Verification for this scoped layer (2026-09-23): `pnpm verify:full` passed with 150 unit tests, 84 integration tests, migration consistency, the production build and 10 browser journeys. The checks include narrative save/reload/clear in the browser, MCP round trips and stale application edits. Generation prompts are unchanged in this layer.
 
@@ -136,7 +136,7 @@ Settings → Job Sources manages a customizable list that starts empty. Jobs use
 
 ## Shared Companies and findings (2026-09-23, feature branch pending merge)
 
-Companies stores Name, Location, Website and About alongside individual findings with text, source URL, retrieval date and statement/interpretation kind. Jobs can link or create a shared company, retain their existing posting-company text and logos, and select up to five findings in Interest. Existing jobs remain unlinked until explicitly linked. Company changes clear incompatible selections; finding deletion removes live selections, and referenced companies cannot be deleted. Browser and MCP expose version-checked operations with retry IDs for creates; the endpoint now has 42 tools. Migration 0010 adds company records, findings and job links. Generation integration is a subsequent layer.
+Companies stores Name, Location, Website and About alongside individual findings with text, source URL, retrieval date and statement/interpretation kind. Jobs can link or create a shared company, retain their existing posting-company text and logos, and select up to five findings in Interest. Existing jobs remain unlinked until explicitly linked. Company changes clear incompatible selections; finding deletion removes live selections, and referenced companies cannot be deleted. Browser and MCP expose version-checked operations with retry IDs for creates; the endpoint now has 42 tools. Migration 0010 adds company records, findings and job links. Generation integration is recorded in the following section.
 
 `pnpm verify:full` passed on this scoped layer: 153 unit tests, 95 integration tests, migration consistency, the production build and 12 browser journeys. Checks cover ownership, stale writes, protected deletion, selection limits, finding deletion/selection concurrency, MCP parity and browser findings selection. Tests use fictional data and the fake provider; generation prompts are unchanged.
 ## Short cover-letter validation
@@ -161,3 +161,5 @@ Final synthetic `pnpm eval`: OpenRouter / `google/gemini-3.1-flash-lite`, nine s
 
 An earlier evaluation of this prompt iteration returned one fit-letter schema validation failure; a targeted repeat and the final full run passed. Provider output is nondeterministic. Saved drafts still need review for semantic attribution, tone and brevity; zero grounding warnings do not prove every claim is supported. `EVAL_REPORT_PATH` optionally saves the synthetic evaluation report and generated letter PDFs for inspection.
 
+
+Rebased generation verification (2026-09-23): the full verification steps (`pnpm verify`, `pnpm build`, `CI=true pnpm test:e2e`) passed with 159 unit tests, 99 integration tests, migration consistency and 12 browser journeys. Prompt, document schema and provider code match the evaluated version above; no provider behavior was changed by the split.

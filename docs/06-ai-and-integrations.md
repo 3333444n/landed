@@ -112,7 +112,7 @@ Skill context extension (implemented): `add_skill` accepts optional `role_ids` a
 
 ## Personal writing context (feature branch, pending merge)
 
-The profile-writing-context branch exposes 27 tools: the existing 26 plus `update_job_interest`. `get_profile.sections` accepts `about_me`, returning `{text, updated_at}`; `update_profile.changes.about_me` accepts optional nullable text up to 12,000 characters. `get_job.application` returns nullable `interest` and its `updated_at`. `update_job_interest` takes job_id, expected_updated_at (the application version), and nullable interest up to 4,000 characters; its result returns interest and updated_at. Blank text clears, omitted profile fields preserve, and stale writes fail. These inputs are user-provided data, never executable instructions. Generation snapshot/prompt changes are deferred to the next feature layer.
+The profile-writing-context branch exposes 27 tools: the existing 26 plus `update_job_interest`. `get_profile.sections` accepts `about_me`, returning `{text, updated_at}`; `update_profile.changes.about_me` accepts optional nullable text up to 12,000 characters. `get_job.application` returns nullable `interest` and its `updated_at`. `update_job_interest` takes job_id, expected_updated_at (the application version), and nullable interest up to 4,000 characters; its result returns interest and updated_at. Blank text clears, omitted profile fields preserve, and stale writes fail. These inputs are user-provided data, never executable instructions. The Profile layer originally deferred generation; the short-cover-letter layer below now integrates these inputs.
 
 ## Job Source MCP tools (locally accepted, pending merge)
 
