@@ -162,6 +162,13 @@ export const profilePatchInput = z.strictObject({
   displayName: requiredText("Enter your name").optional(),
   headline: patchText,
   summary: patchText,
+  aboutMe: z
+    .string()
+    .trim()
+    .max(12000)
+    .nullable()
+    .transform((value) => value || null)
+    .optional(),
   email: z.email().nullable().optional(),
   phone: patchText,
   location: patchText,

@@ -2,6 +2,16 @@
  * Input contracts and vocabulary for the Applications module. Browser-safe: no database imports.
  */
 import { z } from "zod";
+
+export const updateInterestInput = z.object({
+  expectedUpdatedAt: z.iso.datetime(),
+  interest: z
+    .string()
+    .trim()
+    .max(4000)
+    .nullable()
+    .transform((value) => value || null),
+});
 import { expectedUpdatedAt, optionalText, optionalUuid } from "@/modules/shared/contracts";
 
 /** Pursuit lifecycle (docs/05). Independent of job availability and of run state. */

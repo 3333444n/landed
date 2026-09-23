@@ -9,7 +9,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import styles from "./SidebarNav.module.css";
 
 const items = [
-  { href: "/about", label: "About me", icon: UserRound },
+  { href: "/about", label: "Profile", icon: UserRound },
   { href: "/jobs", label: "Jobs", icon: Briefcase },
   { href: "/settings", label: "Settings", icon: Settings },
 ];

@@ -53,7 +53,7 @@ export function ProfileForm({
           </span>
         ) : null}
         <Button type="submit" disabled={pending}>
-          {pending ? "Saving" : "Save profile"}
+          {pending ? "Saving" : "Save general info"}
         </Button>
       </div>
     </form>

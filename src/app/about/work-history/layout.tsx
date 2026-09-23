@@ -22,7 +22,7 @@ export default async function WorkHistoryLayout({ children }: { children: ReactN
         count={roles.length}
         subtitle="Roles you have held, in your own words."
         parentHref="/about"
-        parentTitle="About me"
+        parentTitle="Profile"
         toolbar={<Toolbar right={<AddLink href="/about/work-history/new" label="Add role" />} />}
       >
         {roles.length === 0 ? (

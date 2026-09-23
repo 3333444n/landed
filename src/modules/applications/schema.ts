@@ -20,6 +20,7 @@ export const applications = pgTable(
     jobId: uuid("job_id").notNull(),
     status: text("status", { enum: applicationStatuses }).notNull().default("preparing"),
     notes: text("notes"),
+    interest: text("interest"),
     submittedAt: timestamp("submitted_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

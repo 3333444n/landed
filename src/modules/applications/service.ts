@@ -14,7 +14,7 @@ import {
   validation,
   type BaseDeps,
 } from "@/modules/shared/service";
-import { createApplicationInput, updateApplicationInput } from "./contracts";
+import { createApplicationInput, updateApplicationInput, updateInterestInput } from "./contracts";
 import * as repo from "./repository";
 import { submittedAtAfter } from "./rules";
 
@@ -97,6 +97,36 @@ export async function updateApplication(
           updatedAt: at,
         },
         expected(input.expectedUpdatedAt),
+      );
+      return updated ? { ok: true as const, value: updated } : stale();
+    });
+  } catch (error) {
+    return mapDatabaseError(error, async () => null);
+  }
+}
+
+/** Change only the user's reason for pursuing this application. */
+export async function updateInterest(
+  deps: ApplicationsDeps,
+  profileId: string,
+  id: string,
+  rawInput: unknown,
+): Promise<Result<repo.ApplicationRecord>> {
+  const parsed = updateInterestInput.safeParse(rawInput);
+  if (!parsed.success) return validation(fieldErrorsFromZod(parsed.error));
+  try {
+    return await deps.db.transaction(async (tx) => {
+      const current = await repo.findApplication(tx, profileId, id);
+      if (!current) return notFound("Application");
+      const updated = await repo.updateApplication(
+        tx,
+        profileId,
+        id,
+        {
+          interest: parsed.data.interest,
+          updatedAt: new Date(Math.max(now(deps).getTime(), current.updatedAt.getTime() + 1)),
+        },
+        new Date(parsed.data.expectedUpdatedAt),
       );
       return updated ? { ok: true as const, value: updated } : stale();
     });

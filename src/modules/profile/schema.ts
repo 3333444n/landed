@@ -82,6 +82,7 @@ export const profiles = pgTable(
     displayName: text("display_name").notNull(),
     headline: text("headline"),
     summary: text("summary"),
+    aboutMe: text("about_me"),
     email: text("email"),
     phone: text("phone"),
     location: text("location"),

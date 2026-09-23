@@ -57,6 +57,13 @@
       "when": 1789851271986,
       "tag": "0007_skill_contexts",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790196138912,
+      "tag": "0008_rapid_captain_cross",
+      "breakpoints": true
     }
   ]
 }

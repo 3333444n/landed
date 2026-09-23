@@ -52,7 +52,14 @@ export function jobDetail(
     salary: job.salary,
     source_url: job.sourceUrl,
     availability: job.availability,
-    application: application ? { status: application.status, notes: application.notes } : null,
+    application: application
+      ? {
+          status: application.status,
+          notes: application.notes,
+          interest: application.interest,
+          updated_at: application.updatedAt.toISOString(),
+        }
+      : null,
     documents: {
       resume: documentSummary(views.resume),
       cover_letter: documentSummary(views.cover_letter),
