@@ -1,8 +1,8 @@
 # 08 — Contributions and living documentation
 
-Status: CI, commit conventions, PR template, the skill sync check and SECURITY in place; the packaged installation is built from the checkout, no tagged release yet. Updated 2026-09-20.
+Status: CI, commit conventions, PR template, the skill sync check and SECURITY in place; the packaged installation is built from the checkout, no tagged release yet. Updated 2026-09-23.
 
-Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is merged. The locally accepted ADR 011 context and canonical-company extensions are pending merge. See [current verification](09-decisions-and-readiness.md#profile-management-over-mcp-merged).
+Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is merged. The ADR 011 writing-context and canonical-company extensions are implemented and merged in PRs #43–47 (2026-09-23). See [current verification](09-decisions-and-readiness.md#smaller-pr-stack-verification-2026-09-23).
 
 ## Small public-repository baseline
 

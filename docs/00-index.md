@@ -2,7 +2,7 @@
 
 Status: Phase 0 complete (career data entry, packaged Docker installation, column interface since 2026-09-14); Phase 1a complete (manual jobs and application tracking, 2026-09-14); Phase 1b complete (generated materials, review, PDFs, model access, 2026-09-14); Phase 1c additions to the paste flow complete (salary, company logo, word cloud, 2026-09-14); the assistant surface over MCP complete ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16); Phases 2 to 4 are design. Updated 2026-09-23.
 
-Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is merged. The locally accepted ADR 011 context and canonical-company extensions are pending merge. See [current verification](09-decisions-and-readiness.md#profile-management-over-mcp-merged).
+Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is merged. The ADR 011 writing-context and canonical-company extensions are implemented and merged in PRs #43–47 (2026-09-23). See [current verification](09-decisions-and-readiness.md#smaller-pr-stack-verification-2026-09-23).
 
 Numbers establish reading order, not software release versions. Accepted choices are distinguished from proposals, and each document says which parts are implemented; a diagram describes the intended structure, and its labels say which phase each part belongs to.
 
@@ -10,10 +10,10 @@ Numbers establish reading order, not software release versions. Accepted choices
 |---|---|---|
 | [01 — Product and phases](01-product-and-phases.md) | What can users accomplish, and when? | Phases 0, 1a, 1b, the 1c additions and the assistant surface complete; Phases 2 to 4 proposed |
 | [02 — Domain model](02-domain-model.md) | What do the product's concepts mean? | Vocabulary through the assistant surface in use; Phase 2 to 4 concepts proposed |
-| [03 — System and modules](03-system-and-modules.md) | Where does code run, and who owns behavior? | Profile, Jobs and Applications modules, column interface and packaged runtime implemented; Documents module, model adapter and PDF rendering implemented; the `/mcp` endpoint and the host guard implemented |
+| [03 — System and modules](03-system-and-modules.md) | Where does code run, and who owns behavior? | Profile, Companies, Jobs and Applications modules, column interface and packaged runtime implemented; Documents module, model adapter and PDF rendering implemented; the `/mcp` endpoint and the host guard implemented |
 | [04 — Data model](04-data-model.md) | How does PostgreSQL represent those concepts? | Phase 0, 1a, 1b and 1c schemas migrated (0000 to 0006) |
 | [05 — Workflows and failures](05-workflows-and-failures.md) | What happens on success, failure, and retry? | Phases 0, 1a and 1b and the assistant run lifecycle implemented; Phase 2 and 3 workflows proposed |
-| [06 — AI and integrations](06-ai-and-integrations.md) | How do models, harnesses, RAG, and agents fit? | Model access path implemented (ADR 006); OpenRouter run through the evaluation set; eight original tools implemented (ADR 008), 18 merged profile tools (ADR 009), and locally accepted context/company extensions (42 tools total), pending merge; later integrations proposed |
+| [06 — AI and integrations](06-ai-and-integrations.md) | How do models, harnesses, RAG, and agents fit? | Model access path implemented (ADR 006); OpenRouter run through the evaluation set; eight original tools implemented (ADR 008), 18 merged profile tools (ADR 009), and merged context/company extensions (42 tools total); later integrations proposed |
 | [07 — Quickstart](07-quickstart-contract.md) | How do you run it, and what does the packaged install guarantee? | Both paths tested on macOS; the assistant path tested from Claude Code on a contributor install, not yet in Docker; Windows and Linux untested |
 | [08 — Contributions and documentation](08-contributions-and-documentation.md) | How do changes stay understandable and documented? | CI, conventions, the skill sync check and SECURITY in place |
 | [09 — Decisions and readiness](09-decisions-and-readiness.md) | What is accepted, open, or deferred? | Current decision register |
@@ -33,7 +33,7 @@ Numbers establish reading order, not software release versions. Accepted choices
 | [009 — Profile management over MCP](adr/009-profile-management-over-mcp.md) | Profile creation and partial updates; individual career-record CRUD with retry ids and version checks | Implemented and merged into `main` |
 | [010 — Career browsing and skill context](adr/010-career-browsing-and-skill-context.md) | Expandable records, direct skill associations and derived context filters | Accepted, implementation merged (PRs #35–39) |
 
-| [011 — Writing context, Companies and Job Sources](adr/011-writing-company-context-and-job-sources.md) | Profile narratives, application Interest, shared company context and logos, configurable sources and grounded short cover letters | Locally accepted, pending merge |
+| [011 — Writing context, Companies and Job Sources](adr/011-writing-company-context-and-job-sources.md) | Profile narratives, application Interest, shared company context and logos, configurable sources and grounded short cover letters | Implemented and merged, 2026-09-23 |
 
 ## Architecture diagrams
 
@@ -60,4 +60,4 @@ Implementation, `pnpm verify:full`, local assistant acceptance and merge are com
 
 ## Writing context and company research
 
-[ADR 011](adr/011-writing-company-context-and-job-sources.md) adds Profile narratives, application Interest, shared Companies and sourced findings, customizable Job Sources and shorter cover letters with separate context citations. Implemented on local feature branches; local acceptance is complete; merge remains pending. See doc 09 for actual validation results.
+[ADR 011](adr/011-writing-company-context-and-job-sources.md) adds Profile narratives, application Interest, shared Companies and sourced findings, customizable Job Sources and shorter cover letters with separate context citations. Implemented and merged in PRs #43–47 on 2026-09-23. See doc 09 for actual validation results.

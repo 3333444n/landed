@@ -1,6 +1,6 @@
 # 04 — PostgreSQL data model
 
-Status: Phase 0 tables implemented in `db/migrations/0000_phase0_profile_tables.sql`; Phase 1a tables in `db/migrations/0001_phase1a_jobs_and_applications.sql`; Phase 1b tables in `db/migrations/0002_phase1b_documents_and_profile_links.sql`; the job salary column in `db/migrations/0003_phase1c_job_salary.sql`; the job logo columns in `db/migrations/0004_phase1c_job_logo.sql`; the employment location in `db/migrations/0005_phase1c_employment_location.sql`; the `assistant` run mode and revision source in `db/migrations/0006_phase1c_assistant_run_mode.sql`. Updated 2026-09-23. Migration 0007 (direct skill contexts) is merged; locally accepted migrations 0008–0011 add writing context, sources, companies/findings and canonical company identity, pending merge.
+Status: Phase 0 tables implemented in `db/migrations/0000_phase0_profile_tables.sql`; Phase 1a tables in `db/migrations/0001_phase1a_jobs_and_applications.sql`; Phase 1b tables in `db/migrations/0002_phase1b_documents_and_profile_links.sql`; the job salary column in `db/migrations/0003_phase1c_job_salary.sql`; the job logo columns in `db/migrations/0004_phase1c_job_logo.sql`; the employment location in `db/migrations/0005_phase1c_employment_location.sql`; the `assistant` run mode and revision source in `db/migrations/0006_phase1c_assistant_run_mode.sql`. Updated 2026-09-23. Migration 0007 (direct skill contexts) is merged; merged migrations 0008–0011 add writing context, sources, companies/findings and canonical company identity.
 
 An Entity–Relationship (ER) diagram describes entities and their relationships. A logical relational ER model adds keys, attributes, and cardinality; a physical schema adds database-specific types, constraints, and indexes. The domain model explains what a Loan means; the ER model shows how `loans.copy_id` references `copies.id`.
 
@@ -143,12 +143,12 @@ Sources: [PostgreSQL constraints](https://www.postgresql.org/docs/current/ddl-co
 
 Achievement-derived skill connections and parent roles of linked projects are computed for browsing, never backfilled into direct link tables. Existing skills begin with empty direct lists; existing achievement links are preserved. Direct links currently support career browsing only: the document snapshot projection and grounding rules remain unchanged, so a context link alone does not become achievement evidence.
 
-## Writing context (feature branch, locally accepted, pending merge)
+## Writing context (implemented and merged)
 
 Migration 0008 adds nullable `profiles.about_me` and `applications.interest`. Each is edited in place with a version-checked partial update. About me accepts up to 12,000 characters and Interest 4,000; blank text clears the value. Updating General info or application status preserves these fields. Frozen generation snapshots remain independent of live edits.
 
 
-## Companies, findings and Job Sources (local implementation, locally accepted, pending merge)
+## Companies, findings and Job Sources (implemented and merged)
 
 | Table / field | Content and relationships |
 |---|---|

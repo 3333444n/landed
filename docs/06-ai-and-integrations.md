@@ -2,7 +2,7 @@
 
 Status: model access path implemented in Phase 1b ([ADR 006](adr/006-model-access-path.md)); the guarded outbound fetch exists for a company's logo address ([ADR 007](adr/007-user-initiated-image-fetch.md), 2026-09-14); the evaluation set has been run against OpenRouter (see "Providers run through the evaluation set"); the assistant surface over MCP is implemented ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16; see "Your own assistant over MCP"); agentic research, discovery and retrieval remain future design. Updated 2026-09-23.
 
-Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is merged. The locally accepted ADR 011 context and canonical-company extensions are pending merge. See [current verification](09-decisions-and-readiness.md#profile-management-over-mcp-merged).
+Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is merged. The ADR 011 writing-context and canonical-company extensions are implemented and merged in PRs #43–47 (2026-09-23). See [current verification](09-decisions-and-readiness.md#smaller-pr-stack-verification-2026-09-23).
 
 ## Distinguish the moving parts
 
@@ -110,9 +110,9 @@ Generated claims cite input snapshot entries, but valid IDs alone do not establi
 Skill context extension (merged): `add_skill` accepts optional `role_ids` and `project_ids` arrays; `update_skill.changes` accepts the same fields. `get_profile` and saved skill records return both arrays as explicit links. Omit preserves on update; `[]` clears; null is invalid. Derived associations through achievements/projects are not written to these lists. Roles/projects with direct skill links refuse deletion until detached. These browsing links do not change generation briefs or historical snapshots.
 
 
-## Writing context, company and source tools (ADR 011, local feature branch)
+## Writing context, company and source tools (ADR 011, implemented)
 
-The local feature branch has **42 tools**: the original eight, 18 profile tools, one Interest tool, four Job Source tools and 11 company/context tools. This extension is implemented locally and locally accepted, pending merge; historical verification counts above describe their original milestones.
+The endpoint has **42 tools**: the original eight, 18 profile tools, one Interest tool, four Job Source tools and 11 company/context tools. This extension is implemented and merged; historical verification counts above describe their original milestones.
 
 | Tool | Input / behavior |
 |---|---|
