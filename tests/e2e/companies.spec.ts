@@ -31,6 +31,16 @@ test("companies retain sourced findings and can be selected for a job", async ({
   await page.getByLabel("Description", { exact: true }).fill("Build public tools for developers.");
   await page.getByRole("button", { name: "Save job" }).click();
   await expect(page).toHaveURL(/\/jobs\/[0-9a-f-]+$/);
+  const jobUrl = page.url();
+  await page.goto(`${jobUrl}/interest`);
+  await page.getByRole("combobox", { name: "Company findings" }).fill("Released");
+  await page.getByRole("option", { name: "Released a public tool in 2026.", exact: true }).click();
+  await page.getByRole("button", { name: "Save findings", exact: true }).click();
+  await page.reload();
+  await expect(
+    page.getByRole("button", { name: "Remove Released a public tool in 2026." }),
+  ).toBeVisible();
+  await page.goto(jobUrl);
   await page
     .getByRole("list", { name: "Materials" })
     .getByRole("link")

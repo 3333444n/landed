@@ -225,6 +225,7 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
             path: u.path,
             text: u.text,
             evidence_ids: u.evidenceIds,
+            ...(u.contextIds ? { context_ids: u.contextIds } : {}),
           })),
         });
       }

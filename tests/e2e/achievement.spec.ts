@@ -19,13 +19,13 @@ test("a new installation creates a profile and saves an achievement that survive
   await page.getByRole("button", { name: "Create profile" }).click();
   await expect(page.getByRole("heading", { name: demo.displayName })).toBeVisible();
 
-  // Sidebar → About me hub → Achievements list → the add control opens a blank form column.
+  // Sidebar → Profile hub → Achievements list → the add control opens a blank form column.
   await page
     .getByRole("navigation", { name: "Main" })
-    .getByRole("link", { name: "About me" })
+    .getByRole("link", { name: "Profile" })
     .click();
   await page
-    .getByRole("list", { name: "About me" })
+    .getByRole("list", { name: "Profile" })
     .getByRole("link", { name: "Manage achievements", exact: true })
     .first()
     .click();

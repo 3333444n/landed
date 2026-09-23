@@ -227,17 +227,27 @@ export function registerCompanyTools(server: McpServer, ctx: ToolContext) {
         }),
       ),
   );
+  const jobResult = async (r: Awaited<ReturnType<typeof updateJobCompany>>, p: string) =>
+    r.ok
+      ? json({
+          job_id: r.value.id,
+          company_id: r.value.companyId,
+          updated_at: r.value.updatedAt.toISOString(),
+          selected_finding_ids: await getSelectedFindingIds(ctx.deps, p, r.value.id),
+        })
+      : failure(errorText(r.error));
   register(
     "link_job_company",
     "Link or clear a job's company. Changing it clears selected findings; posting company text is preserved.",
     { job_id: z.uuid(), company_id: z.uuid().nullable(), expected_updated_at: version },
     false,
     async (a, p) =>
-      result(
+      jobResult(
         await updateJobCompany(ctx.deps, p, a.job_id, {
           companyId: a.company_id,
           expectedUpdatedAt: a.expected_updated_at,
         }),
+        p,
       ),
   );
   register(
@@ -264,11 +274,12 @@ export function registerCompanyTools(server: McpServer, ctx: ToolContext) {
     { job_id: z.uuid(), finding_ids: z.array(z.uuid()).max(5), expected_updated_at: version },
     false,
     async (a, p) =>
-      result(
+      jobResult(
         await setJobFindingSelection(ctx.deps, p, a.job_id, {
           findingIds: a.finding_ids,
           expectedUpdatedAt: a.expected_updated_at,
         }),
+        p,
       ),
   );
 }

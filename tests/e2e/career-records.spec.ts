@@ -25,7 +25,7 @@ test("profile, role, project, skill and a linked achievement survive a reload", 
   await page.getByLabel("Headline").fill("Software developer");
   await page.getByLabel("Email").fill("alex@example.com");
   await page.getByLabel("Remote").check();
-  await page.getByRole("button", { name: "Save profile" }).click();
+  await page.getByRole("button", { name: "Save general info" }).click();
   await expect(page.getByRole("status")).toHaveText("Saved");
   await page.reload();
   await expect(page.getByLabel("Headline")).toHaveValue("Software developer");
