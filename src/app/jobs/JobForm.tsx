@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useDeferredValue, useMemo, useState } from "react";
+import { SourcePicker, type SourceOption } from "./SourcePicker";
 import { Button } from "@/components/Button";
 import { Field } from "@/components/Field";
 import { Select } from "@/components/Select";
@@ -24,14 +25,17 @@ export function JobForm({
   record,
   submitLabel,
   skills,
+  sources = [],
 }: {
   action: (state: ActionState, formData: FormData) => Promise<ActionState>;
   record?: FormValues;
   submitLabel: string;
   /** The profile's skills as plain data, so the live word cloud can tint its matches. */
   skills: SkillLike[];
+  sources?: SourceOption[];
 }) {
   const [state, formAction, pending] = useActionState(action, idleState);
+  const [sourceId, setSourceId] = useState(record?.jobSourceId ?? "");
   const errors = state.status === "error" ? state.fieldErrors : {};
   const values = prefill(state, record ?? {});
 
@@ -43,6 +47,12 @@ export function JobForm({
         errors={errors}
         editing={!!record}
         skills={skills}
+      />
+      <SourcePicker
+        sources={sources}
+        value={sourceId}
+        onChange={setSourceId}
+        errors={errors.jobSourceId}
       />
       {errors.logoFile || errors.logoUrl ? (
         <p className={`${formStyles.status} ${formStyles.failed}`} role="alert">

@@ -105,6 +105,7 @@ const sources = (): SnapshotSources => ({
     logoContentType: null,
     source: "pasted",
     sourceUrl: null,
+    jobSourceId: null,
     rawDescription: "Build internal reporting tools.",
     availability: "active",
     ...stamps,
