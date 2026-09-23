@@ -150,3 +150,7 @@ Migration 0008 adds nullable `profiles.about_me` and `applications.interest`. Ea
 ## Job Sources (locally accepted, pending merge)
 
 Migration 0009 adds profile-owned job_sources with name, archived and version timestamps, plus nullable jobs.job_source_id and an owner-aware foreign key. New installations have no sources. Sources are archived rather than deleted so old assignments remain readable; new assignments require an active source. Posting URL and technical ingestion method remain separate.
+
+## Companies and selected findings (locally accepted, pending merge)
+
+Migration 0010 adds profile-owned companies (name, location, website, about), company_findings (text, source URL, retrieval date, statement/interpretation kind), nullable jobs.company_id and the job_finding_selections join table. Ownership uses composite foreign keys. Existing jobs retain their company text and stay unlinked at this layer. Company deletion is refused while referenced; finding deletion clears live selections and advances affected job versions. Historical snapshots are unchanged.

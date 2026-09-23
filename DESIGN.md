@@ -223,3 +223,7 @@ Eyebrow labels. Monospace anything except a preformatted command block in a read
 ## Job Source controls
 
 Job forms reuse the searchable Combobox for Source and allow inline source creation. Settings → Job Sources uses the existing list/detail columns and forms; archive/restore preserves existing assignments. The default list is empty.
+
+## Company context columns
+
+Companies uses the existing list/detail column pattern. Name, Location, Website and About use standard fields; Findings uses a compact table with text, source, retrieval date and kind. The job Company selector allows inline creation. Interest uses the shared multiple Combobox for up to five findings, saved separately from its narrative so each operation uses the appropriate version.
