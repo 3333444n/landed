@@ -1,3 +1,4 @@
+import { getJob } from "@/app/jobs/company-job";
 /*
  * Composition boundary (docs/03) for Phase 1b: reads the profile, the job and its application
  * through their public surfaces, freezes the snapshot, and hands it with the adapter's answer
@@ -19,7 +20,7 @@ import {
   type Snapshot,
 } from "@/modules/documents";
 import { getCompany, listCompanyFindings } from "@/modules/companies";
-import { getJob, getSelectedFindingIds } from "@/modules/jobs";
+import { getSelectedFindingIds } from "@/modules/jobs";
 import {
   listAchievements,
   listEducation,

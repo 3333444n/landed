@@ -9,7 +9,8 @@ import {
   type JobStatusFacts,
 } from "@/modules/applications";
 import { documentFactsForApplications, sweepInterruptedRuns } from "@/modules/documents";
-import { jobSummary, listJobs, logoHref } from "@/modules/jobs";
+import { jobSummary } from "@/modules/jobs";
+import { listJobs } from "./company-job";
 import type { BaseDeps } from "@/modules/shared/service";
 
 export interface JobRow {
@@ -57,7 +58,7 @@ export async function listJobRows(deps: BaseDeps, profileId: string): Promise<Jo
       companyName: job.companyName,
       location: job.location,
       salary: job.salary,
-      logoHref: logoHref(job),
+      logoHref: job.logoHref,
       summary: jobSummary(job.rawDescription),
       createdAt: job.createdAt.toISOString(),
       updatedAt: job.updatedAt.toISOString(),

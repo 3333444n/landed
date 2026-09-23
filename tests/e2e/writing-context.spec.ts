@@ -1,3 +1,4 @@
+import { createJobCompany } from "./company-helpers";
 import { expect, test } from "@playwright/test";
 
 test("About me and Interest save and clear; Source can be created, archived and restored", async ({
@@ -17,7 +18,7 @@ test("About me and Interest save and clear; Source can be created, archived and 
   await expect(story).toHaveValue("");
   await page.goto("/jobs/new");
   await page.getByLabel("Title", { exact: true }).fill("Workflow developer");
-  await page.getByLabel("Company", { exact: true }).fill("Example Systems");
+  await createJobCompany(page, "Example Systems");
   await page.getByLabel("Description", { exact: true }).fill("Build understandable workflows.");
   await page.getByRole("button", { name: "Add a source", exact: true }).click();
   await page.getByLabel("New source name").fill("Community board");

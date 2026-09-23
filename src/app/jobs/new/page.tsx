@@ -1,11 +1,11 @@
 import { listJobSources } from "@/modules/jobs";
 import { deps, requireProfile } from "@/app/current-profile";
 import { Column } from "@/components/Column";
-import { LogoPicker } from "@/components/LogoPicker";
+import { Briefcase } from "lucide-react";
 import { listCompanies } from "@/modules/companies";
 import { listSkills } from "@/modules/profile";
 import { saveJobAction } from "../actions";
-import { JobForm, jobFormId } from "../JobForm";
+import { JobForm } from "../JobForm";
 
 export const dynamic = "force-dynamic";
 
@@ -16,9 +16,9 @@ export default async function NewJobPage() {
   const companies = await listCompanies(deps(), profile.id);
   return (
     <Column
-      control={<LogoPicker formId={jobFormId} current={null} />}
+      icon={<Briefcase />}
       title="New job"
-      subtitle="Paste a posting. Its application starts as Preparing. The tile adds a logo."
+      subtitle="Paste a posting. Its application starts as Preparing."
       parentHref="/jobs"
       parentTitle="Jobs"
       width="detail"

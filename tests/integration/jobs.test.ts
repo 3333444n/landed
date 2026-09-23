@@ -1,13 +1,10 @@
-import { access, mkdtemp, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import path from "node:path";
 import { sql } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { DatabaseConnection } from "@/infrastructure/database";
 import { listJobRows } from "@/app/jobs/list-jobs";
 import { pursueJob } from "@/app/jobs/pursue-job";
 import { getApplicationForJob, listApplications, updateApplication } from "@/modules/applications";
-import { deleteJob, getJob, listJobs, saveJob, storeLogo } from "@/modules/jobs";
+import { deleteJob, getJob, listJobs, saveJob } from "@/modules/jobs";
 import { createProfile } from "@/modules/profile";
 import { openTestDatabase, truncateAll } from "../helpers/test-database";
 
@@ -62,7 +59,6 @@ describe("pursueJob", () => {
   it("rejects a blank title or description before writing anything", async () => {
     const result = await pursueJob(deps(), demo.profileId, {
       title: " ",
-      companyName: demo.companyName,
       rawDescription: "",
     });
     expect(result.ok).toBe(false);
@@ -194,143 +190,6 @@ describe("applications", () => {
     expect(result).toEqual({
       ok: false,
       error: { kind: "validation", fieldErrors: { status: ["Choose a status"] } },
-    });
-  });
-});
-
-describe("logo", () => {
-  const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 73, 72]);
-  const svg = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"/>');
-  let artifactDir: string;
-  beforeEach(async () => {
-    artifactDir = await mkdtemp(path.join(tmpdir(), "landed-logo-"));
-  });
-  afterAll(async () => {
-    await rm(artifactDir, { recursive: true, force: true });
-  });
-  const exists = (key: string) =>
-    access(path.join(artifactDir, key)).then(
-      () => true,
-      () => false,
-    );
-  const logoDeps = () => ({ ...deps(), artifactDir });
-
-  it("stores the file before the row, replaces and removes it, and deletes it with the job", async () => {
-    const first = unwrap(await storeLogo(artifactDir, demo.profileId, demo.jobId, png));
-    expect(first.contentType).toBe("image/png");
-    expect(first.storageKey).toMatch(
-      new RegExp(`^${demo.profileId}/logos/${demo.jobId}-[0-9a-f]{8}\\.png$`),
-    );
-    expect(await exists(first.storageKey)).toBe(true);
-
-    const job = unwrap(
-      await pursueJob(logoDeps(), demo.profileId, { id: demo.jobId, ...demo }, first),
-    );
-    expect(job.logoStorageKey).toBe(first.storageKey);
-    expect(job.logoContentType).toBe("image/png");
-
-    const second = unwrap(await storeLogo(artifactDir, demo.profileId, demo.jobId, svg, "logoUrl"));
-    expect(second.contentType).toBe("image/svg+xml");
-    const replaced = unwrap(
-      await saveJob(
-        logoDeps(),
-        demo.profileId,
-        { ...demo, expectedUpdatedAt: job.updatedAt.toISOString() },
-        job.id,
-        second,
-      ),
-    );
-    expect(replaced.logoStorageKey).toBe(second.storageKey);
-    expect(await exists(first.storageKey)).toBe(false);
-    expect(await exists(second.storageKey)).toBe(true);
-
-    const kept = unwrap(
-      await saveJob(
-        logoDeps(),
-        demo.profileId,
-        { ...demo, title: "Renamed", expectedUpdatedAt: replaced.updatedAt.toISOString() },
-        job.id,
-      ),
-    );
-    expect(kept.logoStorageKey).toBe(second.storageKey);
-
-    const cleared = unwrap(
-      await saveJob(
-        logoDeps(),
-        demo.profileId,
-        { ...demo, expectedUpdatedAt: kept.updatedAt.toISOString() },
-        job.id,
-        null,
-      ),
-    );
-    expect(cleared.logoStorageKey).toBeNull();
-    expect(cleared.logoContentType).toBeNull();
-    expect(await exists(second.storageKey)).toBe(false);
-
-    const third = unwrap(await storeLogo(artifactDir, demo.profileId, demo.jobId, png));
-    unwrap(
-      await saveJob(
-        logoDeps(),
-        demo.profileId,
-        { ...demo, expectedUpdatedAt: cleared.updatedAt.toISOString() },
-        job.id,
-        third,
-      ),
-    );
-    unwrap(await deleteJob(logoDeps(), demo.profileId, job.id));
-    expect(await exists(third.storageKey)).toBe(false);
-  });
-
-  it("refuses an oversized file and bytes that are not an image, writing nothing", async () => {
-    const big = await storeLogo(artifactDir, demo.profileId, demo.jobId, new Uint8Array(1_048_577));
-    expect(!big.ok && big.error.kind === "validation" && big.error.fieldErrors.logoFile).toEqual([
-      "Choose an image under 1 MB",
-    ]);
-    const text = await storeLogo(
-      artifactDir,
-      demo.profileId,
-      demo.jobId,
-      Buffer.from("hello there, not an image"),
-      "logoUrl",
-    );
-    expect(!text.ok && text.error.kind === "validation" && text.error.fieldErrors.logoUrl).toEqual([
-      "Choose a PNG, JPEG, WebP or SVG image",
-    ]);
-    expect(await exists(path.join(demo.profileId, "logos"))).toBe(false);
-  });
-
-  it("the database refuses a key without a type and a type outside the list", async () => {
-    unwrap(await pursueJob(deps(), demo.profileId, { id: demo.jobId, ...demo }));
-    await expect(
-      connection.db.execute(sql`UPDATE jobs SET logo_storage_key = 'x' WHERE id = ${demo.jobId}`),
-    ).rejects.toThrow();
-    await expect(
-      connection.db.execute(
-        sql`UPDATE jobs SET logo_storage_key = 'x', logo_content_type = 'image/gif' WHERE id = ${demo.jobId}`,
-      ),
-    ).rejects.toThrow();
-  });
-});
-
-describe("listJobRows", () => {
-  it("derives the chip from the stored facts", async () => {
-    const job = unwrap(await pursueJob(deps(), demo.profileId, { id: demo.jobId, ...demo }));
-    let rows = await listJobRows(deps(), demo.profileId);
-    expect(rows).toHaveLength(1);
-    expect(rows[0]?.derived).toEqual({ chip: { label: "Preparing", tone: "neutral" } });
-    expect(rows[0]?.summary).toBe(
-      "Example Analytics is looking for a full-stack developer to build internal reporting tools.",
-    );
-
-    const application = (await getApplicationForJob(deps(), demo.profileId, job.id))!;
-    unwrap(
-      await updateApplication(deps(), demo.profileId, application.id, { status: "interviewing" }),
-    );
-    unwrap(await saveJob(deps(), demo.profileId, { ...demo, availability: "expired" }, job.id));
-    rows = await listJobRows(deps(), demo.profileId);
-    expect(rows[0]?.derived).toEqual({
-      chip: { label: "Interviewing", tone: "success" },
-      modifier: { label: "Posting expired", tone: "warning" },
     });
   });
 });

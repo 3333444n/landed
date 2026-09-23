@@ -65,7 +65,7 @@ async function job(companyId: string) {
     job_id: randomUUID(),
     company_id: companyId,
     title: "Developer",
-    company: "Original posting name",
+
     description: "Build public tools.",
   });
 }

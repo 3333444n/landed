@@ -6,22 +6,14 @@ export {
   jobAvailabilities,
   jobInput,
   jobSources,
-  logoContentTypes,
-  logoMaxBytes,
   type JobAvailability,
   type JobInput,
   type JobSource,
-  type LogoContentType,
-  type StoredLogo,
 } from "./contracts";
-export { logoFieldErrors, readLogo, storeLogo } from "./logo";
 export {
   buildWordCloud,
   centerOut,
-  detectImageType,
   jobSummary,
-  logoHref,
-  logoVersion,
   sizeStep,
   skillWords,
   tokenize,
@@ -30,7 +22,7 @@ export {
   type WordCloudItem,
   type WordCount,
 } from "./rules";
-export { deleteJob, getJob, listJobs, saveJob, type JobsDeps, type LogoChange } from "./service";
+export { deleteJob, getJob, listJobs, saveJob, type JobsDeps } from "./service";
 export type { JobRecord } from "./repository";
 
 export { createJobSourceInput, updateJobSourceInput, updateJobSourceLinkInput } from "./contracts";

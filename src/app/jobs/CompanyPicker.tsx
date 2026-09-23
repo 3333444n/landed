@@ -29,12 +29,12 @@ export function CompanyPicker({
     <>
       <Combobox
         name="companyId"
-        label="Linked company"
+        label="Company"
         options={options}
         value={value}
         onChange={onChange}
         errors={errors}
-        helper="Optional shared company context. The posting's company name stays as written."
+        helper="Choose or create the company. Its name and logo are shared across its jobs."
         emptyMessage="No companies yet."
       />
       {!value ? (

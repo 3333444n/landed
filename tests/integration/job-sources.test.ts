@@ -140,7 +140,7 @@ it("exposes source management and assignment through MCP", async () => {
     const source = await call("add_job_source", { source_id: sourceId, name: "Local board" });
     const job = await call("add_job", {
       title: "Engineer",
-      company: "Example",
+
       description: "Build useful tools",
       job_source_id: sourceId,
     });

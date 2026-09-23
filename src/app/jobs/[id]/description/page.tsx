@@ -1,13 +1,14 @@
+import { getJob } from "@/app/jobs/company-job";
 import { listJobSources } from "@/modules/jobs";
 import { notFound } from "next/navigation";
 import { deps, requireProfile } from "@/app/current-profile";
 import { Column } from "@/components/Column";
-import { LogoPicker } from "@/components/LogoPicker";
-import { getJob, logoHref } from "@/modules/jobs";
+import { Briefcase } from "lucide-react";
+import { LogoImage } from "../../LogoImage";
 import { listCompanies } from "@/modules/companies";
 import { listSkills } from "@/modules/profile";
 import { saveJobAction } from "../../actions";
-import { JobForm, jobFormId } from "../../JobForm";
+import { JobForm } from "../../JobForm";
 
 export const dynamic = "force-dynamic";
 
@@ -22,9 +23,9 @@ export default async function JobDescriptionPage({ params }: { params: Promise<{
 
   return (
     <Column
-      control={<LogoPicker formId={jobFormId} current={logoHref(job)} />}
+      icon={job.logoHref ? <LogoImage src={job.logoHref} /> : <Briefcase />}
       title="Job description"
-      subtitle="The posting as you pasted it. The tile changes the logo."
+      subtitle="The posting as you pasted it. Manage its logo in Companies."
       parentHref={`/jobs/${job.id}`}
       parentTitle={job.title}
       width="detail"
@@ -37,7 +38,6 @@ export default async function JobDescriptionPage({ params }: { params: Promise<{
         companies={companies.map((c) => ({ value: c.id, label: c.name }))}
         record={{
           title: job.title,
-          companyName: job.companyName,
           companyId: job.companyId ?? "",
           location: job.location ?? "",
           salary: job.salary ?? "",
