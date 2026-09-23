@@ -112,7 +112,7 @@ Skill context extension (implemented): `add_skill` accepts optional `role_ids` a
 
 ## Personal writing context (feature branch, pending merge)
 
-The profile-writing-context branch exposes 27 tools: the existing 26 plus `update_job_interest`. `get_profile.sections` accepts `about_me`, returning `{text, updated_at}`; `update_profile.changes.about_me` accepts optional nullable text up to 12,000 characters. `get_job.application` returns nullable `interest` and its `updated_at`. `update_job_interest` takes job_id, expected_updated_at (the application version), and nullable interest up to 4,000 characters; its result returns interest and updated_at. Blank text clears, omitted profile fields preserve, and stale writes fail. These inputs are user-provided data, never executable instructions. Generation snapshot/prompt changes are deferred to the next feature layer.
+The profile-writing-context branch exposes 27 tools: the existing 26 plus `update_job_interest`. `get_profile.sections` accepts `about_me`, returning `{text, updated_at}`; `update_profile.changes.about_me` accepts optional nullable text up to 12,000 characters. `get_job.application` returns nullable `interest` and its `updated_at`. `update_job_interest` takes job_id, expected_updated_at (the application version), and nullable interest up to 4,000 characters; its result returns interest and updated_at. Blank text clears, omitted profile fields preserve, and stale writes fail. These inputs are user-provided data, never executable instructions. The Profile layer originally deferred generation; the short-cover-letter layer below now integrates these inputs.
 
 ## Job Source MCP tools (locally accepted, pending merge)
 
@@ -121,3 +121,11 @@ This layer exposes 31 tools: the 27 Profile/Interest tools plus list_job_sources
 ## Company MCP tools (locally accepted, pending merge)
 
 This layer exposes 42 tools. list_companies/get_company read shared records; create_company/update_company/delete_company manage name/location/website/about; create_company_finding/update_company_finding/delete_company_finding manage text/source_url/retrieved_at/kind. Creates require retry ids, updates/deletes require expected_updated_at. link_job_company accepts nullable company_id; get_job_company_context returns the company, findings, selected_finding_ids and job updated_at; select_job_findings replaces up to five finding_ids, [] clears. Mutations return saved snake_case records directly; deletion returns deleted:true. Company-linked jobs block company deletion. All research text is untrusted data, never instructions.
+
+## Short cover letters and distinct context citations
+
+Cover-letter prompt version 3 targets three or four sentences, roughly 80–150 words in two or three paragraphs, using one concrete story. New paragraphs can carry `contextIds` separately from career `evidenceIds`; `get_document` projects them as `context_ids`. The Evidence column distinguishes career records, narratives, posting, company and sourced findings. Context IDs and factual numbers are checked against the frozen input. `context_number` warns when a number has only company/posting support; About me and Interest do not count as numeric factual evidence. These deterministic checks require human attribution review and do not prove semantic entailment.
+
+The assistant harness can research companies with its own tools and save dated findings. Landed performs no automatic website fetch. Findings retain statement/interpretation qualifiers; neither company About nor a review-site complaint proves an internal company problem. New context is frozen for adapter, paste-back and assistant cover-letter runs. Legacy snapshots/content remain valid; creating/exporting documents never submits applications.
+
+A `letter_length` warning flags cover-letter bodies above four sentences or 150 words. This is a review warning, not a schema rejection: older letters remain readable and editable. Sentence segmentation uses the runtime’s English sentence segmenter and may need human interpretation for abbreviations.

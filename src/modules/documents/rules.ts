@@ -18,6 +18,7 @@ import type {
 import { lineCount, textWidth } from "./helvetica";
 
 export interface Unit extends ContentUnit {
+  contextIds?: string[];
   path: string;
 }
 
@@ -70,6 +71,35 @@ export function evidenceText(snapshot: Snapshot): Map<string, string> {
   return text;
 }
 
+/** Context is separately cited and never accepted as career evidence. */
+export function contextEvidenceText(snapshot: Snapshot): Map<string, string> {
+  const result = new Map<string, string>();
+  result.set(
+    snapshot.job.id,
+    [
+      snapshot.job.title,
+      snapshot.job.companyName,
+      snapshot.job.location,
+      snapshot.job.rawDescription,
+    ]
+      .filter(Boolean)
+      .join("\n"),
+  );
+  const context = snapshot.writingContext;
+  if (!context) return result;
+  for (const narrative of [context.aboutMe, context.interest])
+    if (narrative) result.set(narrative.id, narrative.text);
+  if (context.company)
+    result.set(
+      context.company.id,
+      [context.company.name, context.company.location, context.company.about]
+        .filter(Boolean)
+        .join("\n"),
+    );
+  for (const finding of context.findings) result.set(finding.id, finding.text);
+  return result;
+}
+
 const numberPattern = /\d+(?:[.,]\d+)*/g;
 
 /** Numbers as written, with thousands separators removed, so "4,000" and "4000" agree. */
@@ -89,7 +119,17 @@ export function groundingCheck(
 ): GroundingWarning[] {
   const evidence = evidenceText(snapshot);
   const warnings: GroundingWarning[] = [];
+  const context =
+    type === "cover_letter" ? contextEvidenceText(snapshot) : new Map<string, string>();
   for (const unit of contentUnits(type, content)) {
+    const contextIds = unit.contextIds ?? [];
+    for (const id of contextIds)
+      if (!context.has(id))
+        warnings.push({
+          kind: "unknown_evidence",
+          path: unit.path,
+          message: `Context ${id} is not in the snapshot`,
+        });
     const known = unit.evidenceIds.filter((id) => evidence.has(id));
     for (const id of unit.evidenceIds) {
       if (!evidence.has(id)) {
@@ -100,20 +140,43 @@ export function groundingCheck(
         });
       }
     }
-    if (unit.evidenceIds.length === 0) {
+    if (unit.evidenceIds.length === 0 && contextIds.length === 0) {
       warnings.push({ kind: "no_evidence", path: unit.path, message: "No evidence cited" });
       continue;
     }
-    const cited = known.map((id) => numbersIn(evidence.get(id) ?? "")).flat();
+    const careerNumbers = known.flatMap((id) => numbersIn(evidence.get(id) ?? ""));
+    const contextNumbers = contextIds
+      .filter((id) => !id.startsWith("about:") && !id.startsWith("interest:"))
+      .flatMap((id) => numbersIn(context.get(id) ?? ""));
     for (const number of numbersIn(unit.text)) {
-      if (!cited.includes(number)) {
-        warnings.push({
-          kind: "unsupported_number",
-          path: unit.path,
-          message: `"${number}" does not appear in the cited evidence`,
-        });
-      }
+      if (careerNumbers.includes(number)) continue;
+      warnings.push(
+        contextNumbers.includes(number)
+          ? {
+              kind: "context_number",
+              path: unit.path,
+              message: `"${number}" is supported only by company or posting context. Check that it describes that context, not your accomplishments.`,
+            }
+          : {
+              kind: "unsupported_number",
+              path: unit.path,
+              message: `"${number}" does not appear in the cited factual evidence`,
+            },
+      );
     }
+  }
+
+  if (type === "cover_letter") {
+    const text = (content as CoverLetterContent).paragraphs.map((p) => p.text).join(" ");
+    const sentences = [...new Intl.Segmenter("en", { granularity: "sentence" }).segment(text)]
+      .length;
+    const words = text.trim().split(/\s+/).length;
+    if (sentences > 4 || words > 150)
+      warnings.push({
+        kind: "letter_length",
+        path: "paragraphs.0",
+        message: `The body has ${sentences} sentences and ${words} words. Aim for three or four sentences and no more than 150 words; keep the strongest example.`,
+      });
   }
   if (type === "resume") {
     warnings.push(...headingWarnings(content as ResumeContent, snapshot));

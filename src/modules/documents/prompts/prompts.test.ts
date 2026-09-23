@@ -14,7 +14,7 @@ describe("prompts", () => {
     for (const type of documentTypes) {
       expect(prompts[type].name.length).toBeGreaterThan(0);
       expect(prompts[type].version).toBeGreaterThanOrEqual(1);
-      expect(prompts[type].instructions).toContain("never invent");
+      expect(prompts[type].instructions.toLowerCase()).toContain("never invent");
     }
   });
 
