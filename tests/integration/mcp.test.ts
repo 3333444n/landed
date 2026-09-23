@@ -78,8 +78,15 @@ afterAll(async () => {
 beforeEach(async () => {
   await truncateAll(connection);
   await seedDemoProfile(deps);
-  const company = unwrap(await saveCompany(deps(), demo.profileId, {id: crypto.randomUUID(), name: demo.job.companyName}));
-  unwrap(await pursueJob(deps(), demo.profileId, { id: demo.jobId, ...demo.job, companyId:company.id }));
+  const company = unwrap(
+    await saveCompany(deps(), demo.profileId, {
+      id: crypto.randomUUID(),
+      name: demo.job.companyName,
+    }),
+  );
+  unwrap(
+    await pursueJob(deps(), demo.profileId, { id: demo.jobId, ...demo.job, companyId: company.id }),
+  );
   client = await connect();
 });
 
@@ -121,8 +128,13 @@ describe("list_jobs and get_job", () => {
 describe("add_job", () => {
   it("creates the job and its application together, and replays on the same id", async () => {
     const jobId = crypto.randomUUID();
+    const company = await call<{ id: string }>("create_company", {
+      company_id: crypto.randomUUID(),
+      name: "Example Logistics",
+    });
     const posting = {
       job_id: jobId,
+      company_id: company.id,
       title: "Data engineer",
 
       description: "Example Logistics needs a data engineer for its reporting pipeline.",
@@ -138,7 +150,7 @@ describe("add_job", () => {
     expect(jobRows).toHaveLength(2);
     expect(jobRows.find((j) => j.id === jobId)).toMatchObject({
       title: "Data engineer",
-      companyName: "Example Logistics",
+      companyId: company.id,
       rawDescription: posting.description,
       location: "Monterrey",
       salary: "MXN 60,000 a month",

@@ -1,7 +1,5 @@
-import { sql } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { DatabaseConnection } from "@/infrastructure/database";
-import { listJobRows } from "@/app/jobs/list-jobs";
 import { pursueJob } from "@/app/jobs/pursue-job";
 import { getApplicationForJob, listApplications, updateApplication } from "@/modules/applications";
 import { deleteJob, getJob, listJobs, saveJob } from "@/modules/jobs";

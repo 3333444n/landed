@@ -35,7 +35,7 @@ export function logoVersion(storageKey: string): string | null {
   return match?.[1] ?? null;
 }
 
-/** The address the interface loads a company's logo from, or null when the job has none. */
+/** The address the interface loads a company's logo from, or null when the company has none. */
 export function logoHref(company: { id: string; logoStorageKey: string | null }): string | null {
   if (!company.logoStorageKey) return null;
   const version = logoVersion(company.logoStorageKey);

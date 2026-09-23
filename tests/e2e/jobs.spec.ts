@@ -102,17 +102,30 @@ test("a pasted job gets an application whose status the user moves by hand", asy
 
   // The company owns its logo; linked jobs display it without a per-job override.
   await page.goto(jobUrl);
-  const companyPath = await page.getByRole("list", {name:"Materials"}).getByRole("link").filter({hasText:/^Company/}).getAttribute("href");
+  const companyPath = await page
+    .getByRole("list", { name: "Materials" })
+    .getByRole("link")
+    .filter({ hasText: /^Company/ })
+    .getAttribute("href");
   await page.goto(companyPath!);
   const companyVersion = page.locator('input[name="expectedUpdatedAt"]');
   let before = await companyVersion.inputValue();
-  await page.getByLabel("Logo file").setInputFiles({name:"logo.png", mimeType:"image/png",buffer:Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==","base64")});
-  await page.getByRole("button", {name:"Save changes",exact:true}).click();
+  await page.getByLabel("Logo file").setInputFiles({
+    name: "logo.png",
+    mimeType: "image/png",
+    buffer: Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+      "base64",
+    ),
+  });
+  await page.getByRole("button", { name: "Save changes", exact: true }).click();
   await expect(companyVersion).not.toHaveValue(before);
   await page.goto(`${jobUrl}?filter=all`);
   const logo = page.getByRole("list", { name: "Jobs" }).locator("img");
   await expect(logo).toHaveCount(1);
-  await expect.poll(() => logo.evaluate((img:HTMLImageElement)=>img.complete && img.naturalWidth)).toBe(1);
+  await expect
+    .poll(() => logo.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth))
+    .toBe(1);
   const logoSrc = await logo.getAttribute("src");
   expect(logoSrc).toMatch(/^\/companies\//);
   const response = await page.request.get(logoSrc!);
@@ -122,12 +135,12 @@ test("a pasted job gets an application whose status the user moves by hand", asy
   expect((await page.request.get(`${logoSrc?.split("?")[0]}?k=00000000`)).status()).toBe(404);
   await page.goto(companyPath!);
   before = await companyVersion.inputValue();
-  await page.getByRole("button",{name:"Change logo"}).click();
-  await page.getByRole("menuitem",{name:"Remove logo"}).click();
-  await page.getByRole("button",{name:"Save changes",exact:true}).click();
+  await page.getByRole("button", { name: "Change logo" }).click();
+  await page.getByRole("menuitem", { name: "Remove logo" }).click();
+  await page.getByRole("button", { name: "Save changes", exact: true }).click();
   await expect(companyVersion).not.toHaveValue(before);
   await page.goto(`${jobUrl}?filter=all`);
-  await expect(page.getByRole("list",{name:"Jobs"}).locator("img")).toHaveCount(0);
+  await expect(page.getByRole("list", { name: "Jobs" }).locator("img")).toHaveCount(0);
 
   await page.goto(jobUrl);
   await page.getByRole("button", { name: "Delete" }).click();
