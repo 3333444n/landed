@@ -41,6 +41,7 @@ export async function prepareGeneration(
   deps: BaseDeps,
   profileId: string,
   jobId: string,
+  type?: DocumentType,
 ): Promise<Result<GenerationTarget>> {
   const [profile, job, application] = await Promise.all([
     getCurrentProfile(deps),
@@ -67,6 +68,15 @@ export async function prepareGeneration(
     job,
     capturedAt: now(deps),
   });
+  if (type === "cover_letter")
+    snapshot.writingContext = {
+      aboutMe: profile.aboutMe ? { id: `about:${profile.id}`, text: profile.aboutMe } : null,
+      interest: application.interest
+        ? { id: `interest:${application.id}`, text: application.interest }
+        : null,
+      company: null,
+      findings: [],
+    };
   return { ok: true, value: { applicationId: application.id, snapshot } };
 }
 
@@ -78,7 +88,7 @@ export async function generateDocument(
   jobId: string,
   type: DocumentType,
 ): Promise<Result<GenerationRunRecord>> {
-  const prepared = await prepareGeneration(deps, profileId, jobId);
+  const prepared = await prepareGeneration(deps, profileId, jobId, type);
   if (!prepared.ok) return prepared;
   const { applicationId, snapshot } = prepared.value;
   const prompt = promptFor(type);
@@ -110,7 +120,7 @@ export async function preparePasteBack(
   jobId: string,
   type: DocumentType,
 ): Promise<Result<{ run: GenerationRunRecord; instructions: string; input: string }>> {
-  const prepared = await prepareGeneration(deps, profileId, jobId);
+  const prepared = await prepareGeneration(deps, profileId, jobId, type);
   if (!prepared.ok) return prepared;
   const { applicationId, snapshot } = prepared.value;
   const prompt = promptFor(type);
@@ -147,7 +157,7 @@ export async function prepareAssistantBrief(
   type: DocumentType,
   reported: { provider: string; model: string },
 ): Promise<Result<DocumentBrief>> {
-  const prepared = await prepareGeneration(deps, profileId, jobId);
+  const prepared = await prepareGeneration(deps, profileId, jobId, type);
   if (!prepared.ok) return prepared;
   const { applicationId, snapshot } = prepared.value;
   const prompt = promptFor(type);

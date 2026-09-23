@@ -23,7 +23,8 @@ export const groundingRules = `Rules that apply to every sentence you write:
 - Answer with JSON matching the requested schema and nothing else.`;
 
 export function factsBlock(snapshot: Snapshot): string {
-  const { job, capturedAt, ...facts } = snapshot;
+  const { job, capturedAt, writingContext: _writingContext, ...facts } = snapshot;
+  void _writingContext;
   return [
     "BEGIN CAREER FACTS (trusted, entered by the candidate)",
     stableStringify(facts),

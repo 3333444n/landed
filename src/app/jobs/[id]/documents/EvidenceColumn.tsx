@@ -32,11 +32,16 @@ export async function EvidenceColumn({ jobId, type }: { jobId: string; type: Doc
 }
 
 function citedIds(type: DocumentType, content: Parameters<typeof contentUnits>[1]): Set<string> {
-  return new Set(contentUnits(type, content).flatMap((u) => u.evidenceIds));
+  return new Set(
+    contentUnits(type, content).flatMap((u) => [...u.evidenceIds, ...(u.contextIds ?? [])]),
+  );
 }
 
 function Groups({ snapshot, cited }: { snapshot: Snapshot; cited: Set<string> }) {
-  const groups: { title: string; items: { id: string; text: string; detail?: string }[] }[] = [
+  const groups: {
+    title: string;
+    items: { id: string; text: string; detail?: string; url?: string }[];
+  }[] = [
     {
       title: "Work history",
       items: snapshot.employment.map((e) => ({
@@ -70,6 +75,55 @@ function Groups({ snapshot, cited }: { snapshot: Snapshot; cited: Set<string> })
         detail: [a.result, a.metric].filter(Boolean).join(" · ") || undefined,
       })),
     },
+    {
+      title: "About me",
+      items: snapshot.writingContext?.aboutMe
+        ? [{ id: snapshot.writingContext.aboutMe.id, text: snapshot.writingContext.aboutMe.text }]
+        : [],
+    },
+    {
+      title: "Interest",
+      items: snapshot.writingContext?.interest
+        ? [{ id: snapshot.writingContext.interest.id, text: snapshot.writingContext.interest.text }]
+        : [],
+    },
+    {
+      title: "Job posting",
+      items: [
+        {
+          id: snapshot.job.id,
+          text: `${snapshot.job.title} at ${snapshot.job.companyName}`,
+          detail: snapshot.job.rawDescription,
+        },
+      ],
+    },
+    {
+      title: "Company",
+      items: snapshot.writingContext?.company
+        ? [
+            {
+              id: snapshot.writingContext.company.id,
+              text: snapshot.writingContext.company.name,
+              detail: [
+                snapshot.writingContext.company.location,
+                snapshot.writingContext.company.about,
+              ]
+                .filter(Boolean)
+                .join(" · "),
+              url: snapshot.writingContext.company.website ?? undefined,
+            },
+          ]
+        : [],
+    },
+    {
+      title: "Company findings",
+      items: (snapshot.writingContext?.findings ?? []).map((f) => ({
+        id: f.id,
+        text: f.text,
+        detail: `${f.kind === "interpretation" ? "Interpretation" : "Direct statement"} · Retrieved ${f.retrievedAt}`,
+        url: f.sourceUrl,
+      })),
+    },
     { title: "Profile", items: [{ id: snapshot.profile.id, text: snapshot.profile.displayName }] },
   ]
     .map((g) => ({ ...g, items: g.items.filter((i) => cited.has(i.id)) }))
@@ -87,6 +141,11 @@ function Groups({ snapshot, cited }: { snapshot: Snapshot; cited: Set<string> })
             {group.items.map((item) => (
               <li key={item.id} id={item.id}>
                 <p>{item.text}</p>
+                {item.url ? (
+                  <a href={item.url} target="_blank" rel="noreferrer">
+                    Source
+                  </a>
+                ) : null}
                 {item.detail ? <p className="body-sm text-secondary">{item.detail}</p> : null}
               </li>
             ))}

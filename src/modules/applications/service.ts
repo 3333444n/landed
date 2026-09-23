@@ -85,7 +85,7 @@ export async function updateApplication(
     return await deps.db.transaction(async (tx) => {
       const current = await repo.findApplication(tx, profileId, id);
       if (!current) return notFound("Application");
-      const at = now(deps);
+      const at = new Date(Math.max(now(deps).getTime(), current.updatedAt.getTime() + 1));
       const updated = await repo.updateApplication(
         tx,
         profileId,

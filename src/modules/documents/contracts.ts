@@ -169,7 +169,13 @@ export type ResumeContent = z.infer<typeof resumeContent>;
 export const coverLetterContent = z.object({
   greeting: z.string().trim().min(1).max(80),
   paragraphs: z
-    .array(z.object({ text: z.string().trim().min(1).max(700), evidenceIds }))
+    .array(
+      z.object({
+        text: z.string().trim().min(1).max(700),
+        evidenceIds,
+        contextIds: z.array(z.string().min(1).max(64)).max(8).optional(),
+      }),
+    )
     .min(2)
     .max(4),
   closing: z.string().trim().min(1).max(40),
@@ -271,6 +277,30 @@ export const snapshot = z.object({
       skillIds: z.array(z.string()),
     }),
   ),
+  writingContext: z
+    .object({
+      aboutMe: z.object({ id: z.string(), text: z.string() }).nullable(),
+      interest: z.object({ id: z.string(), text: z.string() }).nullable(),
+      company: z
+        .object({
+          id: z.string(),
+          name: z.string(),
+          location: z.string().nullable(),
+          website: z.string().nullable(),
+          about: z.string().nullable(),
+        })
+        .nullable(),
+      findings: z.array(
+        z.object({
+          id: z.string(),
+          text: z.string(),
+          sourceUrl: z.string(),
+          retrievedAt: z.string(),
+          kind: z.enum(["statement", "interpretation"]),
+        }),
+      ),
+    })
+    .optional(),
   job: z.object({
     id: z.string(),
     title: z.string(),
@@ -288,6 +318,7 @@ export const warningKinds = [
   "unknown_evidence",
   "no_evidence",
   "unsupported_number",
+  "context_number",
   "unknown_heading",
   "misattributed_evidence",
   "wraps_line",
@@ -304,6 +335,7 @@ export interface GroundingWarning {
 export const warningLabels: Record<WarningKind, string> = {
   unknown_evidence: "Cites a record that is not in the snapshot",
   no_evidence: "Cites no evidence",
+  context_number: "Check number attribution",
   unsupported_number: "Contains a number not found in the cited evidence",
   unknown_heading: "Names an employer, project or institution not in your facts",
   misattributed_evidence: "Cites a record that belongs to another role or project",

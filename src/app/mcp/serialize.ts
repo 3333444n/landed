@@ -84,6 +84,7 @@ export function documentDetail(type: DocumentType, view: DocumentView) {
           path: u.path,
           text: u.text,
           evidence_ids: u.evidenceIds,
+          ...(u.contextIds ? { context_ids: u.contextIds } : {}),
         }))
       : [],
     warnings: view.warnings.map(warning),
