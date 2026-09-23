@@ -1,6 +1,6 @@
 # ADR 011 — Personal writing context, Companies and Job Sources
 
-Date: 2026-09-23. Status: accepted scope; locally implemented, pending user acceptance and merge.
+Date: 2026-09-23. Status: accepted and implemented locally; pending merge.
 
 ## Context
 

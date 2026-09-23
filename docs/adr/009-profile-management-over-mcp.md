@@ -1,6 +1,6 @@
 # ADR 009 — Profile management over MCP
 
-Date: 2026-09-17. Status: accepted; implementation on the feature branch, locally accepted, pending merge. Extends the original write scope of [ADR 008](008-assistant-surface-over-mcp.md).
+Date: 2026-09-17. Status: accepted; implemented and merged. Extends the original write scope of [ADR 008](008-assistant-surface-over-mcp.md).
 
 ## Context
 

@@ -2,7 +2,7 @@
 
 Status: model access path implemented in Phase 1b ([ADR 006](adr/006-model-access-path.md)); the guarded outbound fetch exists for a company's logo address ([ADR 007](adr/007-user-initiated-image-fetch.md), 2026-09-14); the evaluation set has been run against OpenRouter (see "Providers run through the evaluation set"); the assistant surface over MCP is implemented ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16; see "Your own assistant over MCP"); agentic research, discovery and retrieval remain future design. Updated 2026-09-17.
 
-Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is implemented and locally accepted on this branch, pending merge. See [current verification](09-decisions-and-readiness.md#profile-management-over-mcp-accepted-pending-merge).
+Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is merged. The locally accepted ADR 011 context and canonical-company extensions are pending merge. See [current verification](09-decisions-and-readiness.md#profile-management-over-mcp-merged).
 
 ## Distinguish the moving parts
 
@@ -56,13 +56,13 @@ The original ADR 008 tool contract (profile management is the additive ADR 009 c
 | `render_pdf` | `{ job_id, type: "resume" \| "cover_letter" }` | `getOrRenderPdf` with the same file label as the browser route, so filenames match; returns `{ filename, pages, size_bytes, download_url, reused }` | not destructive |
 | `add_job` | `{ job_id?, title, company, description, location?, salary?, source_url? }` | `pursueJob`, the same composition the paste form uses: the job and its application in one transaction; returns `{ job_id, application_id }`. A client-minted `job_id` replays to the same records, so a retry after a lost response never duplicates. Validation errors name the tool's parameters | idempotent, not destructive |
 
-Link intake for assistant users happens in the harness, not in Landed: when the user gives a posting address, the assistant fetches the page with its own tools, respecting robots.txt, and passes the text to `add_job`; when the fetch fails, it asks the user to paste the text. Landed never fetches a posting page itself ([ADR 007](adr/007-user-initiated-image-fetch.md) keeps the logo address as the app's only user-initiated outbound request). Errors from the modules map to tool errors carrying the error kind and message or field errors; tools never throw. The original tools require a profile. On the ADR 009 branch, `get_profile` and `create_profile` also work before one exists; other tools provide creation guidance. `pnpm verify` drives the endpoint in process with the MCP client (`tests/integration/mcp.test.ts`), and the surface was used end to end from Claude Code on 2026-09-16: a posting added through `add_job` and the three documents written, submitted and rendered through the endpoint.
+Link intake for assistant users happens in the harness, not in Landed: when the user gives a posting address, the assistant fetches the page with its own tools, respecting robots.txt, and passes the text to `add_job`; when the fetch fails, it asks the user to paste the text. Landed never fetches a posting page itself ([ADR 007](adr/007-user-initiated-image-fetch.md) keeps the logo address as the app's only user-initiated outbound request). Errors from the modules map to tool errors carrying the error kind and message or field errors; tools never throw. The original tools require a profile. With merged ADR 009, `get_profile` and `create_profile` also work before one exists; other tools provide creation guidance. `pnpm verify` drives the endpoint in process with the MCP client (`tests/integration/mcp.test.ts`), and the surface was used end to end from Claude Code on 2026-09-16: a posting added through `add_job` and the three documents written, submitted and rendered through the endpoint.
 
 What stays as before: the app invoking a harness as a subprocess is not a path (it cannot run inside the release container, and the vendors' terms do not permit a third-party application to spend a chat subscription that way). Do not read a user's CLI credential store, and do not assume a chat subscription is an API credential. A local model is not a separate path: Ollama and similar servers are reached as an OpenAI-compatible endpoint, and structured-output quality on small local models is not guaranteed; the evaluation set is the way to find out. A locally running installation is reachable from claude.ai or a phone app only when exposed to the internet with authentication, which documents 03 and 09 keep as a separate design; that design reuses this endpoint.
 
-## Profile tools (ADR 009, feature branch pending merge)
+## Profile tools (ADR 009, merged)
 
-[ADR 009](adr/009-profile-management-over-mcp.md) extends the original eight tools with 18 profile tools. This contract describes the feature branch; local acceptance is complete and merge remains pending. The endpoint, token and Host/Origin guard are unchanged. The current profile is resolved freshly for each call, including calls on an already-connected client after profile creation.
+[ADR 009](adr/009-profile-management-over-mcp.md) extends the original eight tools with 18 profile tools. This contract describes the merged profile tools. The endpoint, token and Host/Origin guard are unchanged. The current profile is resolved freshly for each call, including calls on an already-connected client after profile creation.
 
 | Tool | Input | Returns or effect |
 |---|---|---|
@@ -107,12 +107,12 @@ Generated claims cite input snapshot entries, but valid IDs alone do not establi
 - [pgvector](https://github.com/pgvector/pgvector)
 
 
-Skill context extension (local implementation pending acceptance): `add_skill` accepts optional `role_ids` and `project_ids` arrays; `update_skill.changes` accepts the same fields. `get_profile` and saved skill records return both arrays as explicit links. Omit preserves on update; `[]` clears; null is invalid. Derived associations through achievements/projects are not written to these lists. Roles/projects with direct skill links refuse deletion until detached. These browsing links do not change generation briefs or historical snapshots.
+Skill context extension (merged): `add_skill` accepts optional `role_ids` and `project_ids` arrays; `update_skill.changes` accepts the same fields. `get_profile` and saved skill records return both arrays as explicit links. Omit preserves on update; `[]` clears; null is invalid. Derived associations through achievements/projects are not written to these lists. Roles/projects with direct skill links refuse deletion until detached. These browsing links do not change generation briefs or historical snapshots.
 
 
 ## Writing context, company and source tools (ADR 011, local feature branch)
 
-The local feature branch has **42 tools**: the original eight, 18 profile tools, one Interest tool, four Job Source tools and 11 company/context tools. This extension is implemented locally and pending acceptance/merge; historical verification counts above describe their original milestones.
+The local feature branch has **42 tools**: the original eight, 18 profile tools, one Interest tool, four Job Source tools and 11 company/context tools. This extension is implemented locally and locally accepted, pending merge; historical verification counts above describe their original milestones.
 
 | Tool | Input / behavior |
 |---|---|

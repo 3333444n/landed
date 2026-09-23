@@ -1,6 +1,6 @@
 # Contributing
 
-Start at the [documentation index](docs/00-index.md) and the [decision register](docs/09-decisions-and-readiness.md). Phase 0 (career data entry), Phase 1a (jobs and applications), Phase 1b (generated materials, review, PDFs, model access) and the assistant surface ([ADR 008](docs/adr/008-assistant-surface-over-mcp.md), 2026-09-16) are implemented. The profile-management extension ([ADR 009](docs/adr/009-profile-management-over-mcp.md)) adds 18 tools, bringing this branch to 26; it is implemented and locally accepted, pending merge. Later phases are design only. Distinguish accepted decisions from suggestions and avoid describing planned features as implemented.
+Start at the [documentation index](docs/00-index.md) and the [decision register](docs/09-decisions-and-readiness.md). Phase 0 (career data entry), Phase 1a (jobs and applications), Phase 1b (generated materials, review, PDFs, model access) and the assistant surface ([ADR 008](docs/adr/008-assistant-surface-over-mcp.md), 2026-09-16) are implemented. The profile-management extension ([ADR 009](docs/adr/009-profile-management-over-mcp.md)) adds 18 tools and is merged. The locally accepted context and canonical-company work under ADR 011 extends the endpoint to 42 tools and is pending merge. Remaining later-phase capabilities are design only. Distinguish accepted decisions from suggestions and avoid describing planned features as implemented.
 
 ## Set up
 

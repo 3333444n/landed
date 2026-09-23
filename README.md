@@ -14,7 +14,7 @@ Tailoring an application by hand takes an hour per job, and the shortcuts are ba
 | Area | What you get |
 |---|---|
 | Career facts | Profile, work history, education, projects, skills and achievements, edited in the browser and stored in PostgreSQL on your computer |
-| Jobs | Paste a posting with its salary and the company's logo (an image file or an image address); each one gets an application with a status you set by hand (preparing, ready, applied, interviewing, offer, rejected, withdrawn, accepted), notes, filters and sorting. A word cloud shows which words the posting repeats and which of them are already among your skills |
+| Jobs | Paste a posting with its salary; each one gets an application with a status you set by hand (preparing, ready, applied, interviewing, offer, rejected, withdrawn, accepted), notes, filters and sorting. A word cloud shows which words the posting repeats and which of them are already among your skills |
 | Documents | Per job, a generated resume, cover letter and recruiter message. Each bullet cites your records; numbers that do not appear in the cited evidence are flagged. Edit summaries, bullets and body text in place; every edit is a saved revision |
 | PDFs | One-page resume filled to the margin and a one-page cover letter, monochrome, built from saved document revisions; review remains a manual step |
 | Model access | Bring an API key for OpenRouter, Anthropic, OpenAI, the Vercel AI Gateway or any OpenAI-compatible server (Ollama and similar), or use no key at all: paste-back mode shows you the prompt, you run it in whatever assistant you already have and paste the answer back through the same checks |
@@ -62,7 +62,7 @@ Use the assistant you already pay for, no key needed ([ADR 008](docs/adr/008-ass
 
    Codex discovers the same skill by itself when you run it inside the Landed checkout; to use it from anywhere, link it into your user skills: `mkdir -p ~/.agents/skills && ln -s "$PWD/.agents/skills/landed" ~/.agents/skills/landed`. Claude Desktop uses the block from step 2 alone.
 
-The profile-management extension is on the feature branch, locally accepted, pending merge ([ADR 009](docs/adr/009-profile-management-over-mcp.md)). It adds conversational profile creation and editing, plus individual career-record deletion through the same connection. See the [branch testing instructions](docs/07-quickstart-contract.md#trying-profile-tools-on-the-feature-branch-adr-009-pending-merge).
+The merged [profile-management extension](docs/adr/009-profile-management-over-mcp.md) supports conversational profile creation and editing, plus individual career-record deletion through the same connection. See the [profile setup instructions](docs/07-quickstart-contract.md#using-profile-tools-adr-009).
 
 Then ask for a resume: "tailor my resume for the Acme job". The assistant checks the fit first, writes the resume, cover letter and recruiter message in turn, fixes the warnings Landed raises, and gives you the PDF links. It never marks an application applied and never sends anything.
 
@@ -93,7 +93,7 @@ Decisions that shaped it, each with its reasoning and the alternatives rejected:
 - [ADR 006](docs/adr/006-model-access-path.md): the app calls the provider through one adapter; keys live in the environment only; paste-back as the zero-setup path; a fake adapter for every automated check.
 - [ADR 007](docs/adr/007-user-initiated-image-fetch.md): a logo address you paste is the one outbound request you start, fetched once through a guarded fetcher and stored.
 - [ADR 008](docs/adr/008-assistant-surface-over-mcp.md): your own assistant drives Landed through a local MCP endpoint with a launcher-minted token; Landed keeps validation, grounding and the run record.
-- [ADR 009 — Profile management over MCP](docs/adr/009-profile-management-over-mcp.md): typed profile and individual-record operations, partial updates, retry ids and required version checks; locally accepted on this branch, pending merge.
+- [ADR 009 — Profile management over MCP](docs/adr/009-profile-management-over-mcp.md): typed profile and individual-record operations, partial updates, retry ids and required version checks; implemented and merged.
 
 The [numbered documentation](docs/00-index.md) covers product, domain, modules, data model, workflows and failures, AI and integrations, quickstart, and the decision register. The interface follows [DESIGN.md](DESIGN.md); the produced PDFs follow [DESIGN-DOCS.md](DESIGN-DOCS.md).
 
@@ -108,3 +108,10 @@ Issues and pull requests are welcome, including documentation fixes. Start with 
 ## License
 
 [MIT](LICENSE). Built by [Luis Peregrino](https://github.com/3333444n).
+
+
+## Locally accepted context extension (pending merge)
+
+The context branch renames the career hub Profile, adds General info and a separate About me narrative, and records Interest for each application. Companies stores shared names, logos, location, website, About and sourced findings. Jobs select that canonical Company and up to five relevant findings; Job Sources is a customizable, initially empty list under Settings. Short cover letters use this context alongside career evidence, with distinct citations and review warnings.
+
+The complete branch exposes 42 MCP tools. Its company-identity follow-up removes the duplicate free-text employer field and job-owned logos; add_job accepts optional company_id. These changes are locally accepted and authorized for publication, but are not yet merged or released. Review the [upgrade notes](docs/07-quickstart-contract.md#upgrading-to-writing-context-and-canonical-companies-locally-accepted-pending-merge) before using the branch with existing data.
