@@ -39,6 +39,8 @@ import type { ModuleError } from "@/modules/shared/contracts";
 import type { BaseDeps } from "@/modules/shared/service";
 import { documentDetail, errorText, jobDetail, jobListItem, warning } from "./serialize";
 import { registerJobSourceTools } from "./job-source-tools";
+import { registerCompanyTools } from "./company-tools";
+import { getSelectedFindingIds } from "@/modules/jobs";
 import { registerProfileTools } from "./profile-tools";
 
 export interface ToolContext {
@@ -78,6 +80,7 @@ const refused = (error: ModuleError) => failure(errorText(error));
 export function registerTools(server: McpServer, ctx: ToolContext): void {
   registerProfileTools(server, ctx);
   registerJobSourceTools(server, ctx);
+  registerCompanyTools(server, ctx);
   /** Runs a tool body with the profile resolved; any thrown error becomes a result. */
   const tool =
     <A>(body: (args: A, profileId: string) => Promise<ToolResult>) =>
@@ -160,7 +163,12 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
       if (!job) return failure("not_found: Job not found");
       const application = await getApplicationForJob(ctx.deps, profileId, job.id);
       const views = await documentViews(profileId, application?.id ?? null);
-      return json(jobDetail(job, application, views));
+      return json({
+        ...jobDetail(job, application, views),
+        company_id: job.companyId,
+        selected_finding_ids: await getSelectedFindingIds(ctx.deps, profileId, job.id),
+        updated_at: job.updatedAt.toISOString(),
+      });
     }),
   );
 
@@ -314,6 +322,7 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
         job_id: z.uuid().optional().describe("A UUID minted by the client, so a retry replays"),
         title: z.string().describe("The job title as the posting states it"),
         company: z.string().describe("The employer's name"),
+        company_id: z.uuid().optional(),
         description: z.string().describe("The full posting text, up to 50,000 characters"),
         location: z.string().optional(),
         salary: z.string().optional().describe("Free text, shown as written and never parsed"),
@@ -324,13 +333,24 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
     },
     tool(
       async (
-        { job_id, title, company, description, location, salary, source_url, job_source_id },
+        {
+          job_id,
+          title,
+          company,
+          company_id,
+          description,
+          location,
+          salary,
+          source_url,
+          job_source_id,
+        },
         profileId,
       ) => {
         const saved = await pursueJob({ ...ctx.deps, artifactDir: ctx.artifactDir }, profileId, {
           id: job_id,
           title,
           companyName: company,
+          companyId: company_id,
           rawDescription: description,
           location,
           salary,

@@ -99,7 +99,7 @@ export default async function JobLayout({
           </li>
           <li>
             <Card
-              href={`/jobs/${job.id}/company`}
+              href={job.companyId ? `/companies/${job.companyId}` : `/jobs/${job.id}/company`}
               icon={<Building2 />}
               title="Company"
               subtitle={job.companyName}

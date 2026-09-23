@@ -2,6 +2,8 @@
 
 import { useActionState, useDeferredValue, useMemo, useState } from "react";
 import { SourcePicker, type SourceOption } from "./SourcePicker";
+import { CompanyPicker } from "./CompanyPicker";
+import type { ComboboxOption } from "@/components/Combobox";
 import { Button } from "@/components/Button";
 import { Field } from "@/components/Field";
 import { Select } from "@/components/Select";
@@ -26,11 +28,13 @@ export function JobForm({
   submitLabel,
   skills,
   sources = [],
+  companies = [],
 }: {
   action: (state: ActionState, formData: FormData) => Promise<ActionState>;
   record?: FormValues;
   submitLabel: string;
   /** The profile's skills as plain data, so the live word cloud can tint its matches. */
+  companies?: ComboboxOption[];
   skills: SkillLike[];
   sources?: SourceOption[];
 }) {
@@ -47,6 +51,7 @@ export function JobForm({
         errors={errors}
         editing={!!record}
         skills={skills}
+        companies={companies}
       />
       <SourcePicker
         sources={sources}
@@ -84,12 +89,15 @@ function Fields({
   errors,
   editing,
   skills,
+  companies,
 }: {
   values: FormValues;
   errors: Record<string, string[]>;
   editing: boolean;
+  companies: ComboboxOption[];
   skills: SkillLike[];
 }) {
+  const [companyId, setCompanyId] = useState(values.companyId ?? "");
   const [recordId] = useState(() => values.id ?? crypto.randomUUID());
   // The word cloud follows the description as it is typed or pasted. The deferred value lets a
   // long paste render first and the cloud catch up, so typing never waits on the count.
@@ -120,6 +128,12 @@ function Fields({
         defaultValue={values.companyName}
         errors={errors.companyName}
         required
+      />
+      <CompanyPicker
+        companies={companies}
+        value={companyId}
+        onChange={setCompanyId}
+        errors={errors.companyId}
       />
       <Field
         label="Location"

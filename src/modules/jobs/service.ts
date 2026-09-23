@@ -20,6 +20,8 @@ import {
   updateJobSourceInput,
   updateJobSourceLinkInput,
   jobInput,
+  jobCompanyInput,
+  findingSelectionInput,
   type StoredLogo,
 } from "./contracts";
 import { removeLogoFile } from "./logo";
@@ -58,6 +60,7 @@ export async function saveJob(
   const values = {
     title: input.title,
     companyName: input.companyName,
+    ...(input.companyId !== undefined ? { companyId: input.companyId } : {}),
     location: input.location ?? null,
     salary: input.salary ?? null,
     sourceUrl: input.sourceUrl ?? null,
@@ -92,8 +95,12 @@ export async function saveJob(
         Object.assign(values, { jobSourceId: null });
       // The profile_id foreign key backs ownership; the route already resolved the profile.
       if (existingId) {
-        const current = await repo.findJob(tx, profileId, id);
+        const current = await repo.lockJob(tx, profileId, id);
         if (!current) return notFound("Job");
+        if (input.expectedUpdatedAt && current.updatedAt.toISOString() !== input.expectedUpdatedAt)
+          return stale();
+        if (input.companyId !== undefined && input.companyId !== current.companyId)
+          await repo.clearFindingSelection(tx, profileId, id);
         const updated = await repo.updateJob(
           tx,
           profileId,
@@ -234,5 +241,73 @@ export async function updateJobSourceLink(
     });
   } catch (error) {
     return mapDatabaseError(error, async () => null);
+  }
+}
+export const getSelectedFindingIds = (deps: JobsDeps, profileId: string, jobId: string) =>
+  repo.selectedFindingIds(deps.db, profileId, jobId);
+export const invalidateJobsForFinding = (deps: JobsDeps, profileId: string, findingId: string) =>
+  repo.invalidateFindingJobs(deps.db, profileId, findingId, now(deps));
+export async function updateJobCompany(
+  deps: JobsDeps,
+  profileId: string,
+  jobId: string,
+  raw: unknown,
+): Promise<Result<repo.JobRecord>> {
+  const parsed = jobCompanyInput.safeParse(raw);
+  if (!parsed.success) return validation(fieldErrorsFromZod(parsed.error));
+  try {
+    return await deps.db.transaction(async (tx) => {
+      const job = await repo.lockJob(tx, profileId, jobId);
+      if (!job) return notFound("Job");
+      if (job.updatedAt.toISOString() !== parsed.data.expectedUpdatedAt) return stale();
+      if (job.companyId !== parsed.data.companyId)
+        await repo.clearFindingSelection(tx, profileId, jobId);
+      const updated = await repo.updateJob(
+        tx,
+        profileId,
+        jobId,
+        { companyId: parsed.data.companyId, updatedAt: now(deps) },
+        new Date(parsed.data.expectedUpdatedAt),
+      );
+      return updated ? { ok: true as const, value: updated } : stale();
+    });
+  } catch (e) {
+    return mapDatabaseError(e, async () => null);
+  }
+}
+export async function setJobFindingSelection(
+  deps: JobsDeps,
+  profileId: string,
+  jobId: string,
+  raw: unknown,
+): Promise<Result<repo.JobRecord>> {
+  const parsed = findingSelectionInput.safeParse(raw);
+  if (!parsed.success) return validation(fieldErrorsFromZod(parsed.error));
+  try {
+    return await deps.db.transaction(async (tx) => {
+      const job = await repo.lockJob(tx, profileId, jobId);
+      if (!job) return notFound("Job");
+      if (job.updatedAt.toISOString() !== parsed.data.expectedUpdatedAt) return stale();
+      if (!job.companyId && parsed.data.findingIds.length)
+        return validation({ findingIds: ["Link a company before selecting findings"] });
+      if (job.companyId)
+        await repo.replaceFindingSelection(
+          tx,
+          profileId,
+          jobId,
+          job.companyId,
+          parsed.data.findingIds,
+        );
+      const updated = await repo.updateJob(
+        tx,
+        profileId,
+        jobId,
+        { updatedAt: now(deps) },
+        new Date(parsed.data.expectedUpdatedAt),
+      );
+      return updated ? { ok: true as const, value: updated } : stale();
+    });
+  } catch (e) {
+    return mapDatabaseError(e, async () => null);
   }
 }
