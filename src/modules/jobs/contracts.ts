@@ -47,6 +47,7 @@ export const jobInput = z.object({
   id: optionalUuid,
   expectedUpdatedAt,
   title: requiredText("Enter the job title"),
+  companyId: z.preprocess((v) => (v === "" ? null : v), z.uuid().nullable().optional()),
   companyName: requiredText("Enter the company"),
   location: optionalText(200),
   salary: optionalText(200),
@@ -76,4 +77,15 @@ export const updateJobSourceInput = z.object({
 export const updateJobSourceLinkInput = z.object({
   expectedUpdatedAt: z.iso.datetime(),
   jobSourceId: z.uuid().nullable(),
+});
+export const jobCompanyInput = z.object({
+  companyId: z.uuid().nullable(),
+  expectedUpdatedAt: z.iso.datetime(),
+});
+export const findingSelectionInput = z.object({
+  findingIds: z
+    .array(z.uuid())
+    .max(5)
+    .refine((ids) => new Set(ids).size === ids.length, "Choose each finding only once"),
+  expectedUpdatedAt: z.iso.datetime(),
 });

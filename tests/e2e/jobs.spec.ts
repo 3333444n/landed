@@ -29,7 +29,7 @@ test("a pasted job gets an application whose status the user moves by hand", asy
   await expect(page.getByText("No jobs yet.")).toBeVisible();
   await page.getByRole("link", { name: "Add job" }).click();
   await page.getByLabel("Title").fill(demo.title);
-  await page.getByLabel("Company").fill(demo.companyName);
+  await page.getByLabel("Company", { exact: true }).fill(demo.companyName);
   await page.getByLabel("Location").fill(demo.location);
   await page.getByLabel("Salary").fill(demo.salary);
   await page.getByLabel("Description").fill(demo.rawDescription);
@@ -144,9 +144,9 @@ test("a pasted job gets an application whose status the user moves by hand", asy
   ).toBeVisible();
   await expect(page.getByRole("list", { name: "Jobs" }).locator("img")).toHaveCount(0);
 
-  // The company block is an empty state until Phase 2
+  // Legacy jobs can link shared company context without changing their posting text
   await page.goto(`${jobUrl}/company`);
-  await expect(page.getByText("Company research arrives in Phase 2.")).toBeVisible();
+  await expect(page.getByRole("combobox", { name: "Linked company" })).toBeVisible();
 
   // Deleting the job removes it and its application
   await page.goto(jobUrl);

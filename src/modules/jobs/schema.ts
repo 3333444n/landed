@@ -1,8 +1,9 @@
 import { sql } from "drizzle-orm";
 import {
   boolean,
-  foreignKey,
   check,
+  foreignKey,
+  primaryKey,
   index,
   pgTable,
   text,
@@ -10,6 +11,7 @@ import {
   unique,
   uuid,
 } from "drizzle-orm/pg-core";
+import { companies, companyFindings } from "@/modules/companies/schema";
 import { profiles } from "@/modules/profile/schema";
 import { jobAvailabilities, jobSources, logoContentTypes } from "./contracts";
 
@@ -48,6 +50,7 @@ export const jobs = pgTable(
       .notNull()
       .references(() => profiles.id, { onDelete: "cascade" }),
     title: text("title").notNull(),
+    companyId: uuid("company_id"),
     companyName: text("company_name").notNull(),
     location: text("location"),
     /** As the posting states it, any currency or period; never parsed (docs/01). */
@@ -69,6 +72,11 @@ export const jobs = pgTable(
       foreignColumns: [jobSourceOptions.profileId, jobSourceOptions.id],
       name: "jobs_source_owner_fk",
     }),
+    foreignKey({
+      columns: [t.profileId, t.companyId],
+      foreignColumns: [companies.profileId, companies.id],
+    }),
+    unique("jobs_owner_company_unique").on(t.profileId, t.id, t.companyId),
     unique("jobs_profile_id_id_unique").on(t.profileId, t.id),
     index("jobs_profile_id_updated_at_idx").on(t.profileId, t.updatedAt),
     notBlank(t.title.name),
@@ -81,5 +89,27 @@ export const jobs = pgTable(
       "jobs_logo_content_type_valid",
       sql`logo_content_type IS NULL OR logo_content_type IN ('image/png', 'image/jpeg', 'image/webp', 'image/svg+xml')`,
     ),
+  ],
+);
+
+/** Both composite keys enforce owner and company agreement even under concurrent writes. */
+export const jobFindingSelections = pgTable(
+  "job_finding_selections",
+  {
+    profileId: uuid("profile_id").notNull(),
+    jobId: uuid("job_id").notNull(),
+    companyId: uuid("company_id").notNull(),
+    findingId: uuid("finding_id").notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.jobId, t.findingId] }),
+    foreignKey({
+      columns: [t.profileId, t.jobId, t.companyId],
+      foreignColumns: [jobs.profileId, jobs.id, jobs.companyId],
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [t.profileId, t.companyId, t.findingId],
+      foreignColumns: [companyFindings.profileId, companyFindings.companyId, companyFindings.id],
+    }).onDelete("cascade"),
   ],
 );

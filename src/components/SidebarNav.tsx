@@ -1,6 +1,6 @@
 "use client";
 
-import { Briefcase, Settings, UserRound } from "lucide-react";
+import { Briefcase, Building2, Settings, UserRound } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -11,6 +11,7 @@ import styles from "./SidebarNav.module.css";
 const items = [
   { href: "/about", label: "Profile", icon: UserRound },
   { href: "/jobs", label: "Jobs", icon: Briefcase },
+  { href: "/companies", label: "Companies", icon: Building2 },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 

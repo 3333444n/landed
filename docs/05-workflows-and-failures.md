@@ -100,3 +100,7 @@ The Profile hub contains General info and About me. About me is a single optiona
 ## Manage Job Sources
 
 Settings → Job Sources supports add, rename, archive and restore. Job forms offer an optional Source selector and inline creation. Clearing saves an explicit empty selection; omitted fields preserve the current assignment. Archived sources remain visible on existing jobs. Version checks reject stale edits and retry ids make creates safe to repeat.
+
+## Shared company research
+
+Companies uses list/detail columns with fields and an individual findings table. Jobs choose or create a linked company. Interest selects at most five findings from that company. Changing/clearing the link clears incompatible selections; finding deletion invalidates affected job versions. A profile-scoped transaction lock serializes selection and deletion. A website URL is stored without fetching it. Research is performed by the user or their harness. Generation integration follows separately.

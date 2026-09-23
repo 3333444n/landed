@@ -1,9 +1,9 @@
 /*
  * Drizzle queries for the jobs table over a database or transaction handle. No rules live here.
  */
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import type { DbHandle } from "@/infrastructure/database";
-import { jobs, jobSourceOptions } from "./schema";
+import { jobs, jobSourceOptions, jobFindingSelections } from "./schema";
 
 export type JobRecord = typeof jobs.$inferSelect;
 
@@ -101,4 +101,80 @@ export async function updateJobSource(
     )
     .returning();
   return rows[0] ?? null;
+}
+export async function lockJob(db: DbHandle, profileId: string, id: string) {
+  return (
+    (
+      await db
+        .select()
+        .from(jobs)
+        .where(and(eq(jobs.profileId, profileId), eq(jobs.id, id)))
+        .for("update")
+    )[0] ?? null
+  );
+}
+export async function selectedFindingIds(db: DbHandle, profileId: string, jobId: string) {
+  return (
+    await db
+      .select({ id: jobFindingSelections.findingId })
+      .from(jobFindingSelections)
+      .where(
+        and(eq(jobFindingSelections.profileId, profileId), eq(jobFindingSelections.jobId, jobId)),
+      )
+  ).map((r) => r.id);
+}
+export async function clearFindingSelection(db: DbHandle, profileId: string, jobId: string) {
+  await db
+    .delete(jobFindingSelections)
+    .where(
+      and(eq(jobFindingSelections.profileId, profileId), eq(jobFindingSelections.jobId, jobId)),
+    );
+}
+export async function replaceFindingSelection(
+  db: DbHandle,
+  profileId: string,
+  jobId: string,
+  companyId: string,
+  ids: string[],
+) {
+  await clearFindingSelection(db, profileId, jobId);
+  if (ids.length)
+    await db
+      .insert(jobFindingSelections)
+      .values(ids.map((findingId) => ({ profileId, jobId, companyId, findingId })));
+}
+export async function invalidateFindingJobs(
+  db: DbHandle,
+  profileId: string,
+  findingId: string,
+  at: Date,
+) {
+  const rows = await db
+    .select({ id: jobFindingSelections.jobId })
+    .from(jobFindingSelections)
+    .where(
+      and(
+        eq(jobFindingSelections.profileId, profileId),
+        eq(jobFindingSelections.findingId, findingId),
+      ),
+    );
+  if (rows.length)
+    await db
+      .update(jobs)
+      .set({
+        updatedAt: sql`greatest(${at.toISOString()}::timestamptz, ${jobs.updatedAt} + interval '1 millisecond')`,
+      })
+      .where(
+        and(
+          eq(jobs.profileId, profileId),
+          inArray(
+            jobs.id,
+            rows.map((r) => r.id),
+          ),
+        ),
+      );
+}
+
+export async function lockFindingContext(db: DbHandle, profileId: string) {
+  await db.execute(sql`select pg_advisory_xact_lock(hashtextextended(${profileId}, 0))`);
 }

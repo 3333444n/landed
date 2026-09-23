@@ -78,9 +78,11 @@ export function Combobox(props: ComboboxProps) {
       );
     } else {
       props.onChange(option.value);
-      setOpen(false);
-      setQuery("");
     }
+    // Close after selection so dismissing an inline panel cannot move the next
+    // form control between pointer-down and click. Reopen to select another item.
+    setOpen(false);
+    setQuery("");
   };
 
   return (

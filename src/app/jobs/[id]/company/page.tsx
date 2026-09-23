@@ -1,29 +1,33 @@
 import { Building2 } from "lucide-react";
 import { notFound } from "next/navigation";
 import { deps, requireProfile } from "@/app/current-profile";
-import { Column, EmptyState } from "@/components/Column";
+import { Column } from "@/components/Column";
 import { getJob } from "@/modules/jobs";
-
+import { listCompanies } from "@/modules/companies";
+import { JobCompanyForm } from "../../JobCompanyForm";
+import { saveJobCompanyAction } from "../../company-actions";
 export const dynamic = "force-dynamic";
-
-/** Company is text on the job until Phase 2 research gives it content of its own (docs/01). */
-export default async function JobCompanyPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const profile = await requireProfile();
   const job = await getJob(deps(), profile.id, id);
   if (!job) notFound();
-
+  const companies = await listCompanies(deps(), profile.id);
   return (
     <Column
       icon={<Building2 />}
-      title={job.companyName}
-      parentHref={`/jobs/${job.id}`}
+      title="Company"
+      subtitle={job.companyName}
+      parentHref={`/jobs/${id}`}
       parentTitle={job.title}
       width="detail"
     >
-      <EmptyState>
-        Company research arrives in Phase 2. For now the company is the name on the job.
-      </EmptyState>
+      <JobCompanyForm
+        action={saveJobCompanyAction.bind(null, id)}
+        companies={companies.map((c) => ({ value: c.id, label: c.name }))}
+        companyId={job.companyId}
+        expectedUpdatedAt={job.updatedAt.toISOString()}
+      />
     </Column>
   );
 }
