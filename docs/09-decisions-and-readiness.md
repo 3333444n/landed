@@ -164,4 +164,18 @@ The migration preserves existing linked companies, creates a distinct company fo
 
 ## Publication status (2026-09-23)
 
-Local review is complete and publication is authorized for the writing-context/Companies/Job Sources change and the dependent canonical-company follow-up. Both remain pending merge; publication approval is not a claim that they are already on main or released. ADR 009 profile management and the earlier UI/skill-context changes are already merged. The checks recorded above apply to the respective verified implementation boundaries. No additional platform or packaged-release coverage is implied.
+Local review is complete. The implementation is split into five review layers rebased on main at 7678601: Profile/Interest, Job Sources, Companies/findings, cover-letter generation, and canonical company identity. All remain pending merge; publication approval is not a claim that they are released. ADR 009 profile management and the earlier UI/skill-context changes are already merged. The checks recorded above apply to the respective verified implementation boundaries. No additional platform or packaged-release coverage is implied.
+
+## Smaller PR stack verification (2026-09-23)
+
+Each layer was checked independently with fictional data in a separate test database. The full suite passed at each boundary: check, integration, migration consistency, production build and Chromium journeys. The first three ran `pnpm verify:full`; the last two ran its same constituent commands (`pnpm verify`, `pnpm build`, `CI=true pnpm test:e2e`).
+
+| Layer | Unit | Integration | Browser | Migration |
+|---|---:|---:|---:|---|
+| Profile / Interest | 150 | 84 | 10 | 0008 |
+| Job Sources | 150 | 87 | 11 | 0009 |
+| Companies / findings | 153 | 95 | 12 | 0010 |
+| Short cover letters | 159 | 99 | 12 | none |
+| Shared company identity | 159 | 102 | 12 | 0011 |
+
+Generated Drizzle JSON snapshots are marked as generated for GitHub review; SQL migrations remain visible. The previously evaluated prompt, document schema and provider behavior are unchanged by the split, so the recorded real-provider results above still apply. Historical verification counts describe their original scope.
