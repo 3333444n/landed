@@ -51,6 +51,7 @@ export const jobInput = z.object({
   location: optionalText(200),
   salary: optionalText(200),
   sourceUrl: optionalUrl,
+  jobSourceId: optionalUuid,
   rawDescription: requiredText("Paste the job description", 50_000),
   availability: z.enum(jobAvailabilities).default("active"),
   /**
@@ -62,3 +63,17 @@ export const jobInput = z.object({
   removeLogo: checkbox.default(false),
 });
 export type JobInput = z.infer<typeof jobInput>;
+
+export const createJobSourceInput = z.object({
+  id: z.uuid(),
+  name: requiredText("Enter a source name"),
+});
+export const updateJobSourceInput = z.object({
+  expectedUpdatedAt: z.iso.datetime(),
+  name: requiredText("Enter a source name").optional(),
+  archived: z.boolean().optional(),
+});
+export const updateJobSourceLinkInput = z.object({
+  expectedUpdatedAt: z.iso.datetime(),
+  jobSourceId: z.uuid().nullable(),
+});

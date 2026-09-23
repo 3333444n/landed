@@ -1,3 +1,4 @@
+import { listJobSources } from "@/modules/jobs";
 import { deps, requireProfile } from "@/app/current-profile";
 import { Column } from "@/components/Column";
 import { LogoPicker } from "@/components/LogoPicker";
@@ -9,6 +10,7 @@ export const dynamic = "force-dynamic";
 
 export default async function NewJobPage() {
   const profile = await requireProfile();
+  const sources = await listJobSources(deps(), profile.id);
   const skills = await listSkills(deps(), profile.id);
   return (
     <Column
@@ -23,6 +25,7 @@ export default async function NewJobPage() {
         action={saveJobAction.bind(null, undefined)}
         submitLabel="Save job"
         skills={skills}
+        sources={sources.map(({ id, name, archived }) => ({ id, name, archived }))}
       />
     </Column>
   );

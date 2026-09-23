@@ -1,4 +1,4 @@
-import { Plug, Settings } from "lucide-react";
+import { Plug, Settings, Tags } from "lucide-react";
 import type { ReactNode } from "react";
 import { Card, CardList } from "@/components/Card";
 import { Column } from "@/components/Column";
@@ -24,6 +24,12 @@ function modelSubtitle(status: ModelStatus): string {
 export default function SettingsLayout({ children }: { children: ReactNode }) {
   const assistant = getAssistantConfig();
   const cards = [
+    {
+      href: "/settings/job-sources",
+      title: "Job Sources",
+      subtitle: "Where you find openings",
+      icon: Tags,
+    },
     {
       href: "/settings/model",
       title: "Model setup",

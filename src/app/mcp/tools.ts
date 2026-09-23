@@ -38,6 +38,7 @@ import { getCurrentProfile } from "@/modules/profile";
 import type { ModuleError } from "@/modules/shared/contracts";
 import type { BaseDeps } from "@/modules/shared/service";
 import { documentDetail, errorText, jobDetail, jobListItem, warning } from "./serialize";
+import { registerJobSourceTools } from "./job-source-tools";
 import { registerProfileTools } from "./profile-tools";
 
 export interface ToolContext {
@@ -76,6 +77,7 @@ const refused = (error: ModuleError) => failure(errorText(error));
 
 export function registerTools(server: McpServer, ctx: ToolContext): void {
   registerProfileTools(server, ctx);
+  registerJobSourceTools(server, ctx);
   /** Runs a tool body with the profile resolved; any thrown error becomes a result. */
   const tool =
     <A>(body: (args: A, profileId: string) => Promise<ToolResult>) =>
@@ -316,11 +318,15 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
         location: z.string().optional(),
         salary: z.string().optional().describe("Free text, shown as written and never parsed"),
         source_url: z.string().optional().describe("The posting's address, http or https"),
+        job_source_id: z.uuid().optional(),
       }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
     },
     tool(
-      async ({ job_id, title, company, description, location, salary, source_url }, profileId) => {
+      async (
+        { job_id, title, company, description, location, salary, source_url, job_source_id },
+        profileId,
+      ) => {
         const saved = await pursueJob({ ...ctx.deps, artifactDir: ctx.artifactDir }, profileId, {
           id: job_id,
           title,
@@ -329,6 +335,7 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
           location,
           salary,
           sourceUrl: source_url,
+          jobSourceId: job_source_id,
         });
         if (!saved.ok) return refused(renamed(saved.error, jobFieldNames));
         const application = await getApplicationForJob(ctx.deps, profileId, saved.value.id);
@@ -367,6 +374,7 @@ const jobFieldNames: Record<string, string> = {
   companyName: "company",
   rawDescription: "description",
   sourceUrl: "source_url",
+  jobSourceId: "job_source_id",
 };
 
 function renamed(error: ModuleError, names: Record<string, string>): ModuleError {
