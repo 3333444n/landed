@@ -64,6 +64,13 @@
       "when": 1790196138912,
       "tag": "0008_rapid_captain_cross",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790196495742,
+      "tag": "0009_green_gertrude_yorkes",
+      "breakpoints": true
     }
   ]
 }
