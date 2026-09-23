@@ -108,3 +108,33 @@ Generated claims cite input snapshot entries, but valid IDs alone do not establi
 
 
 Skill context extension (local implementation pending acceptance): `add_skill` accepts optional `role_ids` and `project_ids` arrays; `update_skill.changes` accepts the same fields. `get_profile` and saved skill records return both arrays as explicit links. Omit preserves on update; `[]` clears; null is invalid. Derived associations through achievements/projects are not written to these lists. Roles/projects with direct skill links refuse deletion until detached. These browsing links do not change generation briefs or historical snapshots.
+
+
+## Writing context, company and source tools (ADR 010, local feature branch)
+
+The local feature branch has **42 tools**: the original eight, 18 profile tools, one Interest tool, four Job Source tools and 11 company/context tools. This extension is implemented locally and pending acceptance/merge; historical verification counts above describe their original milestones.
+
+| Tool | Input / behavior |
+|---|---|
+| update_job_interest | job_id, expected_updated_at from get_job.application, nullable interest; clears with null |
+| list_job_sources | No fields; returns sources including archived and updated_at |
+| add_job_source | source_id retry UUID, name |
+| update_job_source | source_id, expected_updated_at, optional name/archived; omit preserves |
+| set_job_source | job_id, job expected_updated_at, nullable job_source_id |
+| list_companies | No fields; returns companies |
+| get_company | company_id; returns company and findings |
+| create_company | company_id retry UUID, name, optional location/website/about |
+| update_company | company_id, expected_updated_at, optional name/location/website/about; null clears optional fields |
+| delete_company | company_id, expected_updated_at; referenced companies cannot be deleted |
+| create_company_finding | company_id, finding_id retry UUID, text, source_url, retrieved_at (YYYY-MM-DD), kind (statement/interpretation) |
+| update_company_finding | company_id, finding_id, expected_updated_at and changed finding fields; omit preserves |
+| delete_company_finding | company_id, finding_id, expected_updated_at; removes live selections only |
+| link_job_company | job_id, nullable company_id, job expected_updated_at; changing clears findings |
+| get_job_company_context | job_id; returns company, available findings, selected_finding_ids, job updated_at |
+| select_job_findings | job_id, finding_ids (maximum five; [] clears), job expected_updated_at |
+
+`get_profile.sections` adds `about_me`; its projection is `{text, updated_at}`. `update_profile.changes` adds nullable `about_me` (12,000 characters). `get_job.application` adds Interest and its independent version. `add_job` accepts optional `company_id` and `job_source_id`. Source/company/finding mutation records return directly with snake_case keys and versions; the older profile mutation envelope remains `{record}`. Reread on stale; never replace a job version with an application version.
+
+Cover-letter prompt version 3 targets three or four sentences, roughly 80–150 words in two or three paragraphs, using one concrete story. New paragraphs can carry `contextIds` separately from career `evidenceIds`; `get_document` projects them as `context_ids`. The Evidence column distinguishes career records, narratives, posting, company and sourced findings. Context IDs and factual numbers are checked against the frozen input. `context_number` warns when a number has only company/posting support; About me and Interest do not count as numeric factual evidence. These deterministic checks require human attribution review and do not prove semantic entailment.
+
+The assistant harness can research companies with its own tools and save dated findings. Landed performs no automatic website fetch. Findings retain statement/interpretation qualifiers; neither company About nor a review-site complaint proves an internal company problem. New context is frozen for adapter, paste-back and assistant cover-letter runs. Legacy snapshots/content remain valid; creating/exporting documents never submits applications.

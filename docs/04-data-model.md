@@ -138,3 +138,19 @@ Achievement-derived skill connections and parent roles of linked projects are co
 ## Writing context (feature branch, pending local acceptance)
 
 Migration 0008 adds nullable `profiles.about_me` and `applications.interest`. Each is edited in place with a version-checked partial update. About me accepts up to 12,000 characters and Interest 4,000; blank text clears the value. Updating General info or application status preserves these fields. Frozen generation snapshots remain independent of live edits.
+
+
+## Companies, findings and Job Sources (local implementation, pending acceptance/merge)
+
+| Table / field | Content and relationships |
+|---|---|
+| companies | Profile-owned id, required name, nullable location/website/about; created_at and updated_at |
+| company_findings | Profile and company ownership, text, source_url, retrieved_at date, kind (`statement`, `interpretation`), timestamps |
+| jobs.company_id | Nullable owner-aware company link; existing rows remain null and company_name stays intact |
+| job_finding_selections | Job/finding join with composite keys enforcing both owner and company agreement; at most five via the module contract |
+| job_source_options | Profile-owned id, name, archived boolean, timestamps; no seeded rows |
+| jobs.job_source_id | Nullable owner-aware source link, independent of source and source_url |
+
+Company deletion is blocked while referenced by jobs. Changing a job's company clears its selections. Finding deletion cascades its live selections and invalidates affected job versions. Source options are archived/restored rather than deleted; existing assignments remain available. Schema changes use generated additive SQL migrations, never a data reset.
+
+New cover-letter snapshots additionally freeze optional `writingContext`: About me and Interest with their citation IDs, all linked company fields, and the selected findings with their sources, dates and kinds. Old snapshots omit this optional object and remain valid. Career `evidenceIds` and optional paragraph `contextIds` are separate namespaces. Live edits and deletes cannot alter saved snapshots or revisions.

@@ -2,7 +2,7 @@
 
 Updated 2026-09-17. Accepted decisions below reflect the user's explicit instructions. Recommendations remain proposals.
 
-Current branch: 26 MCP tools (eight original plus 18 profile tools), implemented and locally accepted under [ADR 009](adr/009-profile-management-over-mcp.md), pending merge. The final section records current verification; dated milestone sections preserve their historical scope and test counts. Later phases remain design only.
+Current local feature: 42 MCP tools, including writing context, Companies and Job Sources under [ADR 010](adr/010-writing-company-context-and-job-sources.md), pending user acceptance and merge. The final section records this extension; dated milestone sections preserve their historical scope and test counts. Unimplemented later capabilities remain design only.
 
 ## Accepted
 
@@ -110,3 +110,12 @@ Implemented and locally accepted on the feature branch; merge remains pending, s
 Achievement statements use regular body typography (15/22, weight 400). A shared controlled `Combobox` supports searchable single or multiple selection, labelled listbox options, keyboard navigation and hidden form inputs. Achievement skills use multiple selection and preserve both selected and cleared values across validation errors. The public component contract is in DESIGN.md; reuse and state ownership guidance is in AGENTS.md. No dependency, schema, module operation or Server Action changes are required.
 
 Implementation is locally accepted and pending merge. `pnpm verify:full` passed on 2026-09-18: 145 unit tests, 76 integration tests, migration consistency, the production build and all 8 browser journeys. The achievement journey covers search, no matches, keyboard selection, regular card typography, saving and reloading, and preserving both selected and cleared skills across validation errors. All model calls in the checks use the fake adapter.
+
+
+## Personal and company writing context (2026-09-23, local implementation)
+
+[ADR 010](adr/010-writing-company-context-and-job-sources.md) records the accepted scope: Profile/General info naming, an optional About me narrative, application Interest, shared Companies with sourced findings, and customizable Job Sources. Companies have only Name, Location, Website, About and Findings. Up to five findings are selected per job; all company fields are available to cover letters. Existing jobs remain unlinked. People and built-in research remain deferred.
+
+Cover letters target three or four body sentences and retain the single-column monochrome PDF. Career evidence and context citations stay distinct, with context-only number attribution explicitly flagged for review. Source lists begin empty and archive preserves existing assignments. Browser and MCP support the same operations; this branch extends the endpoint to 42 tools.
+
+Implementation is local, pending user acceptance and merge. No PR is opened before the user reviews the combined preview. Verification results for this extension must be recorded after integrated checks; earlier milestone counts are not evidence for these changes. No personal sourcebook import, data reset or remote service exposure is part of this work.

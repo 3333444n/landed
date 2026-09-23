@@ -81,7 +81,7 @@ Logs identify operation/run and error category without copying career content or
 
 ## Browsing career facts
 
-About me expands each section in place. Profile shows compact contact and preference fields and a 240-character summary preview; the edit column contains the full summary. Other sections contain expandable record cards. A separate pencil link opens a record's edit URL without changing its disclosure; section management links retain the dedicated lists and add controls. Multiple disclosures can stay open during client navigation; reloading starts them closed. List cards share the same read-only details as the overview. Empty sections link to their management page.
+Profile expands each section in place. General info shows compact contact and preference fields and a 240-character summary preview; the edit column contains the full summary. Other sections contain expandable record cards. A separate pencil link opens a record's edit URL without changing its disclosure; section management links retain the dedicated lists and add controls. Multiple disclosures can stay open during client navigation; reloading starts them closed. List cards share the same read-only details as the overview. Empty sections link to their management page.
 
 Desired roles are entered as removable pills above the input. Enter or Add appends values; a comma-separated paste adds several. Saving includes an unfinished entry, and a refused save retains additions and removals. Storage remains the profile preferences array.
 
@@ -96,3 +96,12 @@ Document approval is the existing revision review timestamp, presented as `Appro
 ## Personal writing context (feature branch)
 
 The Profile hub contains General info and About me. About me is a single optional narrative; a job's Interest column records why its role and company appeal to the user. Each saves only its own field, requires the current version and preserves text on validation errors. The About me MCP projection exposes its text and profile version; `update_profile` accepts `about_me`, where null clears. `update_job_interest` accepts `job_id`, `expected_updated_at` (the application's version from `get_job`) and nullable `interest`. These operations do not mark documents reviewed or an application submitted.
+
+
+## Company context and discovery sources (local feature branch)
+
+Create or choose a company from the job form, then maintain its Name, Location, Website, About and findings in Companies. Existing jobs remain unlinked until the user or harness links them. In Interest, select up to five findings from the current company; changing/clearing the company clears incompatible selections. Deleting a referenced company requires detaching its jobs first. Deleting a finding removes live selections while frozen runs retain it.
+
+Settings → Job Sources supports add, rename, archive and restore. The Source selector on job forms offers inline creation; it is optional and initially empty. Archived sources remain displayed on already assigned jobs and are unavailable for new assignments. Source edits and assignments require current versions; creates accept retry IDs. Empty selection clears a job's Source without changing its posting URL.
+
+Cover-letter generation freezes career evidence, the posting, personal narratives, all linked company fields and selected findings. The prompt targets three or four body sentences and a concrete career story. Citation and number checks produce review warnings; `context_number` specifically marks a number supported only by company/posting context. The user verifies its attribution rather than treating a valid ID as proof. Narratives cannot supply accomplishment metrics. Missing optional context does not block generation. All text supplied by users or research remains data, never instructions; Landed does not browse company websites.

@@ -43,3 +43,12 @@ Achievements are edited in place; no achievement revision/history feature. Phase
 A module is a code boundary around related responsibilities. A bounded context is a boundary within which a domain model and vocabulary have consistent meaning. A module does not automatically qualify as a bounded context. These boundaries are working hypotheses; avoid declaring that a capability could never become a domain or service.
 
 An aggregate groups data/rules that must remain consistent during an operation. We do not need to load a person's entire history for each update: save an achievement and its skill links atomically, validating that linked records belong to that profile.
+
+
+## Writing and company context (2026-09-23, local feature branch)
+
+The **Profile** navigation hub contains **General info** (identity, contact, summary and preferences), career evidence sections and **About me** (the user's optional story, values and motivation). **Interest** belongs to an application: the user's reason for pursuing its role and company. Neither narrative is a substitute for evidence of an accomplishment.
+
+A **Company** is shared context for zero or more jobs, with Name, Location, Website and About. A job keeps the company name supplied by its posting separately from its optional company link. Existing jobs are never matched automatically. A **Finding** is a dated, sourced statement or interpretation associated with one company. An application can use up to five company findings selected on its job; selection does not imply verification. People and built-in web research remain deferred.
+
+**Source** on a job identifies where the user found it. **Job Sources** in Settings is the user-managed vocabulary, empty by default; archived sources retain historical assignments. This is separate from the posting URL and the technical ingestion method (`pasted`). See ADR 010 for the accepted boundaries. Implementation is local and pending acceptance/merge.
