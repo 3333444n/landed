@@ -8,7 +8,7 @@ import styles from "./LogoPicker.module.css";
 const accept = "image/png,image/jpeg,image/webp,image/svg+xml";
 
 /**
- * The icon tile of a job form as a control (DESIGN.md "Icon tile button"): it opens a small menu
+ * The icon tile of a company form as a control (DESIGN.md "Icon tile button"): it opens a small menu
  * to choose an image file, paste an image address or remove the logo. Its inputs sit outside the
  * form element and join the submission through the `form` attribute, so the Server Action
  * receives the file with the rest of the paste.
@@ -178,7 +178,7 @@ export function LogoPicker({ formId, current }: { formId: string; current: strin
           }}
         />
         <p className={styles.helper}>
-          Up to 1 MB. The image is copied once when you save and kept with the job.
+          Up to 1 MB. The image is copied once when you save and kept with the company.
         </p>
       </div>
     </div>

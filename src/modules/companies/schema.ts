@@ -10,7 +10,7 @@ import {
   date,
 } from "drizzle-orm/pg-core";
 import { profiles } from "@/modules/profile/schema";
-import { findingKinds } from "./contracts";
+import { findingKinds, logoContentTypes } from "./contracts";
 export const companies = pgTable(
   "companies",
   {
@@ -22,10 +22,20 @@ export const companies = pgTable(
     location: text("location"),
     website: text("website"),
     about: text("about"),
+    logoStorageKey: text("logo_storage_key"),
+    logoContentType: text("logo_content_type", { enum: logoContentTypes }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
+    check(
+      "companies_logo_pair",
+      sql`(${t.logoStorageKey} IS NULL) = (${t.logoContentType} IS NULL)`,
+    ),
+    check(
+      "companies_logo_content_type_valid",
+      sql`${t.logoContentType} IS NULL OR ${t.logoContentType} IN ('image/png', 'image/jpeg', 'image/webp', 'image/svg+xml')`,
+    ),
     unique("companies_profile_id_id_unique").on(t.profileId, t.id),
     check("companies_name_not_blank", sql`btrim(${t.name}) <> ''`),
   ],
