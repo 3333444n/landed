@@ -26,3 +26,8 @@ The stored file is served by the application with `X-Content-Type-Options: nosni
 - Node's `fetch` resolves the name again when it connects. A name whose answer changes between the check and the connection could reach a private address for that one request. The window is small, the request is one the person chose, and the reply is treated as bytes to type and store, never as instructions; pinning the resolved address would need a hand-built HTTP client and is deferred until posting import (Phase 2A) reuses the fetcher.
 - Every check runs without the network: the fetcher takes its `fetch` and resolver as parameters and the unit tests inject both.
 - The address is not kept: only the stored bytes and their type are, so a later visit never contacts the site again. Choosing a logo again re-fetches.
+
+
+## Ownership update (2026-09-23, ADR 010 follow-up)
+
+The fetch security decision remains in force, but Companies now owns the logo and its metadata. Company forms offer upload/address/remove; company MCP create/update accepts logo_url, with null clearing it. Jobs inherit the linked company's logo and no longer upload or own separate images. New company logo files include a random write UUID and checksum so repeated identical uploads cannot race cleanup; legacy filenames remain readable. Serving moves to `/companies/<id>/logo`; migration preserves existing files. The job-owned details above describe the original implementation.

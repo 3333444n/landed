@@ -26,7 +26,7 @@ flowchart LR
 
 This is a logical runtime view: PostgreSQL is a process/container with its own volume, and the `migrate` task is a Compose service that runs once per `start` rather than a product component. The diagram abstracts volumes and networks.
 
-Phase 0 and 1a have no runtime network dependency beyond local processes. Installation/image downloads require internet. From Phase 1b the web service makes outbound HTTPS calls to the model provider configured in the environment file, and only then; with no provider configured, Landed makes no model request itself. The assistant used for paste-back or MCP may send supplied facts to its own provider. The one other outbound call is user-initiated: pasting an image address for a job's logo fetches that address once, through the guarded fetcher in `src/infrastructure/fetch` ([ADR 007](adr/007-user-initiated-image-fetch.md)). Later job/search providers require outbound access too.
+Phase 0 and 1a have no runtime network dependency beyond local processes. Installation/image downloads require internet. From Phase 1b the web service makes outbound HTTPS calls to the model provider configured in the environment file, and only then; with no provider configured, Landed makes no model request itself. The assistant used for paste-back or MCP may send supplied facts to its own provider. The one other outbound call is user-initiated: pasting an image address for a company's logo fetches that address once, through the guarded fetcher in `src/infrastructure/fetch` ([ADR 007](adr/007-user-initiated-image-fetch.md)). Later job/search providers require outbound access too.
 
 The assistant surface ([ADR 008](adr/008-assistant-surface-over-mcp.md), implemented 2026-09-16) is an inbound connection, not an outbound one: the user's own assistant on the host computer calls `POST /mcp` on the same port the browser uses, with the bearer token `LANDED_MCP_TOKEN` from the environment file (minted by the launcher for the packaged installation), and Landed's tools call module operations through the composition layer. Two rules then apply to the whole application, not only to `/mcp`: every request's `Host` must be `localhost`, `127.0.0.1` or `::1` (or a name listed in `LANDED_ALLOWED_HOSTS`, empty until a remote design uses it), and an `Origin` header, when present, must name one of the same hosts; any other request is refused with 403 before a handler runs, because the Settings column shows the token and a server that answered any `Host` could be read through DNS rebinding. LAN or public access, and remote MCP from claude.ai or a phone, still require a separate access and security design.
 
@@ -64,7 +64,8 @@ Arrows are code calls or dependencies, not HTTP connections or deployment bounda
 | Module | Owns | May depend on |
 |---|---|---|
 | Profile | Career records, skills, editable achievements | Database adapter |
-| Jobs (implemented) | Raw pasted posting, title, company, location, salary, source URL, availability, the logo file and its metadata | Database adapter and the artifact directory; later import adapters |
+| Jobs (implemented) | Raw pasted posting, title, canonical company/source links, location, salary, source URL, availability and selected company findings | Database adapter; later import adapters |
+| Companies (local feature branch) | Canonical name, location, website, About, sourced findings and shared company logo files/metadata | Database adapter, artifact directory and guarded image fetch through application composition |
 | Documents (implemented) | Generation runs, input snapshots, saved revisions, grounding warnings, review state, artifact metadata, PDF rendering | The model adapter interface and the artifact directory; receives snapshots as data, imports no other module |
 | Applications (implemented) | Pursuit status, notes, submission time, the derived job status rule; pinning the exact revisions used for a submission is deferred (document 09) | Stores a job id; the composition in `src/app/jobs/list-jobs.ts` feeds it run and draft facts read from Documents |
 | Matching (later) | Eligibility checks and explained assessments | Profile and Jobs reads, model/retrieval adapters |
@@ -110,7 +111,8 @@ src/
   modules/
     shared/              contracts.ts (Result, ModuleError, field helpers), service.ts (BaseDeps, error mapping), files.ts (checksum, atomic write, quiet unlink)
     profile/             schema.ts, contracts.ts, rules.ts, repository.ts, service.ts, index.ts
-    jobs/                same shape plus logo.ts (logo files under the artifact directory, row after file) and stopwords.ts (word cloud)
+    jobs/                same shape plus stopwords.ts (word cloud); owns job links and finding selections
+    companies/           same shape plus company logo storage; files under the artifact directory, row after file
     applications/        same shape; pursuits and the derived job status rule
     documents/           same shape plus prompts/ (versioned prompt builders), pdf/ (templates) and artifacts.ts
   proxy.ts               runs before every request: 403 unless Host and Origin name this computer (ADR 008)
