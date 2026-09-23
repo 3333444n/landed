@@ -2,7 +2,9 @@
 
 Updated 2026-09-20. Accepted decisions below reflect the user's explicit instructions. Recommendations remain proposals.
 
-Current state (2026-09-20): Phase 0, Phase 1a, Phase 1b, all 26 MCP tools (ADRs 008/009), the achievement combobox and career browsing/document-control refinements (ADR 010) are implemented and merged into `main`. PR #40 updates this documentation and adds the combined browser journey. The final section records current verification; dated milestone sections preserve their historical scope and test counts. Later phases remain design only.
+Current state (2026-09-20): Phase 0, Phase 1a, Phase 1b, all 26 MCP tools (ADRs 008/009), the achievement combobox and career browsing/document-control refinements (ADR 010) are implemented and merged into `main`. PR #40 updated this documentation and added the combined browser journey.
+
+Current local feature: 42 MCP tools, including writing context, Companies and Job Sources under [ADR 011](adr/011-writing-company-context-and-job-sources.md), locally accepted, pending merge. The final section records this extension; dated milestone sections preserve their historical scope and test counts. Unimplemented later capabilities remain design only.
 
 ## Accepted
 
@@ -46,7 +48,7 @@ Current state (2026-09-20): Phase 0, Phase 1a, Phase 1b, all 26 MCP tools (ADRs 
   - The user's own assistant (Claude Code, Codex or Claude Desktop) drives Landed through a Streamable HTTP MCP endpoint at `/mcp` in the same Next.js process, using `@modelcontextprotocol/server` v2 directly. No second process, nothing on the internet.
   - A bearer token `LANDED_MCP_TOKEN` from the environment file only, minted by the launcher like the database password and appended to an existing `.env.release` on upgrade; shown in the browser only on the Connect your assistant column, because it protects local data the browser already shows. Host and Origin validation for the whole application, loopback names only until a remote design lists others.
   - Run mode `assistant` and revision source `assistant`; a brief opens a queued run, a submission finishes it, an invalid answer fails it with `pasted_invalid` and opens a fresh one; the newest brief from either surface supersedes an older queued run; queued runs are never swept (doc 05).
-  - Original ADR 008 scope (extended by the implemented ADR 009): tools call module operations through the composition layer, never SQL. Eight tools: `list_jobs`, `get_job`, `add_job`, `get_document_brief`, `submit_document`, `get_document`, `edit_unit`, `render_pdf` (`add_job` decided 2026-09-16: a client-minted `job_id` for idempotence, validation errors naming the tool's parameters, and link intake left to the harness, which fetches the page with its own tools respecting robots.txt and passes the text; Landed never fetches a posting page); no deletion, no application status change, no profile write. The assistant's model writes and Landed validates, checks grounding and records the run, with provider and model recorded from what the client reports (doc 06).
+  - Original ADR 008 scope (extended by merged ADR 009): tools call module operations through the composition layer, never SQL. Eight tools: `list_jobs`, `get_job`, `add_job`, `get_document_brief`, `submit_document`, `get_document`, `edit_unit`, `render_pdf` (`add_job` decided 2026-09-16: a client-minted `job_id` for idempotence, validation errors naming the tool's parameters, and link intake left to the harness, which fetches the page with its own tools respecting robots.txt and passes the text; Landed never fetches a posting page); no deletion, no application status change, no profile write. The assistant's model writes and Landed validates, checks grounding and records the run, with provider and model recorded from what the client reports (doc 06).
   - Settings becomes a hub with two cards, Model setup and Connect your assistant; a portable skill under `.agents/skills` with a Claude Code plugin wrapping it; the fit evaluation and a reviewer pass live in the skill, not in Landed.
   - Kept as they were: the API key path, paste-back, the fake adapter for every check; `pnpm verify` exercises the endpoint in process with the MCP client and no model.
 
@@ -57,7 +59,7 @@ Current state (2026-09-20): Phase 0, Phase 1a, Phase 1b, all 26 MCP tools (ADRs 
 
 ## Phase 0 complete (2026-09-13)
 
-Implemented and tested: the Profile module, the first migration with the constraints from document 04, browser entry and editing of every Phase 0 record, integration and browser tests, backup/restore scripts, CI, a SECURITY policy, and the packaged Docker Compose installation with its launcher (ADR 003), tested on macOS. Known gaps, carried rather than blocking: no demo-data loader for `examples/demo-profile.json`; checkbox groups showed the stored selection instead of the typed one after a validation error (achievement skills are addressed by the merged combobox refinement below); an unreachable database gives a generic server error; profile deletion is in the schema but not in the interface; Windows, Linux and x86-64 installs are untested; a tagged version-to-version upgrade has not yet been exercised; the migration upgrade path was verified in Phase 1b (doc 07). The interface was rebuilt on 2026-09-14 (ADR 005) with the same data and tests; the toolbar's originally empty filter and sort slots were filled by the Phase 1a Jobs list.
+Implemented and tested: the Profile module, the first migration with the constraints from document 04, browser entry and editing of every Phase 0 record, integration and browser tests, backup/restore scripts, CI, a SECURITY policy, and the packaged Docker Compose installation with its launcher (ADR 003), tested on macOS. Known gaps, carried rather than blocking: no demo-data loader for `examples/demo-profile.json`; checkbox groups showed the stored selection instead of the typed one after a validation error (achievement skills were addressed by the merged UI refinement below); an unreachable database gives a generic server error; profile deletion is in the schema but not in the interface; Windows, Linux and x86-64 installs are untested; a tagged version-to-version upgrade has not yet been exercised; the migration upgrade path was verified in Phase 1b (doc 07). The interface was rebuilt on 2026-09-14 (ADR 005) with the same data and tests; the toolbar's originally empty filter and sort slots were filled by the Phase 1a Jobs list.
 
 ## Phase 1a complete (2026-09-14)
 
@@ -101,11 +103,13 @@ Vector embeddings/indexes; separate vector storage; generalized agent framework;
 
 - [ADR 010 — Career browsing and skill context](adr/010-career-browsing-and-skill-context.md): expandable records, direct skill associations and derived context filters; implementation merged in PRs #35–39.
 
-## Profile management over MCP (implemented)
+- [ADR 011 — Writing context, Companies and Job Sources](adr/011-writing-company-context-and-job-sources.md): profile narratives, company context and canonical identity, sources and cover-letter grounding; locally accepted, pending merge.
+
+## Profile management over MCP (merged)
 
 [ADR 009 — Profile management over MCP](adr/009-profile-management-over-mcp.md) extends ADR 008 with 18 tools: profile read/create/update and add/update/delete for roles, education, projects, skills and achievements. The implementation uses module-owned partial updates, required version checks, client ids for retries, serialized first-profile creation and individual-record deletion only. The portable skill routes profile tasks independently of jobs. Existing snapshots remain unchanged. No provider access, dependency or schema migration was added for this extension.
 
-Implemented and merged into `main` in PR #33. The following records its original verification scope. `pnpm verify:full` passed on 2026-09-17: 145 unit tests, 76 integration tests, migration consistency, the production build and 8 browser journeys. The new browser journey exercises profile mutations through the authenticated HTTP endpoint and observes them in About me. The user confirmed successful local assistant testing on 2026-09-17. The harness-specific acceptance matrix is not yet recorded; this does not establish verification for every supported client or for the packaged installation. The same verification includes the theme-script fix and direct delivery of the static brand images without bypassing the Host guard. Contracts: [doc 06](06-ai-and-integrations.md#profile-tools-adr-009-implemented); workflow: [doc 05](05-workflows-and-failures.md#profile-management-from-an-assistant-adr-009-implemented).
+Implemented and merged into `main` in PR #33. The following records its original verification scope. `pnpm verify:full` passed on 2026-09-17: 145 unit tests, 76 integration tests, migration consistency, the production build and 8 browser journeys. The new browser journey exercises profile mutations through the authenticated HTTP endpoint and observes them in About me. The user confirmed successful local assistant testing on 2026-09-17. The harness-specific acceptance matrix is not yet recorded; this does not establish verification for every supported client or for the packaged installation. The same verification includes the theme-script fix and direct delivery of the static brand images without bypassing the Host guard. Contracts: [doc 06](06-ai-and-integrations.md#profile-tools-adr-009-merged); workflow: [doc 05](05-workflows-and-failures.md#profile-management-from-an-assistant-adr-009-merged).
 
 ## Achievement UI refinement (2026-09-18, implemented)
 
@@ -120,28 +124,13 @@ Accepted under [ADR 010](adr/010-career-browsing-and-skill-context.md): expandab
 
 The implementation PRs #35–39 are merged into `main`; PR #40 consolidates documentation and adds the combined browser journey. `pnpm verify:full` passed: 150 unit tests, 81 integration tests, migration consistency, production build and 9 browser journeys. Browser checks use fictional data and the fake adapter. Existing release/platform gaps above remain; local acceptance does not establish packaged-install coverage.
 
+## Personal and company writing context (2026-09-23, local implementation)
 
-## Profile narratives and Interest (2026-09-23, feature branch pending merge)
+[ADR 011](adr/011-writing-company-context-and-job-sources.md) records the accepted scope: Profile/General info naming, an optional About me narrative, application Interest, shared Companies with sourced findings, and customizable Job Sources. Companies have Name, Location, Website, About and Findings, with shared company logo controls added by the accepted identity follow-up. Up to five findings are selected per job; all company fields are available to cover letters. The identity follow-up preserves existing company links and creates one distinct company for each unlinked legacy job, without name matching. People and built-in research remain deferred.
 
-Rename the main About me hub to Profile and its existing Profile block to General info, retaining URLs. Add one optional About me narrative and per-application Interest, each with placeholder questions and persistent guidance, partial saves and required version checks. Migration 0008 adds the nullable fields without populating user data. Browser and MCP support read/write/clear; endpoint count is 27. This original Profile layer did not change generation snapshots or prompts; the later generation layer below adds that behavior. Integrated context work was locally accepted; this smaller rebased layer is verified separately before publication.
+Cover letters target three or four body sentences and retain the single-column monochrome PDF. Career evidence and context citations stay distinct, with context-only number attribution explicitly flagged for review. Source lists begin empty and archive preserves existing assignments. Browser and MCP support the same operations; this branch extends the endpoint to 42 tools.
 
-Verification for this scoped layer (2026-09-23): `pnpm verify:full` passed with 150 unit tests, 84 integration tests, migration consistency, the production build and 10 browser journeys. The checks include narrative save/reload/clear in the browser, MCP round trips and stale application edits. Generation prompts are unchanged in this layer.
-
-
-## Custom Job Sources (2026-09-23, feature branch pending merge)
-
-Settings → Job Sources manages a customizable list that starts empty. Jobs use the optional Source field, with inline creation, separately from the posting URL and ingestion method. Sources can be renamed, archived and restored; existing selections retain archived sources. MCP adds `list_job_sources`, `add_job_source`, `update_job_source` and `set_job_source`, bringing the endpoint to 31 tools. Migration 0009 adds source records and nullable job links without populating user data.
-
-`pnpm verify:full` passed on this scoped layer: 150 unit tests, 87 integration tests, migration consistency, the production build and 11 browser journeys. Browser coverage includes inline creation, archive/restore, rename and clearing a selected source. Provider prompts are unchanged.
-
-## Shared Companies and findings (2026-09-23, feature branch pending merge)
-
-Companies stores Name, Location, Website and About alongside individual findings with text, source URL, retrieval date and statement/interpretation kind. Jobs can link or create a shared company, retain their existing posting-company text and logos, and select up to five findings in Interest. Existing jobs remain unlinked until explicitly linked. Company changes clear incompatible selections; finding deletion removes live selections, and referenced companies cannot be deleted. Browser and MCP expose version-checked operations with retry IDs for creates; the endpoint now has 42 tools. Migration 0010 adds company records, findings and job links. Generation integration is recorded in the following section.
-
-`pnpm verify:full` passed on this scoped layer: 153 unit tests, 95 integration tests, migration consistency, the production build and 12 browser journeys. Checks cover ownership, stale writes, protected deletion, selection limits, finding deletion/selection concurrency, MCP parity and browser findings selection. Tests use fictional data and the fake provider; generation prompts are unchanged.
-## Short cover-letter validation
-
-The document-generation layer retains the previously evaluated prompt and schema. Its rebased runtime checks are recorded with the PR. The provider evaluation below uses fictional cases.
+Implementation is locally accepted and pending merge. Verification for this extension is recorded below; historical milestone counts describe earlier behavior. Writing-context fields are populated through explicit user entry or harness operations.
 
 ### Real-provider evaluation, 2026-09-23 (local context branch)
 
@@ -161,5 +150,18 @@ Final synthetic `pnpm eval`: OpenRouter / `google/gemini-3.1-flash-lite`, nine s
 
 An earlier evaluation of this prompt iteration returned one fit-letter schema validation failure; a targeted repeat and the final full run passed. Provider output is nondeterministic. Saved drafts still need review for semantic attribution, tone and brevity; zero grounding warnings do not prove every claim is supported. `EVAL_REPORT_PATH` optionally saves the synthetic evaluation report and generated letter PDFs for inspection.
 
+### Integrated local validation, 2026-09-23
 
-Rebased generation verification (2026-09-23): the full verification steps (`pnpm verify`, `pnpm build`, `CI=true pnpm test:e2e`) passed with 159 unit tests, 99 integration tests, migration consistency and 12 browser journeys. Prompt, document schema and provider code match the evaluated version above; no provider behavior was changed by the split.
+`pnpm verify:full` passed on the integrated context branch: formatting, lint, types, 159 unit tests, skill synchronization, 98 PostgreSQL integration tests, migration consistency, production build and all 10 Chromium browser journeys. The browser journeys include Profile narratives, Interest, shared company findings, protected deletion and Source archive/restore. Fictional Companies and Interest screenshots were visually reviewed. Tests use the isolated test database and fake provider; the separate real-provider evaluation is recorded above. Local acceptance is complete; publication is authorized and merge remains pending.
+
+
+## Canonical company identity follow-up (implemented and locally accepted, pending merge)
+
+Company is the single source for employer name and shared logo. Jobs use one optional Company selector; the separate free-text name and job-owned logo controls are removed. The form order is Title, Company, Availability, Source, Location, Salary, Posting URL, Description. Names and logos resolve consistently for lists, job details, MCP, new generation snapshots and PDF filenames. Company create/update MCP accepts nullable logo_url; add_job accepts optional company_id and removes company/job logo_url.
+
+The migration preserves existing linked companies, creates a distinct company for each unlinked legacy job (no name matching), and fills an empty company logo from its newest linked job's available logo. Existing company logos win. Legacy artifact files and historical snapshots are not removed or rewritten. Follow-up `pnpm verify:full` passed: 159 unit tests, 101 PostgreSQL integration tests, migration consistency, production build and all 10 Chromium journeys. Regression checks cover migration without name matching, shared names and logos, immutable snapshots, stale edits, logo lifecycle and rejection of the removed MCP company argument. Fictional company screenshots were reviewed. No prompt or document schema changed in this follow-up; the real-provider evaluation above remains applicable. Local user acceptance is complete; publication is authorized and merge remains pending.
+
+
+## Publication status (2026-09-23)
+
+Local review is complete and publication is authorized for the writing-context/Companies/Job Sources change and the dependent canonical-company follow-up. Both remain pending merge; publication approval is not a claim that they are already on main or released. ADR 009 profile management and the earlier UI/skill-context changes are already merged. The checks recorded above apply to the respective verified implementation boundaries. No additional platform or packaged-release coverage is implied.

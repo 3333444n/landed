@@ -1,27 +1,28 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { deps, requireProfile } from "@/app/current-profile";
 import { loadConfig } from "@/infrastructure/config";
-import { getJob, logoVersion, readLogo } from "@/modules/jobs";
+import { getCompany, logoVersion, readLogo } from "@/modules/companies";
 
 export const dynamic = "force-dynamic";
 
 /**
- * Serves a job's stored logo. The address carries the file's content hash (`k`), so a stale
+ * Serves a company's stored logo. The address carries the file's content hash (`k`), so a stale
  * address answers 404 instead of new bytes and the browser may cache a match forever. The
  * sandbox policy keeps an SVG inert even when opened directly.
  */
 export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
   const profile = await requireProfile();
-  const job = await getJob(deps(), profile.id, id);
-  if (!job?.logoStorageKey || !job.logoContentType) return new NextResponse(null, { status: 404 });
-  const version = logoVersion(job.logoStorageKey);
+  const company = await getCompany(deps(), profile.id, id);
+  if (!company?.logoStorageKey || !company.logoContentType)
+    return new NextResponse(null, { status: 404 });
+  const version = logoVersion(company.logoStorageKey);
   if (!version || request.nextUrl.searchParams.get("k") !== version) {
     return new NextResponse(null, { status: 404 });
   }
   const logo = await readLogo(loadConfig().LANDED_ARTIFACT_DIR, {
-    storageKey: job.logoStorageKey,
-    contentType: job.logoContentType,
+    storageKey: company.logoStorageKey,
+    contentType: company.logoContentType,
   });
   if (!logo) return new NextResponse(null, { status: 404 });
   return new NextResponse(new Uint8Array(logo.bytes), {

@@ -75,7 +75,7 @@ async function addJob(companyId?: string) {
     await call<{ job_id: string }>("add_job", {
       job_id: randomUUID(),
       title: "Tool developer",
-      company: "Example Labs posting name",
+
       description: "Build helpful public tools with TypeScript.",
       ...(companyId ? { company_id: companyId } : {}),
     })

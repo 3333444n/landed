@@ -1,3 +1,4 @@
+import { getJob } from "@/app/jobs/company-job";
 /*
  * Shared loading for the document columns: the profile, the job, its application and the
  * document view for one type. Calls notFound() when any of them is missing.
@@ -12,7 +13,6 @@ import {
   sweepInterruptedRuns,
   type DocumentType,
 } from "@/modules/documents";
-import { getJob } from "@/modules/jobs";
 
 export async function loadDocument(jobId: string, type: DocumentType) {
   const profile = await requireProfile();

@@ -26,8 +26,7 @@ test("companies retain sourced findings and can be selected for a job", async ({
   await expect(page.getByRole("table")).toContainText("Released a public tool in 2026.");
   await page.goto("/jobs/new");
   await page.getByLabel("Title", { exact: true }).fill("Tool developer");
-  await page.getByLabel("Company", { exact: true }).fill("Example Labs posting name");
-  await page.getByRole("combobox", { name: "Linked company" }).fill("Example Labs");
+  await page.getByRole("combobox", { name: "Company" }).fill("Example Labs");
   await page.getByRole("option", { name: "Example Labs", exact: true }).click();
   await page.getByLabel("Description", { exact: true }).fill("Build public tools for developers.");
   await page.getByRole("button", { name: "Save job" }).click();

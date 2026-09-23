@@ -22,16 +22,10 @@ import {
   jobInput,
   jobCompanyInput,
   findingSelectionInput,
-  type StoredLogo,
 } from "./contracts";
-import { removeLogoFile } from "./logo";
 import * as repo from "./repository";
 
-/** `artifactDir` lets a replaced or deleted logo's file be removed; without it the file stays. */
-export type JobsDeps = BaseDeps & { artifactDir?: string };
-
-/** A stored logo sets the job's logo, null clears it, undefined leaves it as it is. */
-export type LogoChange = StoredLogo | null | undefined;
+export type JobsDeps = BaseDeps;
 
 export async function listJobs(deps: JobsDeps, profileId: string): Promise<repo.JobRecord[]> {
   return repo.listJobs(deps.db, profileId);
@@ -51,7 +45,6 @@ export async function saveJob(
   profileId: string,
   rawInput: unknown,
   existingId?: string,
-  logo?: LogoChange,
 ): Promise<Result<repo.JobRecord>> {
   const parsed = jobInput.safeParse(rawInput);
   if (!parsed.success) return validation(fieldErrorsFromZod(parsed.error));
@@ -59,7 +52,6 @@ export async function saveJob(
   const id = existingId ?? input.id ?? newId(deps);
   const values = {
     title: input.title,
-    companyName: input.companyName,
     ...(input.companyId !== undefined ? { companyId: input.companyId } : {}),
     location: input.location ?? null,
     salary: input.salary ?? null,
@@ -68,12 +60,6 @@ export async function saveJob(
     rawDescription: input.rawDescription,
     availability: input.availability,
   };
-  const logoValues =
-    logo === undefined
-      ? {}
-      : { logoStorageKey: logo?.storageKey ?? null, logoContentType: logo?.contentType ?? null };
-
-  let replaced: string | null = null;
   try {
     const result = await deps.db.transaction(async (tx) => {
       if (!existingId) {
@@ -107,13 +93,11 @@ export async function saveJob(
           id,
           {
             ...values,
-            ...logoValues,
             updatedAt: new Date(Math.max(now(deps).getTime(), current.updatedAt.getTime() + 1)),
           },
           expected(input.expectedUpdatedAt),
         );
         if (!updated) return stale();
-        replaced = current.logoStorageKey;
         return { ok: true as const, value: updated };
       }
       const created = await repo.insertJob(tx, {
@@ -121,15 +105,10 @@ export async function saveJob(
         profileId,
         source: "pasted",
         ...values,
-        ...logoValues,
         ...stamps(deps),
       });
       return { ok: true as const, value: created };
     });
-    // The row no longer points at the old file: remove it after the commit, best effort (docs/04).
-    if (result.ok && replaced && replaced !== result.value.logoStorageKey && deps.artifactDir) {
-      await removeLogoFile(deps.artifactDir, replaced);
-    }
     return result;
   } catch (error) {
     return mapDatabaseError(error, async () => {
@@ -146,12 +125,8 @@ export async function deleteJob(
   id: string,
 ): Promise<Result<void>> {
   try {
-    const current = await repo.findJob(deps.db, profileId, id);
     const deleted = await repo.deleteJob(deps.db, profileId, id);
     if (!deleted) return notFound("Job");
-    if (current?.logoStorageKey && deps.artifactDir) {
-      await removeLogoFile(deps.artifactDir, current.logoStorageKey);
-    }
     return { ok: true, value: undefined };
   } catch (error) {
     return mapDatabaseError(error, async () => null);

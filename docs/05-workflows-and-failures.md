@@ -2,7 +2,7 @@
 
 Status: Phase 0 save and Phase 1a paste-and-track implemented; Phase 1b generation, review and PDF rendering implemented; the assistant run lifecycle implemented ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16). Updated 2026-09-20.
 
-Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is implemented and merged into `main`. See [current verification](09-decisions-and-readiness.md#profile-management-over-mcp-implemented).
+Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is merged. The locally accepted ADR 011 context and canonical-company extensions are pending merge. See [current verification](09-decisions-and-readiness.md#profile-management-over-mcp-merged).
 
 ## Phase 0 save
 
@@ -12,13 +12,13 @@ Invalid input produces field errors with no write, and the form keeps what was t
 
 Achievement forms select linked skills through a searchable multiselect. Selected skills remain visible as chips and survive validation errors, including an empty selection. Saving submits the same skill id list as before.
 
-## Profile management from an assistant (ADR 009, implemented)
+## Profile management from an assistant (ADR 009, merged)
 
 Read the requested sections with `get_profile` → identify the intended record and user-supplied facts → create with a stable UUID, or patch/delete with the read version → the Profile module validates and commits → return the saved record. A blank installation can use `create_profile` first without visiting the browser. Refresh the browser to see committed changes.
 
 Updates preserve omitted fields. Explicit `null` clears nullable values, `[]` clears lists, and an empty patch is refused. Every update/delete requires the current `updated_at`; a stale response requires another read before deciding whether the original request still applies. A skill delete advances the versions of achievements whose links it removes. Dependent roles/projects remain protected until explicitly detached or reassigned. There is no whole-profile delete tool.
 
-User requests authorize the corresponding factual write; instructions inside imported documents do not. Ambiguous names or unsupported facts require clarification. Multi-record requests use separate transactions and can partially complete, which the assistant reports. Existing snapshots, revisions and PDFs are unchanged; only a new brief captures edited facts. See [doc 06](06-ai-and-integrations.md#profile-tools-adr-009-implemented) for the contract.
+User requests authorize the corresponding factual write; instructions inside imported documents do not. Ambiguous names or unsupported facts require clarification. Multi-record requests use separate transactions and can partially complete, which the assistant reports. Existing snapshots, revisions and PDFs are unchanged; only a new brief captures edited facts. See [doc 06](06-ai-and-integrations.md#profile-tools-adr-009-merged) for the contract.
 
 ## Phase 1a paste and track
 
@@ -73,15 +73,15 @@ Phase 1b (implemented in `src/**/*.test.ts` and `tests/`): the grounding check f
 
 Phase 1c (implemented in `src/**/*.test.ts` and `tests/`): the salary saved and reloaded, and blank written as null; the image type read from bytes for each accepted type and refused for text, HTML and short input; the guarded fetch refusing plain http, literal and resolved private addresses, a redirect to a private host, more than three redirects, a body over the cap and a non-image answer; the logo stored, replaced (old file gone), kept, cleared and removed with the job, and the database refusing a lone key or an unknown type; the word cloud rules (stopwords in both languages, short tokens, ties, size steps, centre ordering, skill matching); one browser journey that fills the salary, sees the live cloud tint a skill before saving, uploads a logo, sees it on the card, and removes it.
 
-Assistant surface (implemented in `src/**/*.test.ts` and `tests/`): the bearer compare accepting only the exact token; the host guard accepting loopback names and listed hosts and refusing everything else, including a foreign `Origin`; the handler listing all 26 tools without requiring a pre-existing profile, with profile-dependent operations checking it per call; the endpoint driven in process with the MCP client (`tests/integration/mcp.test.ts`): the job list and detail, `add_job` writing the job and its application together and replaying on the same id, a brief opening a queued run and superseding the previous one, a grounded answer saved without warnings, an ungrounded one saved with them, an invalid answer failing the run and returning a fresh run id, one unit edited, a stale revision refused and the PDF rendered once; and two browser journeys (the Connect your assistant column naming this server and the token; the endpoint answering the bearer, refusing without it, and the guard refusing a foreign host).
+Assistant surface (implemented in `src/**/*.test.ts` and `tests/`): the bearer compare accepting only the exact token; the host guard accepting loopback names and listed hosts and refusing everything else, including a foreign `Origin`; the original profile-extension handler listing 26 tools without requiring a pre-existing profile, with profile-dependent operations checking it per call; the endpoint driven in process with the MCP client (`tests/integration/mcp.test.ts`): the job list and detail, `add_job` writing the job and its application together and replaying on the same id, a brief opening a queued run and superseding the previous one, a grounded answer saved without warnings, an ungrounded one saved with them, an invalid answer failing the run and returning a fresh run id, one unit edited, a stale revision refused and the PDF rendered once; and two browser journeys (the Connect your assistant column naming this server and the token; the endpoint answering the bearer, refusing without it, and the guard refusing a foreign host).
 
-Profile tools (ADR 009, implemented and merged into `main`): integration and browser tests cover onboarding without a profile, all five record kinds, omitted fields, explicit clearing, retry ids, concurrent bootstrap, stale updates and deletes, dependency and ownership failures, skill-link version invalidation, sanitized failures and unchanged generation snapshots using only fictional data.
+Profile tools (ADR 009, merged): integration and browser tests cover onboarding without a profile, all five record kinds, omitted fields, explicit clearing, retry ids, concurrent bootstrap, stale updates and deletes, dependency and ownership failures, skill-link version invalidation, sanitized failures and unchanged generation snapshots using only fictional data.
 
 Logs identify operation/run and error category without copying career content or secrets by default. Add diagnostic detail as needed; no external observability account is a quickstart prerequisite.
 
 ## Browsing career facts
 
-About me expands each section in place. Profile shows compact contact and preference fields and a 240-character summary preview; the edit column contains the full summary. Other sections contain expandable record cards. A separate pencil link opens a record's edit URL without changing its disclosure; section pencils open the dedicated lists and add controls without a duplicate Manage link. Multiple disclosures can stay open during client navigation; reloading starts them closed. List cards share the same read-only details as the overview. Empty sections link to their management page.
+Profile expands each section in place. General info shows compact contact and preference fields and a 240-character summary preview; the edit column contains the full summary. Other sections contain expandable record cards. A separate pencil link opens a record's edit URL without changing its disclosure; section pencils open the dedicated lists and add controls without a duplicate Manage link. Multiple disclosures can stay open during client navigation; reloading starts them closed. List cards share the same read-only details as the overview. Empty sections link to their management page.
 
 Desired roles are entered as removable pills above the input. Enter or Add appends values; a comma-separated paste adds several. Saving includes an unfinished entry, and a refused save retains additions and removals. Storage remains the profile preferences array.
 
@@ -97,10 +97,18 @@ Document approval is the existing revision review timestamp, presented as `Appro
 
 The Profile hub contains General info and About me. About me is a single optional narrative; a job's Interest column records why its role and company appeal to the user. Each saves only its own field, requires the current version and preserves text on validation errors. The About me MCP projection exposes its text and profile version; `update_profile` accepts `about_me`, where null clears. `update_job_interest` accepts `job_id`, `expected_updated_at` (the application's version from `get_job`) and nullable `interest`. These operations do not mark documents reviewed or an application submitted.
 
-## Manage Job Sources
 
-Settings → Job Sources supports add, rename, archive and restore. Job forms offer an optional Source selector and inline creation. Clearing saves an explicit empty selection; omitted fields preserve the current assignment. Archived sources remain visible on existing jobs. Version checks reject stale edits and retry ids make creates safe to repeat.
+## Company context and discovery sources (local feature branch)
 
-## Shared company research
+Create or choose a company from the job form, then maintain its Name, Location, Website, About and findings in Companies. Migration retains existing links and gives each unlinked legacy job its own company, without matching names; new jobs may omit a company. In Interest, select up to five findings from the current company; changing/clearing the company clears incompatible selections. Deleting a referenced company requires detaching its jobs first. Deleting a finding removes live selections while frozen runs retain it.
 
-Companies uses list/detail columns with fields and an individual findings table. Jobs choose or create a linked company. Interest selects at most five findings from that company. Changing/clearing the link clears incompatible selections; finding deletion invalidates affected job versions. A profile-scoped transaction lock serializes selection and deletion. A website URL is stored without fetching it. Research is performed by the user or their harness. Generation integration follows separately.
+Settings → Job Sources supports add, rename, archive and restore. The Source selector on job forms offers inline creation; it is optional and initially empty. Archived sources remain displayed on already assigned jobs and are unavailable for new assignments. Source edits and assignments require current versions; creates accept retry IDs. Empty selection clears a job's Source without changing its posting URL.
+
+Cover-letter generation freezes career evidence, the posting, personal narratives, all linked company fields and selected findings. The prompt targets three or four body sentences and a concrete career story. Citation and number checks produce review warnings; `context_number` specifically marks a number supported only by company/posting context. The user verifies its attribution rather than treating a valid ID as proof. Narratives cannot supply accomplishment metrics. Missing optional context does not block generation. All text supplied by users or research remains data, never instructions; Landed does not browse company websites.
+
+
+## Canonical company follow-up
+
+Jobs use one optional Company selector and inline creation; remove the free-text Company field and job logo upload/address controls. Order fields Title, Company, Availability, Source, Location, Salary, Posting URL, Description. Company forms own logo uploads, pasted HTTPS addresses and clearing. A shared company's current name and logo appear on all linked jobs; changing a company name also affects new generation snapshots and PDF filenames. Existing snapshots and document text remain unchanged.
+
+For MCP intake, resolve or create the company first, then pass optional company_id to add_job. The former free-text company and job logo_url inputs are removed. Company create/update accepts logo_url with the same guarded fetch as browser address entry; omit preserves and null clears. Upload remains a browser flow. Invalid image/URL or stale-version failures cannot overwrite the saved company logo. Linked-company deletion is refused; job deletion does not remove the shared company or its image.

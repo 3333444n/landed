@@ -4,12 +4,12 @@ import { getCurrentProfile } from "@/modules/profile";
 import {
   listCompanies,
   getCompany,
-  saveCompany,
   deleteCompany,
   listCompanyFindings,
   getCompanyFinding,
   saveCompanyFinding,
   findingKinds,
+  logoHref,
 } from "@/modules/companies";
 import {
   getJob,
@@ -17,6 +17,7 @@ import {
   updateJobCompany,
   setJobFindingSelection,
 } from "@/modules/jobs";
+import { saveCompanyWithLogoUrl } from "@/app/companies/logo";
 import { removeCompanyFinding } from "@/app/jobs/company-context";
 import type { Result } from "@/modules/shared/contracts";
 import type { ToolContext } from "./tools";
@@ -29,15 +30,22 @@ const failure = (text: string): ToolResult => ({
   content: [{ type: "text", text }],
   isError: true,
 });
-const record = (value: object) =>
-  Object.fromEntries(
+const record = (value: object) => ({
+  ...Object.fromEntries(
     Object.entries(value)
-      .filter(([key]) => key !== "profileId")
+      .filter(([key]) => !["profileId", "logoStorageKey", "logoContentType"].includes(key))
       .map(([key, value]) => [
         key.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`),
         value instanceof Date ? value.toISOString() : value,
       ]),
-  );
+  ),
+  ...("logoStorageKey" in value &&
+  "id" in value &&
+  typeof value.id === "string" &&
+  (typeof value.logoStorageKey === "string" || value.logoStorageKey === null)
+    ? { logo_url: logoHref({ id: value.id, logoStorageKey: value.logoStorageKey }) }
+    : {}),
+});
 const result = <T extends object>(r: Result<T>) =>
   r.ok ? json(record(r.value)) : failure(errorText(r.error));
 const removed = (r: Result<void>) => (r.ok ? json({ deleted: true }) : failure(errorText(r.error)));
@@ -87,6 +95,7 @@ export function registerCompanyTools(server: McpServer, ctx: ToolContext) {
       return c
         ? json({
             ...record(c),
+            logo_url: logoHref(c),
             findings: (await listCompanyFindings(ctx.deps, p, c.id)).map(record),
           })
         : failure("not_found: Company not found");
@@ -101,17 +110,28 @@ export function registerCompanyTools(server: McpServer, ctx: ToolContext) {
       location: z.string().optional(),
       website: z.string().optional(),
       about: z.string().optional(),
+      logo_url: z
+        .string()
+        .nullable()
+        .optional()
+        .describe("Fetch and store this image address; null leaves no logo"),
     },
     false,
     async (a, p) =>
       result(
-        await saveCompany(ctx.deps, p, {
-          id: a.company_id,
-          name: a.name,
-          location: a.location,
-          website: a.website,
-          about: a.about,
-        }),
+        await saveCompanyWithLogoUrl(
+          { ...ctx.deps, artifactDir: ctx.artifactDir },
+          p,
+          {
+            id: a.company_id,
+            name: a.name,
+            location: a.location,
+            website: a.website,
+            about: a.about,
+          },
+          undefined,
+          a.logo_url,
+        ),
       ),
   );
   register(
@@ -124,14 +144,19 @@ export function registerCompanyTools(server: McpServer, ctx: ToolContext) {
       location: z.string().nullable().optional(),
       website: z.string().nullable().optional(),
       about: z.string().nullable().optional(),
+      logo_url: z
+        .string()
+        .nullable()
+        .optional()
+        .describe("Image address to copy; null clears, omission preserves"),
     },
     false,
     async (a, p) => {
       const c = await getCompany(ctx.deps, p, a.company_id);
       if (!c) return failure("not_found: Company not found");
       return result(
-        await saveCompany(
-          ctx.deps,
+        await saveCompanyWithLogoUrl(
+          { ...ctx.deps, artifactDir: ctx.artifactDir },
           p,
           {
             id: c.id,
@@ -142,6 +167,7 @@ export function registerCompanyTools(server: McpServer, ctx: ToolContext) {
             about: (a.about === undefined ? c.about : a.about) ?? undefined,
           },
           c.id,
+          a.logo_url,
         ),
       );
     },
@@ -153,7 +179,7 @@ export function registerCompanyTools(server: McpServer, ctx: ToolContext) {
     false,
     async (a, p) =>
       removed(
-        await deleteCompany(ctx.deps, p, a.company_id, {
+        await deleteCompany({ ...ctx.deps, artifactDir: ctx.artifactDir }, p, a.company_id, {
           expectedUpdatedAt: a.expected_updated_at,
         }),
       ),

@@ -2,7 +2,7 @@
 
 Status: CI, commit conventions, PR template, the skill sync check and SECURITY in place; the packaged installation is built from the checkout, no tagged release yet. Updated 2026-09-20.
 
-Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is implemented and merged into `main`. See [current verification](09-decisions-and-readiness.md#profile-management-over-mcp-implemented).
+Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is merged. The locally accepted ADR 011 context and canonical-company extensions are pending merge. See [current verification](09-decisions-and-readiness.md#profile-management-over-mcp-merged).
 
 ## Small public-repository baseline
 

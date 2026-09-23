@@ -1,6 +1,6 @@
 # 04 — PostgreSQL data model
 
-Status: Phase 0 tables implemented in `db/migrations/0000_phase0_profile_tables.sql`; Phase 1a tables in `db/migrations/0001_phase1a_jobs_and_applications.sql`; Phase 1b tables in `db/migrations/0002_phase1b_documents_and_profile_links.sql`; the job salary column in `db/migrations/0003_phase1c_job_salary.sql`; the job logo columns in `db/migrations/0004_phase1c_job_logo.sql`; the employment location in `db/migrations/0005_phase1c_employment_location.sql`; the `assistant` run mode and revision source in `db/migrations/0006_phase1c_assistant_run_mode.sql`; direct skill context links in `db/migrations/0007_skill_contexts.sql`. Updated 2026-09-20.
+Status: Phase 0 tables implemented in `db/migrations/0000_phase0_profile_tables.sql`; Phase 1a tables in `db/migrations/0001_phase1a_jobs_and_applications.sql`; Phase 1b tables in `db/migrations/0002_phase1b_documents_and_profile_links.sql`; the job salary column in `db/migrations/0003_phase1c_job_salary.sql`; the job logo columns in `db/migrations/0004_phase1c_job_logo.sql`; the employment location in `db/migrations/0005_phase1c_employment_location.sql`; the `assistant` run mode and revision source in `db/migrations/0006_phase1c_assistant_run_mode.sql`. Updated 2026-09-23. Migration 0007 (direct skill contexts) is merged; locally accepted migrations 0008–0011 add writing context, sources, companies/findings and canonical company identity, pending merge.
 
 An Entity–Relationship (ER) diagram describes entities and their relationships. A logical relational ER model adds keys, attributes, and cardinality; a physical schema adds database-specific types, constraints, and indexes. The domain model explains what a Loan means; the ER model shows how `loans.copy_id` references `copies.id`.
 
@@ -82,7 +82,7 @@ Preferences JSONB contains a small validated structure (`desiredRoles`, `locatio
 - Backup and restore use `pg_dump`/`pg_restore` through `pnpm db:backup` and `pnpm db:restore` (doc 07); the packaged shell launcher's backup also archives the artifact volume with the PDFs (doc 07).
 - Owner-aware links require `UNIQUE (profile_id, id)` on each parent table; that index also serves per-profile lookups, so no separate `profile_id` index is added there.
 
-## Profile mutation contract extension (ADR 009, implemented)
+## Profile mutation contract extension (ADR 009, merged)
 
 The assistant adds no career tables or achievement history. Partial updates are merged with the stored record in the Profile module's transaction and validated with existing constraints. Creates use client ids for replay; first-profile creation is serialized. Assistant updates and deletes require the current `updated_at`. Skill deletion also advances affected achievements' versions when their join rows disappear. Whole-profile deletion remains unavailable through MCP. Frozen snapshots and saved document revisions are not rewritten by career-record changes.
 
@@ -99,10 +99,10 @@ erDiagram
 
 | Table | Key fields / content |
 |---|---|
-| jobs | id, profile_id; title, company_name (both required, not blank), location, salary (free text as the posting states it, never parsed), source (`pasted`), source_url, raw_description (required, not blank), availability (`active`, `expired`, `unknown`, default active), logo_storage_key and logo_content_type (`image/png`, `image/jpeg`, `image/webp`, `image/svg+xml`; both set or both null) |
+| jobs | id, profile_id; title (required, not blank), optional canonical company_id and job_source_id, location, salary (free text as the posting states it, never parsed), source (`pasted`), source_url, raw_description (required, not blank), availability (`active`, `expired`, `unknown`, default active). The ADR 011 follow-up removes the former company_name and job logo columns. |
 | applications | id, profile_id, job_id; status (the eight values of document 05, default `preparing`), notes, submitted_at |
 
-Rules the database backs up: `UNIQUE (profile_id, id)` on jobs so applications link owner-aware; `UNIQUE (profile_id, job_id)` on applications, one pursuit per profile and job; the composite foreign key `(profile_id, job_id)` references `jobs (profile_id, id)` with `ON DELETE CASCADE`, so deleting a job deletes its application (the interface confirms first); check constraints on source, availability, status and the logo pair; an index on jobs `(profile_id, updated_at)` for the list. A company logo is a file under the artifact directory at `<profile_id>/logos/<job_id>-<first 8 hex of its SHA-256>.<ext>`, written atomically (temporary name, then rename) before the row that references it, and served through `/jobs/<id>/logo?k=<hash>`; the hash in the address lets the browser cache it forever and makes a stale address answer 404. A replaced or removed logo, and the logo of a deleted job, has its file unlinked best effort after the commit; a file without a row is an orphan the row never points at, and a row without a file answers 404 until the logo is chosen again. `submitted_at` is set the first time the status becomes `applied` and kept on every later change; it is the user's own record of having sent the application, never something the app sets on its own. The derived status chip is never stored (document 05). Both tables carry `created_at` and `updated_at`, the latter as the stale-edit token.
+Rules the database backs up: `UNIQUE (profile_id, id)` on jobs so applications link owner-aware; `UNIQUE (profile_id, job_id)` on applications, one pursuit per profile and job; the composite foreign key `(profile_id, job_id)` references `jobs (profile_id, id)` with `ON DELETE CASCADE`, so deleting a job deletes its application (the interface confirms first); check constraints on source, availability and status; an index on jobs `(profile_id, updated_at)` for the list. Company logos belong to Companies, with both metadata fields set or both null and an allowed image content type. New files use `<profile_id>/logos/<company_id>-<randomUUID>-<first 8 hex of SHA-256>.<ext>`, written atomically before the company row references them. Each write gets a distinct path so concurrent replacement/removal cannot unlink a newly restored copy of the same bytes. Logos are served through `/companies/<id>/logo?k=<version>`; stale addresses answer 404. Legacy stored filenames remain readable without renaming. Replacing, clearing or deleting a company's logo unlinks its prior file best effort after commit; deleting a job does not remove shared company files. A missing file answers 404 until the logo is chosen again. Migration itself never unlinks legacy artifacts. `submitted_at` is set the first time the status becomes `applied` and kept on every later change; it is the user's own record of having sent the application, never something the app sets on its own. The derived status chip is never stored (document 05). Both tables carry `created_at` and `updated_at`, the latter as the stale-edit token.
 
 | Parent | Child FK | Parent per child | Children per parent |
 |---|---|---|---|
@@ -137,24 +137,35 @@ PostgreSQL remains the source of truth. Later pgvector stores derived embeddings
 Sources: [PostgreSQL constraints](https://www.postgresql.org/docs/current/ddl-constraints.html), [pgvector](https://github.com/pgvector/pgvector).
 
 
-## Direct skill contexts (migration 0007, implemented)
+## Direct skill contexts (migration 0007, merged)
 
 `skill_employment` links a skill to multiple roles; `skill_projects` links it to multiple projects. Both carry `profile_id`, a composite primary key `(skill_id, context_id)`, owner-aware foreign keys and a reverse context lookup index. A skill owns these lists: row and links are saved together, and reads return their version and associations in one SQL statement. Skill deletion cascades to its joins; linked roles and projects require explicit detachment before deletion.
 
 Achievement-derived skill connections and parent roles of linked projects are computed for browsing, never backfilled into direct link tables. Existing skills begin with empty direct lists; existing achievement links are preserved. Direct links currently support career browsing only: the document snapshot projection and grounding rules remain unchanged, so a context link alone does not become achievement evidence.
 
-## Writing context (locally accepted, pending merge)
+## Writing context (feature branch, locally accepted, pending merge)
 
 Migration 0008 adds nullable `profiles.about_me` and `applications.interest`. Each is edited in place with a version-checked partial update. About me accepts up to 12,000 characters and Interest 4,000; blank text clears the value. Updating General info or application status preserves these fields. Frozen generation snapshots remain independent of live edits.
 
-## Job Sources (locally accepted, pending merge)
 
-Migration 0009 adds profile-owned job_sources with name, archived and version timestamps, plus nullable jobs.job_source_id and an owner-aware foreign key. New installations have no sources. Sources are archived rather than deleted so old assignments remain readable; new assignments require an active source. Posting URL and technical ingestion method remain separate.
+## Companies, findings and Job Sources (local implementation, locally accepted, pending merge)
 
-## Companies and selected findings (locally accepted, pending merge)
+| Table / field | Content and relationships |
+|---|---|
+| companies | Profile-owned id, required name, nullable location/website/about; shared logo_storage_key/logo_content_type pair; created_at and updated_at |
+| company_findings | Profile and company ownership, text, source_url, retrieved_at date, kind (`statement`, `interpretation`), timestamps |
+| jobs.company_id | Nullable owner-aware canonical company link; legacy rows receive distinct companies without name matching |
+| job_finding_selections | Job/finding join with composite keys enforcing both owner and company agreement; at most five via the module contract |
+| job_source_options | Profile-owned id, name, archived boolean, timestamps; no seeded rows |
+| jobs.job_source_id | Nullable owner-aware source link, independent of source and source_url |
 
-Migration 0010 adds profile-owned companies (name, location, website, about), company_findings (text, source URL, retrieval date, statement/interpretation kind), nullable jobs.company_id and the job_finding_selections join table. Ownership uses composite foreign keys. Existing jobs retain their company text and stay unlinked at this layer. Company deletion is refused while referenced; finding deletion clears live selections and advances affected job versions. Historical snapshots are unchanged.
+Company deletion is blocked while referenced by jobs. Changing a job's company clears its selections. Finding deletion cascades its live selections and invalidates affected job versions. Source options are archived/restored rather than deleted; existing assignments remain available. Schema changes use generated additive SQL migrations, never a data reset.
 
-## Frozen writing context
+New cover-letter snapshots additionally freeze optional `writingContext`: About me and Interest with their citation IDs, all linked company fields, and the selected findings with their sources, dates and kinds. Old snapshots omit this optional object and remain valid. Career `evidenceIds` and optional paragraph `contextIds` are separate namespaces. Live edits and deletes cannot alter saved snapshots or revisions.
 
-Cover-letter snapshots optionally freeze About me, application Interest, company fields and selected sourced findings alongside career records and the posting. Existing snapshots remain readable. Paragraph contextIds cite context separately from career evidenceIds. Stored URLs do not trigger network requests.
+
+## Canonical company identity and shared logos (ADR 011 follow-up)
+
+This supersedes the historical job-owned company-name/logo description above. Remove the separate jobs.company_name and job logo columns after migration; company records own the canonical name and logo metadata. Application composition resolves company identity for job lists/detail, MCP, new snapshots and PDF filenames. New jobs may have a null company_id.
+
+Migration preserves existing linked Companies. For each legacy job without a company link it creates a distinct company using that job's stored company name, then links the job; it never groups records merely because their names match. A company whose logo is empty inherits the newest linked job's stored logo when available, while an existing company logo wins. Metadata can reference the existing artifact file: migration does not remove legacy files. Future company-logo changes use atomic file-first/row-second storage and safe replacement cleanup. Deleting one job leaves its company and shared logo intact. No historical snapshot or saved document revision is rewritten.

@@ -1,11 +1,9 @@
+import { detectImageType, logoVersion, logoHref } from "@/modules/companies";
 import { describe, expect, it } from "vitest";
 import {
   buildWordCloud,
   centerOut,
-  detectImageType,
   jobSummary,
-  logoHref,
-  logoVersion,
   sizeStep,
   skillWords,
   wordFrequencies,
@@ -62,7 +60,7 @@ describe("logo address", () => {
   it("carries the content hash from the storage key", () => {
     const key = `10000000-0000-4000-8000-000000000001/logos/${job.id}-0badf00d.png`;
     expect(logoVersion(key)).toBe("0badf00d");
-    expect(logoHref({ ...job, logoStorageKey: key })).toBe(`/jobs/${job.id}/logo?k=0badf00d`);
+    expect(logoHref({ ...job, logoStorageKey: key })).toBe(`/companies/${job.id}/logo?k=0badf00d`);
   });
 });
 

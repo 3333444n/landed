@@ -10,7 +10,7 @@ import {
   type DocumentView,
   type GroundingWarning,
 } from "@/modules/documents";
-import type { JobRecord } from "@/modules/jobs";
+import type { CompanyJob } from "@/app/jobs/company-job";
 import type { ModuleError } from "@/modules/shared/contracts";
 
 export function jobListItem(row: JobRow) {
@@ -39,7 +39,7 @@ export function documentSummary(view: DocumentView) {
 }
 
 export function jobDetail(
-  job: JobRecord,
+  job: CompanyJob,
   application: ApplicationRecord | null,
   views: Record<DocumentType, DocumentView>,
 ) {

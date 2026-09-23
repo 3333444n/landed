@@ -1,3 +1,4 @@
+import { saveCompany } from "@/modules/companies";
 /*
  * The assistant surface end to end, in process: the handler from src/app/mcp/handler.ts is
  * driven by the SDK client through a custom fetch, against the test database. The route's own
@@ -77,7 +78,15 @@ afterAll(async () => {
 beforeEach(async () => {
   await truncateAll(connection);
   await seedDemoProfile(deps);
-  unwrap(await pursueJob(deps(), demo.profileId, { id: demo.jobId, ...demo.job }));
+  const company = unwrap(
+    await saveCompany(deps(), demo.profileId, {
+      id: crypto.randomUUID(),
+      name: demo.job.companyName,
+    }),
+  );
+  unwrap(
+    await pursueJob(deps(), demo.profileId, { id: demo.jobId, ...demo.job, companyId: company.id }),
+  );
   client = await connect();
 });
 
@@ -117,12 +126,26 @@ describe("list_jobs and get_job", () => {
 });
 
 describe("add_job", () => {
+  it("rejects legacy company text instead of silently losing identity", async () => {
+    const error = await callExpectingError("add_job", {
+      title: "Engineer",
+      company: "Example Labs",
+      description: "Build useful tools",
+    });
+    expect(error).toContain("company");
+    expect((await call<{ jobs: unknown[] }>("list_jobs")).jobs).toHaveLength(1);
+  });
   it("creates the job and its application together, and replays on the same id", async () => {
     const jobId = crypto.randomUUID();
+    const company = await call<{ id: string }>("create_company", {
+      company_id: crypto.randomUUID(),
+      name: "Example Logistics",
+    });
     const posting = {
       job_id: jobId,
+      company_id: company.id,
       title: "Data engineer",
-      company: "Example Logistics",
+
       description: "Example Logistics needs a data engineer for its reporting pipeline.",
       location: "Monterrey",
       salary: "MXN 60,000 a month",
@@ -136,7 +159,7 @@ describe("add_job", () => {
     expect(jobRows).toHaveLength(2);
     expect(jobRows.find((j) => j.id === jobId)).toMatchObject({
       title: "Data engineer",
-      companyName: "Example Logistics",
+      companyId: company.id,
       rawDescription: posting.description,
       location: "Monterrey",
       salary: "MXN 60,000 a month",
@@ -159,7 +182,7 @@ describe("add_job", () => {
     expect(listed.map((j) => j.id).sort()).toEqual([demo.jobId, jobId].sort());
     expect(listed.find((j) => j.id === jobId)).toMatchObject({
       title: "Data engineer",
-      company: "Example Logistics",
+
       status: "Preparing",
     });
     const detail = await call("get_job", { job_id: jobId });
@@ -169,7 +192,7 @@ describe("add_job", () => {
   it("refuses a posting without a title, naming the field, and writes nothing", async () => {
     const text = await callExpectingError("add_job", {
       title: "   ",
-      company: "Example Logistics",
+
       description: "A posting with no title.",
     });
     expect(text).toContain("validation");
@@ -180,7 +203,7 @@ describe("add_job", () => {
 
     const badUrl = await callExpectingError("add_job", {
       title: "Data engineer",
-      company: "Example Logistics",
+
       description: "A posting with a bad address.",
       source_url: "ftp://example.com/posting",
     });

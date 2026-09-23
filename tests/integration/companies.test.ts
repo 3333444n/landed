@@ -100,7 +100,7 @@ it("keeps legacy posting text and clears selections when changing the linked com
       expectedUpdatedAt: selected.updatedAt.toISOString(),
     }),
   );
-  expect(linked.companyName).toBe(j.companyName);
+  expect(linked.companyId).toBeNull();
   expect(await getSelectedFindingIds(deps(), profileId, j.id)).toEqual([]);
   expect(unwrap(await job(null)).companyId).toBeNull();
 });

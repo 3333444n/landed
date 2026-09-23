@@ -1,3 +1,4 @@
+import { createJobCompany } from "./company-helpers";
 import { expect, test } from "@playwright/test";
 
 // Values from examples/demo-profile.json (fictional).
@@ -29,7 +30,7 @@ test("a pasted job gets an application whose status the user moves by hand", asy
   await expect(page.getByText("No jobs yet.")).toBeVisible();
   await page.getByRole("link", { name: "Add job" }).click();
   await page.getByLabel("Title").fill(demo.title);
-  await page.getByLabel("Company", { exact: true }).fill(demo.companyName);
+  await createJobCompany(page, demo.companyName);
   await page.getByLabel("Location").fill(demo.location);
   await page.getByLabel("Salary").fill(demo.salary);
   await page.getByLabel("Description").fill(demo.rawDescription);
@@ -99,8 +100,16 @@ test("a pasted job gets an application whose status the user moves by hand", asy
   await expect(page.getByRole("status")).toHaveText("Saved");
   await expect(page.getByRole("heading", { name: "Senior full-stack developer" })).toBeVisible();
 
-  // A logo chosen from the tile replaces the status icon on the list card and the job column;
-  // removing it brings the icon back. The list is checked from the job route, where it is visible.
+  // The company owns its logo; linked jobs display it without a per-job override.
+  await page.goto(jobUrl);
+  const companyPath = await page
+    .getByRole("list", { name: "Materials" })
+    .getByRole("link")
+    .filter({ hasText: /^Company/ })
+    .getAttribute("href");
+  await page.goto(companyPath!);
+  const companyVersion = page.locator('input[name="expectedUpdatedAt"]');
+  let before = await companyVersion.inputValue();
   await page.getByLabel("Logo file").setInputFiles({
     name: "logo.png",
     mimeType: "image/png",
@@ -109,16 +118,8 @@ test("a pasted job gets an application whose status the user moves by hand", asy
       "base64",
     ),
   });
-  // The status already reads "Saved" from the title save and the tile already shows the
-  // browser-side preview, so neither proves the logo was stored: wait for the action's
-  // response before leaving the page.
-  const logoSaved = page.waitForResponse(
-    (r) => r.request().method() === "POST" && r.url().endsWith("/description") && r.ok(),
-  );
-  await page.getByRole("button", { name: "Save changes" }).click();
-  await logoSaved;
-  await expect(page.getByRole("status")).toHaveText("Saved");
-  await expect(page.getByRole("button", { name: "Change logo" }).locator("img")).toHaveCount(1);
+  await page.getByRole("button", { name: "Save changes", exact: true }).click();
+  await expect(companyVersion).not.toHaveValue(before);
   await page.goto(`${jobUrl}?filter=all`);
   const logo = page.getByRole("list", { name: "Jobs" }).locator("img");
   await expect(logo).toHaveCount(1);
@@ -126,29 +127,21 @@ test("a pasted job gets an application whose status the user moves by hand", asy
     .poll(() => logo.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth))
     .toBe(1);
   const logoSrc = await logo.getAttribute("src");
-  const response = await page.request.get(`${logoSrc}`);
+  expect(logoSrc).toMatch(/^\/companies\//);
+  const response = await page.request.get(logoSrc!);
   expect(response.status()).toBe(200);
   expect(response.headers()["content-type"]).toBe("image/png");
   expect(response.headers()["content-security-policy"]).toBe("sandbox");
   expect((await page.request.get(`${logoSrc?.split("?")[0]}?k=00000000`)).status()).toBe(404);
-  await page.getByRole("link", { name: "Job description" }).click();
+  await page.goto(companyPath!);
+  before = await companyVersion.inputValue();
   await page.getByRole("button", { name: "Change logo" }).click();
   await page.getByRole("menuitem", { name: "Remove logo" }).click();
-  await page.getByRole("button", { name: "Save changes" }).click();
-  await expect(page.getByRole("status")).toHaveText("Saved");
+  await page.getByRole("button", { name: "Save changes", exact: true }).click();
+  await expect(companyVersion).not.toHaveValue(before);
   await page.goto(`${jobUrl}?filter=all`);
-  await expect(
-    page
-      .getByRole("list", { name: "Jobs" })
-      .getByRole("heading", { name: "Senior full-stack developer" }),
-  ).toBeVisible();
   await expect(page.getByRole("list", { name: "Jobs" }).locator("img")).toHaveCount(0);
 
-  // Legacy jobs can link shared company context without changing their posting text
-  await page.goto(`${jobUrl}/company`);
-  await expect(page.getByRole("combobox", { name: "Linked company" })).toBeVisible();
-
-  // Deleting the job removes it and its application
   await page.goto(jobUrl);
   await page.getByRole("button", { name: "Delete" }).click();
   await page.getByRole("button", { name: "Delete", exact: true }).last().click();

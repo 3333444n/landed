@@ -1,3 +1,4 @@
+import { getJob } from "@/app/jobs/company-job";
 /*
  * The document and job tools an assistant may call (ADR 008, docs/06).
  * Profile tools are registered separately under ADR 009. Each one is a thin adapter over a
@@ -33,7 +34,7 @@ import {
   type DocumentType,
   type DocumentView,
 } from "@/modules/documents";
-import { getJob } from "@/modules/jobs";
+
 import { getCurrentProfile } from "@/modules/profile";
 import type { ModuleError } from "@/modules/shared/contracts";
 import type { BaseDeps } from "@/modules/shared/service";
@@ -318,11 +319,10 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
     {
       title: "Add job",
       description:
-        "Saves a posting the user wants to pursue and opens its application, as pasting one in the browser does. Pass the posting text as the harness fetched or received it; Landed never fetches a posting page itself. Supply `job_id` (a UUID you mint) to make a retry safe: the same id replays to the same job instead of creating a second one. Returns `{ job_id, application_id }`.",
-      inputSchema: z.object({
+        "Saves a posting the user wants to pursue and opens its application, as pasting one in the browser does. Pass the posting text as the harness fetched or received it; Landed never fetches a posting page itself. Supply `job_id` (a UUID you mint) to make a retry safe: the same id replays to the same job instead of creating a second one. Use create_company then company_id for company identity; the former free-text company argument is rejected. Returns `{ job_id, application_id }`.",
+      inputSchema: z.strictObject({
         job_id: z.uuid().optional().describe("A UUID minted by the client, so a retry replays"),
         title: z.string().describe("The job title as the posting states it"),
-        company: z.string().describe("The employer's name"),
         company_id: z.uuid().optional(),
         description: z.string().describe("The full posting text, up to 50,000 characters"),
         location: z.string().optional(),
@@ -334,23 +334,12 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
     },
     tool(
       async (
-        {
-          job_id,
-          title,
-          company,
-          company_id,
-          description,
-          location,
-          salary,
-          source_url,
-          job_source_id,
-        },
+        { job_id, title, company_id, description, location, salary, source_url, job_source_id },
         profileId,
       ) => {
-        const saved = await pursueJob({ ...ctx.deps, artifactDir: ctx.artifactDir }, profileId, {
+        const saved = await pursueJob(ctx.deps, profileId, {
           id: job_id,
           title,
-          companyName: company,
           companyId: company_id,
           rawDescription: description,
           location,
@@ -392,7 +381,7 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
 /** The tool's parameter names for the job fields the module validates, so errors name what was sent. */
 const jobFieldNames: Record<string, string> = {
   id: "job_id",
-  companyName: "company",
+  companyId: "company_id",
   rawDescription: "description",
   sourceUrl: "source_url",
   jobSourceId: "job_source_id",

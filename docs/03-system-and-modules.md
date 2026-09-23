@@ -2,7 +2,7 @@
 
 Status: stack, Profile, Jobs and Applications modules and packaged runtime implemented; Documents module, model adapter and PDF rendering implemented (Phase 1b, ADR 006); the assistant surface at `/mcp` and the Host and Origin guard implemented ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16). Updated 2026-09-20.
 
-Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is implemented and merged into `main`. See [current verification](09-decisions-and-readiness.md#profile-management-over-mcp-implemented).
+Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is merged. The locally accepted ADR 011 context and canonical-company extensions are pending merge. See [current verification](09-decisions-and-readiness.md#profile-management-over-mcp-merged).
 
 ## System boundary
 
@@ -26,7 +26,7 @@ flowchart LR
 
 This is a logical runtime view: PostgreSQL is a process/container with its own volume, and the `migrate` task is a Compose service that runs once per `start` rather than a product component. The diagram abstracts volumes and networks.
 
-Phase 0 and 1a have no runtime network dependency beyond local processes. Installation/image downloads require internet. From Phase 1b the web service makes outbound HTTPS calls to the model provider configured in the environment file, and only then; with no provider configured, Landed makes no model request itself. The assistant used for paste-back or MCP may send supplied facts to its own provider. The one other outbound call is user-initiated: pasting an image address for a job's logo fetches that address once, through the guarded fetcher in `src/infrastructure/fetch` ([ADR 007](adr/007-user-initiated-image-fetch.md)). Later job/search providers require outbound access too.
+Phase 0 and 1a have no runtime network dependency beyond local processes. Installation/image downloads require internet. From Phase 1b the web service makes outbound HTTPS calls to the model provider configured in the environment file, and only then; with no provider configured, Landed makes no model request itself. The assistant used for paste-back or MCP may send supplied facts to its own provider. The one other outbound call is user-initiated: pasting an image address for a company's logo fetches that address once, through the guarded fetcher in `src/infrastructure/fetch` ([ADR 007](adr/007-user-initiated-image-fetch.md)). Later job/search providers require outbound access too.
 
 The assistant surface ([ADR 008](adr/008-assistant-surface-over-mcp.md), implemented 2026-09-16) is an inbound connection, not an outbound one: the user's own assistant on the host computer calls `POST /mcp` on the same port the browser uses, with the bearer token `LANDED_MCP_TOKEN` from the environment file (minted by the launcher for the packaged installation), and Landed's tools call module operations through the composition layer. Two rules then apply to the whole application, not only to `/mcp`: every request's `Host` must be `localhost`, `127.0.0.1` or `::1` (or a name listed in `LANDED_ALLOWED_HOSTS`, empty until a remote design uses it), and an `Origin` header, when present, must name one of the same hosts; any other request is refused with 403 before a handler runs, because the Settings column shows the token and a server that answered any `Host` could be read through DNS rebinding. LAN or public access, and remote MCP from claude.ai or a phone, still require a separate access and security design.
 
@@ -45,7 +45,7 @@ flowchart TB
   documents["Documents<br/>Phase 1b: runs, snapshots, revisions, review (implemented)"]
   applications["Applications<br/>Phase 1a: status and notes (implemented)"]
   compose["Composition in src/app/jobs<br/>pursue-job (1a), generate-document (1b)"]
-  mcp["MCP tools in src/app/mcp<br/>26 tools (ADRs 008 and 009)"]
+  mcp["MCP tools in src/app/mcp<br/>42 on the locally accepted ADR 011 branch, pending merge"]
   mcp -->|"profile reads and mutations"| profile
   mcp -->|"document generation workflows"| compose
   mcp -->|"job operations"| jobs
@@ -64,14 +64,15 @@ Arrows are code calls or dependencies, not HTTP connections or deployment bounda
 | Module | Owns | May depend on |
 |---|---|---|
 | Profile | Career records, skills, editable achievements | Database adapter |
-| Jobs (implemented) | Raw pasted posting, title, company, location, salary, source URL, availability, the logo file and its metadata | Database adapter and the artifact directory; later import adapters |
+| Jobs (implemented) | Raw pasted posting, title, canonical company/source links, location, salary, source URL, availability and selected company findings | Database adapter; later import adapters |
+| Companies (local feature branch) | Canonical name, location, website, About, sourced findings and shared company logo files/metadata | Database adapter, artifact directory and guarded image fetch through application composition |
 | Documents (implemented) | Generation runs, input snapshots, saved revisions, grounding warnings, review state, artifact metadata, PDF rendering | The model adapter interface and the artifact directory; receives snapshots as data, imports no other module |
 | Applications (implemented) | Pursuit status, notes, submission time, the derived job status rule; pinning the exact revisions used for a submission is deferred (document 09) | Stores a job id; the composition in `src/app/jobs/list-jobs.ts` feeds it run and draft facts read from Documents |
 | Matching (later) | Eligibility checks and explained assessments | Profile and Jobs reads, model/retrieval adapters |
 | Research (later) | Sourced findings and bounded research runs | Jobs reads, search/fetch adapters, model runtime |
 | Discovery (later) | Provider adapters, schedules, ingestion runs | Jobs write operations; orchestration can then invoke Matching/Documents |
 
-PDF rendering is a small component within Documents initially, not a separately deployed service. It converts validated structured content through templates into PDFs. Extract an independent package only if real reuse or isolation needs emerge. Model integration is infrastructure, not a business module that knows how resumes work: `src/infrastructure/model/` holds the `ModelAdapter` interface (a structured-output request with a Zod schema in, a validated value with usage or a classified failure out), the AI SDK implementation as a class holding the configured provider client, the fake adapter that answers from `examples/generation`, and the factory that reads the environment ([ADR 006](adr/006-model-access-path.md)). The Model setup column under `/settings/model` reads the same configuration and shows its status without the key. The assistant surface (ADR 008) is the other adapter over the same composition functions: `src/app/mcp/` holds the route (`route.ts`), the SDK handler (`handler.ts`), the tool registrations (`tools.ts` and `profile-tools.ts`; profile management extends them under ADR 009, implemented), the bearer check (`auth.ts`) and the projections (`serialize.ts`); `src/proxy.ts` applies the Host and Origin guard from `src/infrastructure/host-guard.ts`; and the runtime configuration has `LANDED_MCP_TOKEN` and `LANDED_ALLOWED_HOSTS` next to the model variables, read from the environment only, the token shown in the browser solely on the Connect your assistant column under `/settings/assistant`.
+PDF rendering is a small component within Documents initially, not a separately deployed service. It converts validated structured content through templates into PDFs. Extract an independent package only if real reuse or isolation needs emerge. Model integration is infrastructure, not a business module that knows how resumes work: `src/infrastructure/model/` holds the `ModelAdapter` interface (a structured-output request with a Zod schema in, a validated value with usage or a classified failure out), the AI SDK implementation as a class holding the configured provider client, the fake adapter that answers from `examples/generation`, and the factory that reads the environment ([ADR 006](adr/006-model-access-path.md)). The Model setup column under `/settings/model` reads the same configuration and shows its status without the key. The assistant surface (ADR 008) is the other adapter over the same composition functions: `src/app/mcp/` holds the route (`route.ts`), the SDK handler (`handler.ts`), the tool registrations (`tools.ts`, `profile-tools.ts`, `company-tools.ts` and `job-source-tools.ts`; the ADR 011 additions are locally accepted, pending merge), the bearer check (`auth.ts`) and the projections (`serialize.ts`); `src/proxy.ts` applies the Host and Origin guard from `src/infrastructure/host-guard.ts`; and the runtime configuration has `LANDED_MCP_TOKEN` and `LANDED_ALLOWED_HOSTS` next to the model variables, read from the environment only, the token shown in the browser solely on the Connect your assistant column under `/settings/assistant`.
 
 Keep cross-module workflows at an application composition boundary; avoid circular imports. The implemented example is `src/app/jobs/pursue-job.ts`: pasting a posting must create the job and its application together, so the function opens one transaction and passes the handle to the Jobs and Applications use cases, whose own transactions nest as savepoints inside it; a failure in either rolls back both. Neither module imports the other, and the owner-aware foreign key in the database checks the link. Documents likewise stores an opaque application id without importing Applications operations; `src/app/jobs/generate-document.ts` coordinates reading the pursuit, building the snapshot and generating a document. Database foreign keys do not mandate circular code dependencies.
 
@@ -110,7 +111,8 @@ src/
   modules/
     shared/              contracts.ts (Result, ModuleError, field helpers), service.ts (BaseDeps, error mapping), files.ts (checksum, atomic write, quiet unlink)
     profile/             schema.ts, contracts.ts, rules.ts, repository.ts, service.ts, index.ts
-    jobs/                same shape plus logo.ts (logo files under the artifact directory, row after file) and stopwords.ts (word cloud)
+    jobs/                same shape plus stopwords.ts (word cloud); owns job links and finding selections
+    companies/           same shape plus company logo storage; files under the artifact directory, row after file
     applications/        same shape; pursuits and the derived job status rule
     documents/           same shape plus prompts/ (versioned prompt builders), pdf/ (templates) and artifacts.ts
   proxy.ts               runs before every request: 403 unless Host and Origin name this computer (ADR 008)
@@ -146,7 +148,7 @@ Framework handlers translate requests, validate transport input, invoke operatio
 - [Vite](https://vite.dev/guide/) — frontend development/build tooling.
 - [Docker Compose](https://docs.docker.com/compose/intro/compose-application-model/) — services, networks, volumes, and application configuration.
 
-## Profile adapter extension (ADR 009, implemented)
+## Profile adapter extension (ADR 009, merged)
 
 The profile tools use the existing MCP transport and configuration. They resolve the profile for each call and invoke public Profile operations with explicit dependencies. Partial updates and version checks live inside Profile transactions, not in the MCP adapter. Reads project selected sections with snake_case fields and ISO timestamps. The browser and assistant therefore share ownership and validation rules, while the assistant gets a patch contract appropriate for conversational edits. No new worker, provider call or remote service is required.
 
