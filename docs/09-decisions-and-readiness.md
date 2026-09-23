@@ -130,6 +130,6 @@ Verification for this scoped layer (2026-09-23): `pnpm verify:full` passed with 
 
 ## Custom Job Sources (2026-09-23, feature branch pending merge)
 
-Settings → Job Sources manages a customizable list that starts empty. Jobs use the optional Source field, with inline creation, separately from the posting URL and ingestion method. Sources can be renamed, archived and restored; existing selections retain archived sources. MCP adds `list_job_sources`, `create_job_source`, `update_job_source` and `set_job_source`, bringing the endpoint to 31 tools. Migration 0009 adds source records and nullable job links without populating user data.
+Settings → Job Sources manages a customizable list that starts empty. Jobs use the optional Source field, with inline creation, separately from the posting URL and ingestion method. Sources can be renamed, archived and restored; existing selections retain archived sources. MCP adds `list_job_sources`, `add_job_source`, `update_job_source` and `set_job_source`, bringing the endpoint to 31 tools. Migration 0009 adds source records and nullable job links without populating user data.
 
 `pnpm verify:full` passed on this scoped layer: 150 unit tests, 87 integration tests, migration consistency, the production build and 11 browser journeys. Browser coverage includes inline creation, archive/restore, rename and clearing a selected source. Provider prompts are unchanged.
