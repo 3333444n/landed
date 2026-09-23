@@ -40,6 +40,7 @@ describe("buildMcpHandler", () => {
         "get_profile",
         "create_profile",
         "update_profile",
+        "update_job_interest",
         "add_job",
         "add_job_source",
         "update_job_source",
