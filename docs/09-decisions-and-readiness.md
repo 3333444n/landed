@@ -118,7 +118,7 @@ Implementation is merged. `pnpm verify:full` passed on 2026-09-18: 145 unit test
 
 Cover letters target three or four body sentences and retain the single-column monochrome PDF. Career evidence and context citations stay distinct, with context-only number attribution explicitly flagged for review. Source lists begin empty and archive preserves existing assignments. Browser and MCP support the same operations; this branch extends the endpoint to 42 tools.
 
-Implementation is local, locally accepted, pending merge. No PR is opened before the user reviews the combined preview. Verification results for this extension must be recorded after integrated checks; earlier milestone counts are not evidence for these changes. No personal sourcebook import, data reset or remote service exposure is part of this work.
+Implementation is locally accepted and pending merge. Verification for this extension is recorded below; historical milestone counts describe earlier behavior. Writing-context fields are populated through explicit user entry or harness operations.
 
 ### Real-provider evaluation, 2026-09-23 (local context branch)
 
