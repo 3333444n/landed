@@ -29,7 +29,7 @@ test("a pasted job gets an application whose status the user moves by hand", asy
   await expect(page.getByText("No jobs yet.")).toBeVisible();
   await page.getByRole("link", { name: "Add job" }).click();
   await page.getByLabel("Title").fill(demo.title);
-  await page.getByLabel("Company").fill(demo.companyName);
+  await page.getByLabel("Company", { exact: true }).fill(demo.companyName);
   await page.getByLabel("Location").fill(demo.location);
   await page.getByLabel("Salary").fill(demo.salary);
   await page.getByLabel("Description").fill(demo.rawDescription);
