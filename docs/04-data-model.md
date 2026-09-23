@@ -91,7 +91,7 @@ erDiagram
 
 | Table | Key fields / content |
 |---|---|
-| jobs | id, profile_id; title (required, not blank), optional canonical company_id and job_source_id, location, salary (free text as the posting states it, never parsed), source (`pasted`), source_url, raw_description (required, not blank), availability (`active`, `expired`, `unknown`, default active). The ADR 010 follow-up removes the former company_name and job logo columns. |
+| jobs | id, profile_id; title (required, not blank), optional canonical company_id and job_source_id, location, salary (free text as the posting states it, never parsed), source (`pasted`), source_url, raw_description (required, not blank), availability (`active`, `expired`, `unknown`, default active). The ADR 011 follow-up removes the former company_name and job logo columns. |
 | applications | id, profile_id, job_id; status (the eight values of document 05, default `preparing`), notes, submitted_at |
 
 Rules the database backs up: `UNIQUE (profile_id, id)` on jobs so applications link owner-aware; `UNIQUE (profile_id, job_id)` on applications, one pursuit per profile and job; the composite foreign key `(profile_id, job_id)` references `jobs (profile_id, id)` with `ON DELETE CASCADE`, so deleting a job deletes its application (the interface confirms first); check constraints on source, availability and status; an index on jobs `(profile_id, updated_at)` for the list. Company logos belong to Companies, with both metadata fields set or both null and an allowed image content type. New files use `<profile_id>/logos/<company_id>-<randomUUID>-<first 8 hex of SHA-256>.<ext>`, written atomically before the company row references them. Each write gets a distinct path so concurrent replacement/removal cannot unlink a newly restored copy of the same bytes. Logos are served through `/companies/<id>/logo?k=<version>`; stale addresses answer 404. Legacy stored filenames remain readable without renaming. Replacing, clearing or deleting a company's logo unlinks its prior file best effort after commit; deleting a job does not remove shared company files. A missing file answers 404 until the logo is chosen again. Migration itself never unlinks legacy artifacts. `submitted_at` is set the first time the status becomes `applied` and kept on every later change; it is the user's own record of having sent the application, never something the app sets on its own. The derived status chip is never stored (document 05). Both tables carry `created_at` and `updated_at`, the latter as the stale-edit token.
@@ -156,7 +156,7 @@ Company deletion is blocked while referenced by jobs. Changing a job's company c
 New cover-letter snapshots additionally freeze optional `writingContext`: About me and Interest with their citation IDs, all linked company fields, and the selected findings with their sources, dates and kinds. Old snapshots omit this optional object and remain valid. Career `evidenceIds` and optional paragraph `contextIds` are separate namespaces. Live edits and deletes cannot alter saved snapshots or revisions.
 
 
-## Canonical company identity and shared logos (ADR 010 follow-up)
+## Canonical company identity and shared logos (ADR 011 follow-up)
 
 This supersedes the historical job-owned company-name/logo description above. Remove the separate jobs.company_name and job logo columns after migration; company records own the canonical name and logo metadata. Application composition resolves company identity for job lists/detail, MCP, new snapshots and PDF filenames. New jobs may have a null company_id.
 

@@ -2,7 +2,7 @@
 
 Updated 2026-09-17. Accepted decisions below reflect the user's explicit instructions. Recommendations remain proposals.
 
-Current local feature: 42 MCP tools, including writing context, Companies and Job Sources under [ADR 010](adr/010-writing-company-context-and-job-sources.md), pending user acceptance and merge. The final section records this extension; dated milestone sections preserve their historical scope and test counts. Unimplemented later capabilities remain design only.
+Current local feature: 42 MCP tools, including writing context, Companies and Job Sources under [ADR 011](adr/011-writing-company-context-and-job-sources.md), pending user acceptance and merge. The final section records this extension; dated milestone sections preserve their historical scope and test counts. Unimplemented later capabilities remain design only.
 
 ## Accepted
 
@@ -114,7 +114,7 @@ Implementation is locally accepted and pending merge. `pnpm verify:full` passed 
 
 ## Personal and company writing context (2026-09-23, local implementation)
 
-[ADR 010](adr/010-writing-company-context-and-job-sources.md) records the accepted scope: Profile/General info naming, an optional About me narrative, application Interest, shared Companies with sourced findings, and customizable Job Sources. Companies have Name, Location, Website, About and Findings, with shared company logo controls added by the accepted identity follow-up. Up to five findings are selected per job; all company fields are available to cover letters. The identity follow-up preserves existing company links and creates one distinct company for each unlinked legacy job, without name matching. People and built-in research remain deferred.
+[ADR 011](adr/011-writing-company-context-and-job-sources.md) records the accepted scope: Profile/General info naming, an optional About me narrative, application Interest, shared Companies with sourced findings, and customizable Job Sources. Companies have Name, Location, Website, About and Findings, with shared company logo controls added by the accepted identity follow-up. Up to five findings are selected per job; all company fields are available to cover letters. The identity follow-up preserves existing company links and creates one distinct company for each unlinked legacy job, without name matching. People and built-in research remain deferred.
 
 Cover letters target three or four body sentences and retain the single-column monochrome PDF. Career evidence and context citations stay distinct, with context-only number attribution explicitly flagged for review. Source lists begin empty and archive preserves existing assignments. Browser and MCP support the same operations; this branch extends the endpoint to 42 tools.
 

@@ -54,4 +54,4 @@ Implementation, `pnpm verify:full` and local assistant acceptance are complete o
 
 ## Writing context and company research
 
-[ADR 010](adr/010-writing-company-context-and-job-sources.md) adds Profile narratives, application Interest, shared Companies and sourced findings, customizable Job Sources and shorter cover letters with separate context citations. Implemented on local feature branches; user acceptance and merge are pending. See doc 09 for actual validation results.
+[ADR 011](adr/011-writing-company-context-and-job-sources.md) adds Profile narratives, application Interest, shared Companies and sourced findings, customizable Job Sources and shorter cover letters with separate context citations. Implemented on local feature branches; accepted locally as part of the integrated update; merge is pending. See doc 09 for actual validation results.

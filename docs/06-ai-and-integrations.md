@@ -110,7 +110,7 @@ Generated claims cite input snapshot entries, but valid IDs alone do not establi
 Skill context extension (local implementation pending acceptance): `add_skill` accepts optional `role_ids` and `project_ids` arrays; `update_skill.changes` accepts the same fields. `get_profile` and saved skill records return both arrays as explicit links. Omit preserves on update; `[]` clears; null is invalid. Derived associations through achievements/projects are not written to these lists. Roles/projects with direct skill links refuse deletion until detached. These browsing links do not change generation briefs or historical snapshots.
 
 
-## Writing context, company and source tools (ADR 010, local feature branch)
+## Writing context, company and source tools (ADR 011, local feature branch)
 
 The local feature branch has **42 tools**: the original eight, 18 profile tools, one Interest tool, four Job Source tools and 11 company/context tools. This extension is implemented locally and pending acceptance/merge; historical verification counts above describe their original milestones.
 
@@ -144,7 +144,7 @@ A `letter_length` warning flags cover-letter bodies above four sentences or 150 
 
 ### Canonical company and logo contract revision
 
-The ADR 010 follow-up keeps the tool count at 42 but changes job intake: add_job accepts optional company_id, with no free-text company or job logo_url. Resolve/create a Company first when one is known; omission creates an unlinked new job. Company names in job reads and new document snapshots resolve from that company record. Old snapshots keep their frozen name, while generated PDF filenames use the current linked identity.
+The ADR 011 follow-up keeps the tool count at 42 but changes job intake: add_job accepts optional company_id, with no free-text company or job logo_url. Resolve/create a Company first when one is known; omission creates an unlinked new job. Company names in job reads and new document snapshots resolve from that company record. Old snapshots keep their frozen name, while generated PDF filenames use the current linked identity.
 
 create_company and update_company accept optional nullable logo_url: omit preserves, null clears, and an HTTPS address requests a bounded guarded image fetch. Company reads expose the shared logo through the implementation's public projection, never raw secret configuration. Browser uploads and harness-supplied addresses both store company-owned image metadata, shared by all linked jobs. No additional website research fetch is introduced. Historical milestone descriptions of job-owned logos above describe the former model.
 

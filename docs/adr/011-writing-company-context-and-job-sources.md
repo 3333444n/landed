@@ -1,4 +1,4 @@
-# ADR 010 — Personal writing context, Companies and Job Sources
+# ADR 011 — Personal writing context, Companies and Job Sources
 
 Date: 2026-09-23. Status: accepted scope; locally implemented, pending user acceptance and merge.
 
