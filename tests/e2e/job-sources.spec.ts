@@ -39,4 +39,9 @@ test("Source can be created, archived, restored and cleared", async ({ page }) =
   await expect(page.getByRole("status")).toHaveText("Saved");
   await page.reload();
   await expect(page.getByRole("combobox", { name: "Source", exact: true })).toHaveValue("");
+  await page.goto(jobUrl);
+  await page.getByRole("button", { name: "Delete", exact: true }).click();
+  await expect(page.getByText("Delete this job and its application?")).toBeVisible();
+  await page.getByRole("button", { name: "Delete", exact: true }).click();
+  await expect(page).toHaveURL(/\/jobs$/);
 });
