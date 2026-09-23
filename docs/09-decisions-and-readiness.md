@@ -2,7 +2,7 @@
 
 Updated 2026-09-17. Accepted decisions below reflect the user's explicit instructions. Recommendations remain proposals.
 
-Current local feature: 42 MCP tools, including writing context, Companies and Job Sources under [ADR 010](adr/010-writing-company-context-and-job-sources.md), pending user acceptance and merge. The final section records this extension; dated milestone sections preserve their historical scope and test counts. Unimplemented later capabilities remain design only.
+Current local feature: 42 MCP tools, including writing context, Companies and Job Sources under [ADR 011](adr/011-writing-company-context-and-job-sources.md), accepted locally as part of the integrated update, pending merge. The final section records this extension; dated milestone sections preserve their historical scope and test counts. Unimplemented later capabilities remain design only.
 
 ## Accepted
 
@@ -114,11 +114,11 @@ Implementation is locally accepted and pending merge. `pnpm verify:full` passed 
 
 ## Personal and company writing context (2026-09-23, local implementation)
 
-[ADR 010](adr/010-writing-company-context-and-job-sources.md) records the accepted scope: Profile/General info naming, an optional About me narrative, application Interest, shared Companies with sourced findings, and customizable Job Sources. Companies have only Name, Location, Website, About and Findings. Up to five findings are selected per job; all company fields are available to cover letters. Existing jobs remain unlinked. People and built-in research remain deferred.
+[ADR 011](adr/011-writing-company-context-and-job-sources.md) records the accepted scope: Profile/General info naming, an optional About me narrative, application Interest, shared Companies with sourced findings, and customizable Job Sources. Companies have only Name, Location, Website, About and Findings. Up to five findings are selected per job; all company fields are available to cover letters. Existing jobs remain unlinked. People and built-in research remain deferred.
 
 Cover letters target three or four body sentences and retain the single-column monochrome PDF. Career evidence and context citations stay distinct, with context-only number attribution explicitly flagged for review. Source lists begin empty and archive preserves existing assignments. Browser and MCP support the same operations; this branch extends the endpoint to 42 tools.
 
-Implementation is local, pending user acceptance and merge. No PR is opened before the user reviews the combined preview. Verification results for this extension must be recorded after integrated checks; earlier milestone counts are not evidence for these changes. No personal sourcebook import, data reset or remote service exposure is part of this work.
+Implementation is local, accepted locally as part of the integrated update, pending merge. No PR is opened before the user reviews the combined preview. Verification results for this extension must be recorded after integrated checks; earlier milestone counts are not evidence for these changes. No personal sourcebook import, data reset or remote service exposure is part of this work.
 
 ### Real-provider evaluation, 2026-09-23 (local context branch)
 
@@ -140,4 +140,4 @@ An earlier evaluation of this prompt iteration returned one fit-letter schema va
 
 ### Integrated local validation, 2026-09-23
 
-`pnpm verify:full` passed on the integrated context branch: formatting, lint, types, 159 unit tests, skill synchronization, 98 PostgreSQL integration tests, migration consistency, production build and all 10 Chromium browser journeys. The browser journeys include Profile narratives, Interest, shared company findings, protected deletion and Source archive/restore. Fictional Companies and Interest screenshots were visually reviewed. Tests use the isolated test database and fake provider; the separate real-provider evaluation is recorded above. Local acceptance remains pending, with no PR opened.
+`pnpm verify:full` passed on the integrated context branch: formatting, lint, types, 159 unit tests, skill synchronization, 98 PostgreSQL integration tests, migration consistency, production build and all 10 Chromium browser journeys. The browser journeys include Profile narratives, Interest, shared company findings, protected deletion and Source archive/restore. Fictional Companies and Interest screenshots were visually reviewed. Tests use the isolated test database and fake provider; the separate real-provider evaluation is recorded above. Local acceptance completed with the canonical-company follow-up; publication is approved, with merge pending.
