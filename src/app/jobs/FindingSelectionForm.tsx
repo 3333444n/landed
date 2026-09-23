@@ -28,6 +28,7 @@ export function FindingSelectionForm({
       {state.status === "error" ? (
         <p role="alert">{Object.values(state.fieldErrors).flat().join(" ")}</p>
       ) : null}
+      {ids.length > 5 ? <p role="alert">Choose no more than five findings.</p> : null}
       <div className={styles.actions}>
         <Button type="submit" disabled={pending || ids.length > 5}>
           Save findings

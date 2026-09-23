@@ -24,7 +24,7 @@ export function CoverLetterPdf({
           <Text style={styles.contact}>{header.contact.join(" · ")}</Text>
         ) : null}
         <Text style={styles.letterMeta}>{header.date}</Text>
-        <Text style={styles.letterMeta}>{content.greeting},</Text>
+        <Text style={styles.letterMeta}>{content.greeting.replace(/,+$/, "")},</Text>
         <View style={styles.letterBody}>
           {content.paragraphs.map((p, i) => (
             <Text key={i} style={styles.letterParagraph}>
@@ -32,7 +32,7 @@ export function CoverLetterPdf({
             </Text>
           ))}
         </View>
-        <Text style={styles.letterMeta}>{content.closing},</Text>
+        <Text style={styles.letterMeta}>{content.closing.replace(/,+$/, "")},</Text>
         <Text>{content.signature}</Text>
       </Page>
     </Document>

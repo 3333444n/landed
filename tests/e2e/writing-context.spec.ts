@@ -4,7 +4,7 @@ test("About me and Interest save and clear; Source can be created, archived and 
   page,
 }) => {
   await page.goto("/about/story");
-  const story = page.getByLabel("About me", { exact: true });
+  const story = page.getByLabel("Your story", { exact: true });
   await story.fill("I enjoy making complicated workflows understandable.");
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(page.getByRole("status")).toHaveText("Saved");
@@ -40,6 +40,7 @@ test("About me and Interest save and clear; Source can be created, archived and 
   await expect(page.getByRole("status")).toHaveText("Saved");
   await page.goto("/settings/job-sources");
   await page.getByRole("link", { name: /Community board/ }).click();
+  await expect(page).toHaveURL(/\/settings\/job-sources\/[0-9a-f-]+$/);
   const sourceUrl = page.url();
   await page.getByLabel("Status", { exact: true }).selectOption("true");
   await page.getByRole("button", { name: "Save source", exact: true }).click();
@@ -59,6 +60,7 @@ test("About me and Interest save and clear; Source can be created, archived and 
   );
   await page.getByRole("button", { name: "Clear source", exact: true }).click();
   await page.getByRole("button", { name: "Save changes", exact: true }).click();
+  await expect(page.getByRole("status")).toHaveText("Saved");
   await page.reload();
   await expect(page.getByRole("combobox", { name: "Source", exact: true })).toHaveValue("");
 });

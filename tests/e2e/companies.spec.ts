@@ -35,11 +35,13 @@ test("companies retain sourced findings and can be selected for a job", async ({
   await page.goto(`${jobUrl}/interest`);
   await page.getByRole("combobox", { name: "Company findings" }).fill("Released");
   await page.getByRole("option", { name: "Released a public tool in 2026.", exact: true }).click();
+  const saved = page.waitForResponse(
+    (r) => r.request().method() === "POST" && r.url().endsWith("/interest") && r.ok(),
+  );
   await page.getByRole("button", { name: "Save findings", exact: true }).click();
+  await (await saved).finished();
   await page.reload();
-  await expect(
-    page.getByRole("button", { name: "Remove Released a public tool in 2026." }),
-  ).toBeVisible();
+  await expect(page.getByText("Released a public tool in 2026.", { exact: true })).toBeVisible();
   await page.goto(jobUrl);
   await page
     .getByRole("list", { name: "Materials" })
@@ -50,4 +52,8 @@ test("companies retain sourced findings and can be selected for a job", async ({
   await page.getByRole("button", { name: "Delete", exact: true }).click();
   await page.getByRole("button", { name: "Delete", exact: true }).click();
   await expect(page.getByRole("alert")).toContainText("reference");
+  await page.goto(jobUrl);
+  await page.getByRole("button", { name: "Delete", exact: true }).click();
+  await page.getByRole("button", { name: "Delete", exact: true }).last().click();
+  await expect(page).toHaveURL(/\/jobs$/);
 });
