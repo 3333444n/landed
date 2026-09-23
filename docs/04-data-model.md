@@ -146,3 +146,7 @@ Achievement-derived skill connections and parent roles of linked projects are co
 ## Writing context (feature branch, pending local acceptance)
 
 Migration 0008 adds nullable `profiles.about_me` and `applications.interest`. Each is edited in place with a version-checked partial update. About me accepts up to 12,000 characters and Interest 4,000; blank text clears the value. Updating General info or application status preserves these fields. Frozen generation snapshots remain independent of live edits.
+
+## Job Sources (locally accepted, pending merge)
+
+Migration 0009 adds profile-owned job_sources with name, archived and version timestamps, plus nullable jobs.job_source_id and an owner-aware foreign key. New installations have no sources. Sources are archived rather than deleted so old assignments remain readable; new assignments require an active source. Posting URL and technical ingestion method remain separate.

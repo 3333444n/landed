@@ -219,3 +219,7 @@ Eyebrow labels. Monospace anything except a preformatted command block in a read
 
 
 **Personal writing context.** Main navigation labels the career hub Profile; General info contains identity, contact, summary and preferences. About me is a separate narrative block with one growing textarea. Each job has Interest, subtitled “Why this role and company?”. Both use question placeholders and persistent helper text, with clear-and-save removal and ordinary form status/errors. Existing /about routes remain valid.
+
+## Job Source controls
+
+Job forms reuse the searchable Combobox for Source and allow inline source creation. Settings → Job Sources uses the existing list/detail columns and forms; archive/restore preserves existing assignments. The default list is empty.
