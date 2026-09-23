@@ -185,6 +185,8 @@ describe.each(caseNames)("case %s", (name) => {
         schema: contentSchemas[type] as z.ZodType<DocumentContent>,
       });
       if (!outcome.ok) {
+        if (process.env.EVAL_REPORT_PATH)
+          letters[`${name}/${type}/failure`] = { rawText: outcome.rawText };
         rows.push({ case: name, document: type, outcome: `${outcome.kind}: ${outcome.message}` });
         expect.fail(`${name}/${type}: ${outcome.kind} failure, ${outcome.message}`);
       }

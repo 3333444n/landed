@@ -166,6 +166,18 @@ export function groundingCheck(
     }
   }
 
+  if (type === "cover_letter") {
+    const text = (content as CoverLetterContent).paragraphs.map((p) => p.text).join(" ");
+    const sentences = [...new Intl.Segmenter("en", { granularity: "sentence" }).segment(text)]
+      .length;
+    const words = text.trim().split(/\s+/).length;
+    if (sentences > 4 || words > 150)
+      warnings.push({
+        kind: "letter_length",
+        path: "paragraphs.0",
+        message: `The body has ${sentences} sentences and ${words} words. Aim for three or four sentences and no more than 150 words; keep the strongest example.`,
+      });
+  }
   if (type === "resume") {
     warnings.push(...headingWarnings(content as ResumeContent, snapshot));
     warnings.push(...attributionWarnings(content as ResumeContent, snapshot));

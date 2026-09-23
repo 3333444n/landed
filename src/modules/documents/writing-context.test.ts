@@ -99,3 +99,13 @@ describe("cover letter context", () => {
     );
   });
 });
+
+it("flags long cover letters without rejecting historical content", () => {
+  const content = letter([], [companyId]);
+  content.paragraphs[0]!.text =
+    "One connection. A second sentence. A third sentence. A fourth sentence.";
+  expect(coverLetterContent.safeParse(content).success).toBe(true);
+  expect(
+    groundingCheck("cover_letter", content, input()).some((w) => w.kind === "letter_length"),
+  ).toBe(true);
+});

@@ -41,7 +41,9 @@ test("companies retain sourced findings and can be selected for a job", async ({
   await page.getByRole("button", { name: "Save findings", exact: true }).click();
   await (await saved).finished();
   await page.reload();
-  await expect(page.getByText("Released a public tool in 2026.", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("Released a public tool in 2026.", { exact: true }).last(),
+  ).toBeVisible();
   await page.goto(jobUrl);
   await page
     .getByRole("list", { name: "Materials" })
