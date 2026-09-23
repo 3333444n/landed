@@ -1,8 +1,8 @@
 # 01 — Product and phases
 
-Status: Phase 0 complete (2026-09-13); Phase 1a complete (2026-09-14); Phase 1b complete (2026-09-14); Phase 1c additions complete (2026-09-14); "Use your own assistant" complete (2026-09-16); Phases 2 to 4 proposed. Updated 2026-09-20.
+Status: Phase 0 complete (2026-09-13); Phase 1a complete (2026-09-14); Phase 1b complete (2026-09-14); Phase 1c additions complete (2026-09-14); "Use your own assistant" complete (2026-09-16); Phases 2 to 4 proposed. Updated 2026-09-23.
 
-Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is merged. The locally accepted ADR 011 context and canonical-company extensions are pending merge. See [current verification](09-decisions-and-readiness.md#profile-management-over-mcp-merged).
+Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is merged. The ADR 011 writing-context and canonical-company extensions are implemented and merged in PRs #43–47 (2026-09-23). See [current verification](09-decisions-and-readiness.md#smaller-pr-stack-verification-2026-09-23).
 
 Landed is a locally run job-search application that produces factual, tailored materials and helps people manage applications. It must be usable without editing source code. Code can be cloned/forked independently of personal data. The shortest useful outcome is a reviewed resume, cover letter, and recruiter message for a real job.
 
@@ -89,6 +89,6 @@ Hosted accounts, billing, multi-user tenancy, automatic application submission, 
 
 The Profile hub (formerly About me) and career lists allow reading facts inside expandable cards, with a separate pencil action for editing. Dedicated section pages retain add controls and large-list management. Skills and Achievements can be filtered by role/project, including existing evidence-derived associations; skills also support direct role/project assignment. Desired roles are edited as removable pills. Document review is presented as approval of the current revision, with a circular PDF action and underlined Evidence/Runs links. See [ADR 010](adr/010-career-browsing-and-skill-context.md); the implementation is merged into `main` through PRs #35–39.
 
-## Canonical Companies follow-up (local branch, locally accepted, pending merge)
+## Canonical Companies follow-up (implemented and merged)
 
 Jobs select an optional existing Company or create one inline. Current form order is Title, Company, Availability, Source, Location, Salary, Posting URL, Description. Company forms own the shared logo upload/address/remove controls, and all linked jobs display that company identity. The dated Phase 1a/1c descriptions above record the former job-owned name/logo implementation; ADR 011 supersedes those ownership choices. Migrating legacy jobs preserves existing links and creates one distinct company per unlinked job, without matching names. Historical snapshots stay unchanged.

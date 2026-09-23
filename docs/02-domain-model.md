@@ -1,6 +1,6 @@
 # 02 — Domain model
 
-Status: vocabulary through the assistant surface (ADR 008) in use; Phase 2 to 4 concepts proposed; simple editable achievements accepted. Updated 2026-09-20.
+Status: vocabulary through the assistant surface (ADR 008) in use; Phase 2 to 4 concepts proposed; simple editable achievements accepted. Updated 2026-09-23.
 
 A domain model describes the meaningful things, relationships, and rules of the problem being solved. It does not prescribe tables or frameworks. For a library: a Book describes a work, a Copy is an individual item, and a Loan records a borrower taking that copy. Separating Book from Copy matters before deciding how either is stored.
 
@@ -47,10 +47,10 @@ An aggregate groups data/rules that must remain consistent during an operation. 
 
 Skill context (ADR 010, implemented): a skill may have explicit links to several roles and projects independently of achievements. Effective browsing context also follows linked achievements and a project's parent role. These derived associations are not editable copies of evidence: changing the underlying achievement/project changes them. Direct skill context does not add an accomplishment or change document grounding.
 
-## Writing and company context (2026-09-23, local feature branch)
+## Writing and company context (2026-09-23, implemented)
 
 The **Profile** navigation hub contains **General info** (identity, contact, summary and preferences), career evidence sections and **About me** (the user's optional story, values and motivation). **Interest** belongs to an application: the user's reason for pursuing its role and company. Neither narrative is a substitute for evidence of an accomplishment.
 
 A **Company** is shared context for zero or more jobs, with Name, Location, Website and About. A job optionally links to its canonical company, which supplies its name and shared logo throughout the app. There is no separate editable posting-company name. Migration preserves existing links and creates one company per unlinked legacy job without matching names. A **Finding** is a dated, sourced statement or interpretation associated with one company. An application can use up to five company findings selected on its job; selection does not imply verification. People and built-in web research remain deferred.
 
-**Source** on a job identifies where the user found it. **Job Sources** in Settings is the user-managed vocabulary, empty by default; archived sources retain historical assignments. This is separate from the posting URL and the technical ingestion method (`pasted`). See ADR 011 for the accepted boundaries. Implementation is local and locally accepted, pending merge.
+**Source** on a job identifies where the user found it. **Job Sources** in Settings is the user-managed vocabulary, empty by default; archived sources retain historical assignments. This is separate from the posting URL and the technical ingestion method (`pasted`). See ADR 011 for the accepted boundaries. Implementation is merged in PRs #43–47.

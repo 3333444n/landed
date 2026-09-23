@@ -1,8 +1,8 @@
 # 07 — Quickstart
 
-Status: contributor path and ordinary-user path implemented and tested on macOS (2026-09-13, re-verified with the Phase 1b image on 2026-09-14); Windows and Linux untested; the "Connect your assistant" path ([ADR 008](adr/008-assistant-surface-over-mcp.md)) is implemented as of 2026-09-16 and tested from Claude Code on a contributor install; the packaged path with the launcher-minted token is not yet exercised in Docker. Updated 2026-09-20.
+Status: contributor path and ordinary-user path implemented and tested on macOS (2026-09-13, re-verified with the Phase 1b image on 2026-09-14); Windows and Linux untested; the "Connect your assistant" path ([ADR 008](adr/008-assistant-surface-over-mcp.md)) is implemented as of 2026-09-16 and tested from Claude Code on a contributor install; the packaged path with the launcher-minted token is not yet exercised in Docker. Updated 2026-09-23.
 
-Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is merged. The locally accepted ADR 011 context and canonical-company extensions are pending merge. See [current verification](09-decisions-and-readiness.md#profile-management-over-mcp-merged).
+Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is merged. The ADR 011 writing-context and canonical-company extensions are implemented and merged in PRs #43–47 (2026-09-23). See [current verification](09-decisions-and-readiness.md#smaller-pr-stack-verification-2026-09-23).
 
 ## Contributor path (tested)
 
@@ -19,7 +19,7 @@ pnpm db:migrate                 # applies db/migrations to the landed database
 pnpm dev                        # http://localhost:3000
 ```
 
-The first visit asks for your name and creates the single profile of this installation. On the locally accepted context branch, career facts live under Profile in the sidebar, with General info and About me as separate blocks; postings and applications live under Jobs, shared employer records under Companies and customizable Job Sources under Settings. The merged baseline still labels the career hub About me until this extension merges. The button at the bottom of the sidebar switches between light and dark; without a choice the system preference applies. Data lives in the Docker volume `landed_pgdata`, outside the source checkout. `pnpm db:down` stops the database and keeps the volume.
+The first visit asks for your name and creates the single profile of this installation. Career facts live under Profile in the sidebar, with General info and About me as separate blocks; postings and applications live under Jobs, shared employer records under Companies and customizable Job Sources under Settings. The button at the bottom of the sidebar switches between light and dark; without a choice the system preference applies. Data lives in the Docker volume `landed_pgdata`, outside the source checkout. `pnpm db:down` stops the database and keeps the volume.
 
 Generating documents (Phase 1b) needs either a model provider or nothing at all. With nothing configured, each document offers Paste back: the app shows the prompt, you run it in any assistant you already use and paste the JSON answer back. To let the app call a provider itself, pick one row of the table below, set its values in `.env` (the same blocks are commented in `.env.example`), then restart `pnpm dev`. The Settings column in the app shows what is configured without revealing the key, and lists the same blocks when nothing is configured.
 
@@ -155,9 +155,9 @@ The user confirmed successful local assistant testing on 2026-09-17. Harness-spe
 
 The packaged launcher applies migrations during startup. Contributors update their checkout and run `pnpm db:migrate` before starting the updated application. Follow the backup instructions above before upgrading; do not reset the database or delete its volume. Migration 0007 adds direct skill-to-role and skill-to-project link tables without a data backfill. Existing facts and saved generation snapshots remain unchanged. Roles/projects with direct skill links must be detached before deletion.
 
-## Upgrading to writing context and canonical Companies (locally accepted, pending merge)
+## Upgrading to writing context and canonical Companies (implemented and merged)
 
-Back up the database and artifact directory before applying this branch's migrations. Use the documented contributor `pnpm db:backup` / `pnpm db:migrate` commands, or the packaged launcher's documented backup and update workflow; do not reset or recreate volumes. Stop older app instances sharing the database before migration and restart only the matching new code afterward. Migration 0011 removes job-owned name/logo columns, so an old checkout is not compatible with the upgraded schema. Rollback requires restoring the matching database/artifact backup and code version, not merely checking out an older branch.
+Back up the database and artifact directory before applying migrations 0008–0011. Use the documented contributor `pnpm db:backup` / `pnpm db:migrate` commands, or the packaged launcher's documented backup and update workflow; do not reset or recreate volumes. Stop older app instances sharing the database before migration and restart only the matching new code afterward. Migration 0011 removes job-owned name/logo columns, so an old checkout is not compatible with the upgraded schema. Rollback requires restoring the matching database/artifact backup and code version, not merely checking out an older branch.
 
 Migrations 0008–0010 add About me, Interest, Job Sources, Companies and finding selections. Migration 0011 preserves existing company links, creates one distinct company for every unlinked legacy job (without name matching), and moves applicable logo metadata to companies; existing company logos win. Stored legacy image files and frozen document snapshots remain intact. New job forms may leave Company unselected. Refresh the connected assistant's tool list and use this checkout's synchronized skill: the full extension exposes 42 tools and add_job uses company_id instead of the removed company string.
 

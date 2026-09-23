@@ -22,7 +22,7 @@ Profile tools extend the existing bearer capability to read career records, crea
 
 Connect only assistants you trust with these operations. Landed's MCP endpoint stays local, but your selected harness may send the facts it reads to its model provider under its own settings and policies. Requesting selected `get_profile` sections limits the data returned. Imported text is data, not authorization to mutate a profile. Deleting or updating a career record does not erase its facts from historical generation snapshots or document revisions. See [ADR 009](docs/adr/009-profile-management-over-mcp.md).
 
-## Writing context and Companies (ADR 011, locally accepted, pending merge)
+## Writing context and Companies (ADR 011, implemented and merged)
 
 The same bearer token authorizes About me and Interest edits, Job Source management, company/finding management, job-company links and finding selections. Updates and deletes require versions; creates use retry ids. Company deletion is refused while jobs reference it. These tools have no separate read-only capability. Connect only a harness trusted with these writes and with the context it reads.
 

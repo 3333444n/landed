@@ -1,6 +1,6 @@
 # ADR 011 — Personal writing context, Companies and Job Sources
 
-Date: 2026-09-23. Status: accepted and implemented locally; pending merge.
+Date: 2026-09-23. Status: accepted, implemented and merged in PRs #43–47 on 2026-09-23.
 
 ## Context
 
@@ -22,7 +22,7 @@ New cover-letter runs freeze personal narratives, all company fields and selecte
 
 The company link and sourced findings support reuse without changing original posting data. Free narrative entry is easy to use but still requires selection and human review; prompts and ID checks cannot establish semantic truth. Existing resumes and recruiter messages retain their snapshot behavior. Users enter or explicitly import their writing context; adding these fields does not populate them automatically.
 
-Use additive generated migrations. Test ownership, retries, stale writes, clear/archive behavior, company dependency checks, finding selection and deletion, immutable snapshots, browser/MCP parity, and legacy documents. Required integrated validation is pnpm verify:full plus the real-provider pnpm eval for changed generation contracts/prompts. Record actual results in doc 09 after running them. Keep local worktrees and commits for user testing; no PR before review.
+Use additive generated migrations. Test ownership, retries, stale writes, clear/archive behavior, company dependency checks, finding selection and deletion, immutable snapshots, browser/MCP parity, and legacy documents. Required integrated validation is pnpm verify:full plus the real-provider pnpm eval for changed generation contracts/prompts. Record actual results in doc 09 after running them. The implementation received local review before publication and merged through PRs #43–47.
 
 
 ## Superseding decision — canonical company identity and shared logo

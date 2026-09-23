@@ -1,8 +1,8 @@
 # 05 — Workflows and failures
 
-Status: Phase 0 save and Phase 1a paste-and-track implemented; Phase 1b generation, review and PDF rendering implemented; the assistant run lifecycle implemented ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16). Updated 2026-09-20.
+Status: Phase 0 save and Phase 1a paste-and-track implemented; Phase 1b generation, review and PDF rendering implemented; the assistant run lifecycle implemented ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16). Updated 2026-09-23.
 
-Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is merged. The locally accepted ADR 011 context and canonical-company extensions are pending merge. See [current verification](09-decisions-and-readiness.md#profile-management-over-mcp-merged).
+Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is merged. The ADR 011 writing-context and canonical-company extensions are implemented and merged in PRs #43–47 (2026-09-23). See [current verification](09-decisions-and-readiness.md#smaller-pr-stack-verification-2026-09-23).
 
 ## Phase 0 save
 
@@ -93,12 +93,12 @@ Skill forms edit direct role and project lists with searchable multiselects. Cha
 
 Document approval is the existing revision review timestamp, presented as `Approve?` before review and `Approved` afterwards. The approved control can remove approval. Saving an inline edit or generating another revision returns that new revision to unapproved; downloading never approves or submits. Resume and Cover letter download from the circular header action. Evidence and Runs remain separate URL-driven columns, linked under the generation summary.
 
-## Personal writing context (feature branch)
+## Personal writing context (implemented)
 
 The Profile hub contains General info and About me. About me is a single optional narrative; a job's Interest column records why its role and company appeal to the user. Each saves only its own field, requires the current version and preserves text on validation errors. The About me MCP projection exposes its text and profile version; `update_profile` accepts `about_me`, where null clears. `update_job_interest` accepts `job_id`, `expected_updated_at` (the application's version from `get_job`) and nullable `interest`. These operations do not mark documents reviewed or an application submitted.
 
 
-## Company context and discovery sources (local feature branch)
+## Company context and discovery sources (implemented)
 
 Create or choose a company from the job form, then maintain its Name, Location, Website, About and findings in Companies. Migration retains existing links and gives each unlinked legacy job its own company, without matching names; new jobs may omit a company. In Interest, select up to five findings from the current company; changing/clearing the company clears incompatible selections. Deleting a referenced company requires detaching its jobs first. Deleting a finding removes live selections while frozen runs retain it.
 
