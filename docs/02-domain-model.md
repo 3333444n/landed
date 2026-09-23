@@ -1,6 +1,6 @@
 # 02 — Domain model
 
-Status: vocabulary through the assistant surface (ADR 008) in use; Phase 2 to 4 concepts proposed; simple editable achievements accepted. Updated 2026-09-16.
+Status: vocabulary through the assistant surface (ADR 008) in use; Phase 2 to 4 concepts proposed; simple editable achievements accepted. Updated 2026-09-20.
 
 A domain model describes the meaningful things, relationships, and rules of the problem being solved. It does not prescribe tables or frameworks. For a library: a Book describes a work, a Copy is an individual item, and a Loan records a borrower taking that copy. Separating Book from Copy matters before deciding how either is stored.
 
@@ -43,3 +43,6 @@ Achievements are edited in place; no achievement revision/history feature. Phase
 A module is a code boundary around related responsibilities. A bounded context is a boundary within which a domain model and vocabulary have consistent meaning. A module does not automatically qualify as a bounded context. These boundaries are working hypotheses; avoid declaring that a capability could never become a domain or service.
 
 An aggregate groups data/rules that must remain consistent during an operation. We do not need to load a person's entire history for each update: save an achievement and its skill links atomically, validating that linked records belong to that profile.
+
+
+Skill context (ADR 010, implemented): a skill may have explicit links to several roles and projects independently of achievements. Effective browsing context also follows linked achievements and a project's parent role. These derived associations are not editable copies of evidence: changing the underlying achievement/project changes them. Direct skill context does not add an accomplishment or change document grounding.

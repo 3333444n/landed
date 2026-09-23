@@ -1,8 +1,8 @@
 # 07 — Quickstart
 
-Status: contributor path and ordinary-user path implemented and tested on macOS (2026-09-13, re-verified with the Phase 1b image on 2026-09-14); Windows and Linux untested; the "Connect your assistant" path ([ADR 008](adr/008-assistant-surface-over-mcp.md)) is implemented as of 2026-09-16 and tested from Claude Code on a contributor install; the packaged path with the launcher-minted token is not yet exercised in Docker. Updated 2026-09-17.
+Status: contributor path and ordinary-user path implemented and tested on macOS (2026-09-13, re-verified with the Phase 1b image on 2026-09-14); Windows and Linux untested; the "Connect your assistant" path ([ADR 008](adr/008-assistant-surface-over-mcp.md)) is implemented as of 2026-09-16 and tested from Claude Code on a contributor install; the packaged path with the launcher-minted token is not yet exercised in Docker. Updated 2026-09-20.
 
-Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is implemented and locally accepted on this branch, pending merge. See [current verification](09-decisions-and-readiness.md#profile-management-over-mcp-accepted-pending-merge).
+Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is implemented and merged into `main`. See [current verification](09-decisions-and-readiness.md#profile-management-over-mcp-implemented).
 
 ## Contributor path (tested)
 
@@ -142,10 +142,15 @@ Store runtime data in volumes outside the source checkout. Ignore files are a se
 
 [ai-job-search](https://github.com/MadsLorentzen/ai-job-search) uses an installed agent environment and local tools. Its tracked profile-file approach introduces different contribution/privacy concerns than an app that stores user data outside Git. Borrow workflow ideas without inheriting that storage arrangement.
 
-## Trying profile tools on the feature branch (ADR 009, pending merge)
+## Using profile tools (ADR 009)
 
-Use the same Settings → Connect your assistant setup and refresh the connected tool list after restarting the updated server. The branch adds `get_profile`, `create_profile`, `update_profile` and add/update/delete tools for each career-record type. Use the skill from the same checkout; a published plugin from an older release may still describe only the document workflow.
+Use the same Settings → Connect your assistant setup and refresh the connected tool list after restarting the updated server. The endpoint includes `get_profile`, `create_profile`, `update_profile` and add/update/delete tools for each career-record type. Use the skill from the same checkout; a published plugin from an older release may still describe only the document workflow.
 
 On an empty installation, ask “Create my profile with the name Morgan Example.” Then try “Add PostgreSQL to my skills,” “Put that skill in the Databases category,” and “Delete the PostgreSQL skill.” Refresh About me in the browser to inspect each result. These examples are fictional; use an isolated local database for demonstrations. The profile workflow does not require a job or a model API key. Existing installations keep their data, token and configuration; whole-profile deletion is not exposed.
 
 The user confirmed successful local assistant testing on 2026-09-17. Harness-specific coverage and packaged verification for this extension have not yet been recorded. The original connection verification above applies only to ADR 008.
+
+
+## Upgrading for career context links (migration 0007)
+
+The packaged launcher applies migrations during startup. Contributors update their checkout and run `pnpm db:migrate` before starting the updated application. Follow the backup instructions above before upgrading; do not reset the database or delete its volume. Migration 0007 adds direct skill-to-role and skill-to-project link tables without a data backfill. Existing facts and saved generation snapshots remain unchanged. Roles/projects with direct skill links must be detached before deletion.

@@ -13,16 +13,16 @@ Tailoring an application by hand takes an hour per job, and the shortcuts are ba
 
 | Area | What you get |
 |---|---|
-| Career facts | Profile, work history, education, projects, skills and achievements, edited in the browser and stored in PostgreSQL on your computer |
+| Career facts | Profile, work history, education, projects, skills and achievements, edited in the browser and stored in PostgreSQL on your computer. Browse expandable cards, edit desired-role pills, link skills to roles/projects and filter Skills/Achievements by multiple contexts |
 | Jobs | Paste a posting with its salary and the company's logo (an image file or an image address); each one gets an application with a status you set by hand (preparing, ready, applied, interviewing, offer, rejected, withdrawn, accepted), notes, filters and sorting. A word cloud shows which words the posting repeats and which of them are already among your skills |
 | Documents | Per job, a generated resume, cover letter and recruiter message. Each bullet cites your records; numbers that do not appear in the cited evidence are flagged. Edit summaries, bullets and body text in place; every edit is a saved revision |
 | PDFs | One-page resume filled to the margin and a one-page cover letter, monochrome, built from saved document revisions; review remains a manual step |
 | Model access | Bring an API key for OpenRouter, Anthropic, OpenAI, the Vercel AI Gateway or any OpenAI-compatible server (Ollama and similar), or use no key at all: paste-back mode shows you the prompt, you run it in whatever assistant you already have and paste the answer back through the same checks |
-| Your assistant | Connection instructions for Claude Code, Codex and Claude Desktop, without a Landed model key: your assistant writes the documents and Landed checks them |
+| Your assistant | Create and edit career facts, delete individual records, and write documents through 26 MCP tools. Connection instructions for Claude Code, Codex and Claude Desktop, without a Landed model key: your assistant writes the documents and Landed checks them |
 | Runs | Every model call is recorded with model, prompt version, tokens, latency and cost, visible next to the document |
 | Data safety | Backup and restore of the database, the PDFs and the logos; keys live only in your environment file; provider requests, connected assistants, paste-back and logo-address fetches have the data boundaries described in [SECURITY](SECURITY.md) |
 
-Status: **Phase 1b complete (2026-09-14); assistant surface complete (2026-09-16)**. The table describes implemented features; client-specific verification is listed in the decision register. In particular, the packaged Docker install is tested on macOS, and the assistant connection has been used end to end from Claude Code on a contributor install (the packaged install's generated token is not yet exercised in Docker); Windows and Linux are untested. What is not built yet: importing a posting from a link, scoring how well you match, company research, automatic discovery of jobs, and interview tracking. See [product scope and phases](docs/01-product-and-phases.md) for the roadmap and [decisions and readiness](docs/09-decisions-and-readiness.md) for the honest list of known gaps.
+Status: **Phase 1b and the assistant surface are implemented, including profile tools and career browsing refinements (2026-09-20)**. The table describes implemented features; client-specific verification is listed in the decision register. In particular, the packaged Docker install is tested on macOS, and the assistant connection has been used end to end from Claude Code on a contributor install (the packaged install's generated token is not yet exercised in Docker); Windows and Linux are untested. What is not built yet: importing a posting from a link, scoring how well you match, company research, automatic discovery of jobs, and interview tracking. See [product scope and phases](docs/01-product-and-phases.md) for the roadmap and [decisions and readiness](docs/09-decisions-and-readiness.md) for the honest list of known gaps.
 
 ## Quickstart
 
@@ -62,7 +62,7 @@ Use the assistant you already pay for, no key needed ([ADR 008](docs/adr/008-ass
 
    Codex discovers the same skill by itself when you run it inside the Landed checkout; to use it from anywhere, link it into your user skills: `mkdir -p ~/.agents/skills && ln -s "$PWD/.agents/skills/landed" ~/.agents/skills/landed`. Claude Desktop uses the block from step 2 alone.
 
-The profile-management extension is on the feature branch, locally accepted, pending merge ([ADR 009](docs/adr/009-profile-management-over-mcp.md)). It adds conversational profile creation and editing, plus individual career-record deletion through the same connection. See the [branch testing instructions](docs/07-quickstart-contract.md#trying-profile-tools-on-the-feature-branch-adr-009-pending-merge).
+The profile-management extension is implemented and merged into `main` ([ADR 009](docs/adr/009-profile-management-over-mcp.md)). It adds conversational profile creation and editing, plus individual career-record deletion through the same connection. See the [profile tool instructions](docs/07-quickstart-contract.md#using-profile-tools-adr-009).
 
 Then ask for a resume: "tailor my resume for the Acme job". The assistant checks the fit first, writes the resume, cover letter and recruiter message in turn, fixes the warnings Landed raises, and gives you the PDF links. It never marks an application applied and never sends anything.
 
@@ -93,7 +93,7 @@ Decisions that shaped it, each with its reasoning and the alternatives rejected:
 - [ADR 006](docs/adr/006-model-access-path.md): the app calls the provider through one adapter; keys live in the environment only; paste-back as the zero-setup path; a fake adapter for every automated check.
 - [ADR 007](docs/adr/007-user-initiated-image-fetch.md): a logo address you paste is the one outbound request you start, fetched once through a guarded fetcher and stored.
 - [ADR 008](docs/adr/008-assistant-surface-over-mcp.md): your own assistant drives Landed through a local MCP endpoint with a launcher-minted token; Landed keeps validation, grounding and the run record.
-- [ADR 009 — Profile management over MCP](docs/adr/009-profile-management-over-mcp.md): typed profile and individual-record operations, partial updates, retry ids and required version checks; locally accepted on this branch, pending merge.
+- [ADR 009 — Profile management over MCP](docs/adr/009-profile-management-over-mcp.md): typed profile and individual-record operations, partial updates, retry ids and required version checks; implemented and merged into `main`.
 
 The [numbered documentation](docs/00-index.md) covers product, domain, modules, data model, workflows and failures, AI and integrations, quickstart, and the decision register. The interface follows [DESIGN.md](DESIGN.md); the produced PDFs follow [DESIGN-DOCS.md](DESIGN-DOCS.md).
 

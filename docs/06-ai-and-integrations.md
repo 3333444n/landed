@@ -1,8 +1,8 @@
 # 06 — AI, harnesses, and retrieval
 
-Status: model access path implemented in Phase 1b ([ADR 006](adr/006-model-access-path.md)); the guarded outbound fetch exists for a job's logo address ([ADR 007](adr/007-user-initiated-image-fetch.md), 2026-09-14); the evaluation set has been run against OpenRouter (see "Providers run through the evaluation set"); the assistant surface over MCP is implemented ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16; see "Your own assistant over MCP"); agentic research, discovery and retrieval remain future design. Updated 2026-09-17.
+Status: model access path implemented in Phase 1b ([ADR 006](adr/006-model-access-path.md)); the guarded outbound fetch exists for a job's logo address ([ADR 007](adr/007-user-initiated-image-fetch.md), 2026-09-14); the evaluation set has been run against OpenRouter (see "Providers run through the evaluation set"); the assistant surface over MCP is implemented ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16; see "Your own assistant over MCP"); agentic research, discovery and retrieval remain future design. Updated 2026-09-20.
 
-Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is implemented and locally accepted on this branch, pending merge. See [current verification](09-decisions-and-readiness.md#profile-management-over-mcp-accepted-pending-merge).
+Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is implemented and merged into `main`. See [current verification](09-decisions-and-readiness.md#profile-management-over-mcp-implemented).
 
 ## Distinguish the moving parts
 
@@ -60,9 +60,9 @@ Link intake for assistant users happens in the harness, not in Landed: when the 
 
 What stays as before: the app invoking a harness as a subprocess is not a path (it cannot run inside the release container, and the vendors' terms do not permit a third-party application to spend a chat subscription that way). Do not read a user's CLI credential store, and do not assume a chat subscription is an API credential. A local model is not a separate path: Ollama and similar servers are reached as an OpenAI-compatible endpoint, and structured-output quality on small local models is not guaranteed; the evaluation set is the way to find out. A locally running installation is reachable from claude.ai or a phone app only when exposed to the internet with authentication, which documents 03 and 09 keep as a separate design; that design reuses this endpoint.
 
-## Profile tools (ADR 009, feature branch pending merge)
+## Profile tools (ADR 009, implemented)
 
-[ADR 009](adr/009-profile-management-over-mcp.md) extends the original eight tools with 18 profile tools. This contract describes the feature branch; local acceptance is complete and merge remains pending. The endpoint, token and Host/Origin guard are unchanged. The current profile is resolved freshly for each call, including calls on an already-connected client after profile creation.
+[ADR 009](adr/009-profile-management-over-mcp.md) extends the original eight tools with 18 profile tools. These tools are merged into `main` in PR #33. The endpoint, token and Host/Origin guard are unchanged. The current profile is resolved freshly for each call, including calls on an already-connected client after profile creation.
 
 | Tool | Input | Returns or effect |
 |---|---|---|
@@ -107,4 +107,4 @@ Generated claims cite input snapshot entries, but valid IDs alone do not establi
 - [pgvector](https://github.com/pgvector/pgvector)
 
 
-Skill context extension (local implementation pending acceptance): `add_skill` accepts optional `role_ids` and `project_ids` arrays; `update_skill.changes` accepts the same fields. `get_profile` and saved skill records return both arrays as explicit links. Omit preserves on update; `[]` clears; null is invalid. Derived associations through achievements/projects are not written to these lists. Roles/projects with direct skill links refuse deletion until detached. These browsing links do not change generation briefs or historical snapshots.
+Skill context extension (implemented): `add_skill` accepts optional `role_ids` and `project_ids` arrays; `update_skill.changes` accepts the same fields. `get_profile` and saved skill records return both arrays as explicit links. Omit preserves on update; `[]` clears; null is invalid. Derived associations through achievements/projects are not written to these lists. Roles/projects with direct skill links refuse deletion until detached. These browsing links do not change generation briefs or historical snapshots.
