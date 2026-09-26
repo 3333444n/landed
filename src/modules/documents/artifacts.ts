@@ -57,7 +57,7 @@ export async function getOrRenderPdf(
 
   const bytes =
     document.type === "resume"
-      ? await renderResumePdf(revision.content as ResumeContent)
+      ? await renderResumePdf(revision.content as ResumeContent, run?.snapshot ?? null)
       : await renderCoverLetterPdf(
           revision.content as CoverLetterContent,
           letterHeaderFrom(

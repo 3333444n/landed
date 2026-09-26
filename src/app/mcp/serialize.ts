@@ -6,6 +6,11 @@ import type { JobRow } from "@/app/jobs/list-jobs";
 import type { ApplicationRecord } from "@/modules/applications";
 import {
   contentUnits,
+  formattingSegments,
+  availableResumeContacts,
+  resumeContactSelection,
+  resumeContacts,
+  type ResumeContent,
   editableFields,
   type DocumentType,
   type DocumentView,
@@ -82,7 +87,29 @@ export function documentDetail(type: DocumentType, view: DocumentView) {
   return {
     revision_id: revision?.id ?? null,
     reviewed: revision ? revision.reviewedAt !== null : false,
-    editable_fields: revision ? editableFields(type, revision.content) : [],
+    editable_fields: revision
+      ? editableFields(type, revision.content).map((field) => ({
+          ...field,
+          ...(type !== "recruiter_message"
+            ? {
+                segments: formattingSegments(revision.content, field.path, field.text),
+                supported_marks: ["bold", "italic", "underline"],
+              }
+            : {}),
+        }))
+      : [],
+    ...(type === "resume" && revision
+      ? {
+          contacts: {
+            available: view.revisionSnapshot ? availableResumeContacts(view.revisionSnapshot) : [],
+            selected: resumeContactSelection(
+              revision.content as ResumeContent,
+              view.revisionSnapshot ?? null,
+            ),
+            items: resumeContacts(revision.content as ResumeContent, view.revisionSnapshot ?? null),
+          },
+        }
+      : {}),
     units: revision
       ? contentUnits(type, revision.content).map((u) => ({
           path: u.path,

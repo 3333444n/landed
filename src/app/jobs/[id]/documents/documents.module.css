@@ -351,9 +351,11 @@
 .letterLinks {
   flex: 1 1 var(--letter-header-column-min);
 }
+.contactLink,
+.contact a,
 .letterLinks a,
 .letterFooter a {
-  color: inherit;
+  color: var(--document-link);
   text-decoration: underline;
   text-underline-offset: var(--space-1);
 }
@@ -391,4 +393,80 @@
   padding-top: var(--space-4);
   font-size: var(--letter-contact-size);
   line-height: var(--letter-contact-leading);
+}
+
+.richEditor {
+  min-width: 0;
+}
+.proseEditor {
+  font-size: var(--document-body-size);
+  line-height: var(--document-body-leading);
+}
+.richInput {
+  background: var(--bg-input);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  min-height: var(--size-control);
+  color: inherit;
+  font: inherit;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.richInput:focus-visible {
+  outline: var(--document-focus-width) solid var(--accent);
+  outline-offset: var(--document-focus-width);
+}
+.richInput p {
+  margin: 0;
+}
+.richInput p + p {
+  margin-top: 0;
+}
+.formatControls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+  font-size: var(--document-meta-size);
+  font-weight: normal;
+  font-style: normal;
+}
+.formatControls button {
+  min-width: var(--size-control);
+  min-height: var(--size-control);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface-raised);
+  color: var(--text-primary);
+  padding: var(--space-2);
+  cursor: pointer;
+}
+.formatControls button:hover,
+.formatControls button[aria-pressed="true"] {
+  background: var(--accent-soft);
+}
+.formatControls button:focus-visible {
+  outline: var(--document-focus-width) solid var(--accent);
+  outline-offset: var(--document-focus-width);
+}
+.formatControls button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.floatingFormat {
+  padding: var(--space-2);
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-float);
+}
+.floatingFormat .formatControls {
+  margin: 0;
+}
+.formatHint {
+  margin-top: var(--space-2);
+  color: var(--text-secondary);
+  font-size: var(--document-meta-size);
+  line-height: var(--document-meta-leading);
+  font-weight: normal;
+  font-style: normal;
 }

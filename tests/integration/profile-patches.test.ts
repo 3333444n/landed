@@ -54,6 +54,41 @@ beforeEach(async () => {
 });
 
 describe("conversational profile patches", () => {
+  it("preserves resume contacts across full and partial saves, and distinguishes reset from empty", async () => {
+    const original = unwrap(
+      await updateProfile(deps(), profileId, {
+        displayName: "Alex Rivera",
+        resumeContacts: ["website", "email"],
+      }),
+    );
+    const full = unwrap(
+      await updateProfile(deps(), profileId, {
+        ...version(original),
+        displayName: "Alex Rivera",
+        headline: "Developer",
+      }),
+    );
+    expect(full.preferences.resumeContacts).toEqual(["website", "email"]);
+    const partial = unwrap(
+      await patchProfile(deps(), profileId, {
+        ...version(full),
+        summary: "Builds useful software",
+      }),
+    );
+    expect(partial.preferences.resumeContacts).toEqual(["website", "email"]);
+    const empty = unwrap(
+      await patchProfile(deps(), profileId, { ...version(partial), resumeContacts: [] }),
+    );
+    expect(empty.preferences.resumeContacts).toEqual([]);
+    const reset = unwrap(
+      await patchProfile(deps(), profileId, { ...version(empty), resumeContacts: null }),
+    );
+    expect(reset.preferences).not.toHaveProperty("resumeContacts");
+    expect(
+      await patchProfile(deps(), profileId, { ...version(empty), resumeContacts: ["phone"] }),
+    ).toEqual(failure("stale"));
+  });
+
   it("merges profile fields, preferences and links, and clears only explicit values", async () => {
     const original = unwrap(
       await updateProfile(deps(), profileId, {

@@ -28,6 +28,15 @@ export interface SnapshotSources {
 export function buildSnapshot(s: SnapshotSources): Snapshot {
   return {
     capturedAt: s.capturedAt.toISOString(),
+    resumeContacts: [
+      ...(s.profile.preferences.resumeContacts ?? [
+        "phone",
+        "email",
+        "location",
+        "linkedin",
+        "github",
+      ]),
+    ],
     profile: {
       id: s.profile.id,
       displayName: s.profile.displayName,

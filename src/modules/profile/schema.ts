@@ -73,6 +73,7 @@ export interface ProfilePreferences {
   locations?: string[];
   workArrangement?: ("remote" | "hybrid" | "onsite")[];
   constraints?: string;
+  resumeContacts?: ("phone" | "email" | "location" | "linkedin" | "github" | "website")[];
 }
 
 export const profiles = pgTable(

@@ -7,6 +7,7 @@
  * (OpenAI) reject optional properties.
  */
 import { z } from "zod";
+import { trimSegments, validateFormatting } from "./formatting";
 
 export const documentTypes = ["resume", "cover_letter", "recruiter_message"] as const;
 export type DocumentType = (typeof documentTypes)[number];
@@ -56,6 +57,34 @@ export const revisionSources = ["generated", "pasted", "assistant", "edited"] as
 export type RevisionSource = (typeof revisionSources)[number];
 
 // Content schemas
+
+export const inlineMarks = ["bold", "italic", "underline"] as const;
+export type InlineMark = (typeof inlineMarks)[number];
+export const textSegment = z
+  .object({ text: z.string().max(2000), marks: z.array(z.enum(inlineMarks)).max(3) })
+  .strict();
+export type TextSegment = z.infer<typeof textSegment>;
+export const documentFormatting = z
+  .array(
+    z
+      .object({ path: z.string().min(1).max(200), segments: z.array(textSegment).max(2000) })
+      .strict(),
+  )
+  .max(100);
+export type DocumentFormatting = z.infer<typeof documentFormatting>;
+export const resumeContactIds = [
+  "phone",
+  "email",
+  "location",
+  "linkedin",
+  "github",
+  "website",
+] as const;
+export type ResumeContactId = (typeof resumeContactIds)[number];
+export const resumeContactSelection = z
+  .array(z.enum(resumeContactIds))
+  .max(6)
+  .refine((ids) => new Set(ids).size === ids.length, "Contact selections must be unique");
 
 const evidenceIds = z
   .array(z.string().min(1).max(64))
@@ -107,10 +136,12 @@ export const summaryHeading = "Summary";
 
 export const resumeContent = z
   .object({
+    formatting: documentFormatting.optional(),
+    contactSelection: resumeContactSelection.optional(),
     header: z.object({
       name: z.string().trim().min(1).max(80),
       headline: z.string().trim().max(120).nullable(),
-      contact: z.array(z.string().trim().min(1).max(80)).max(6),
+      contact: z.array(z.string().trim().min(1).max(2048)).max(6),
     }),
     summary: z
       .object({ text: z.string().trim().min(1).max(300), evidenceIds })
@@ -119,6 +150,7 @@ export const resumeContent = z
     sections: z.array(resumeSection).min(1).max(4),
   })
   .superRefine((content, ctx) => {
+    validateFormatting("resume", content, ctx);
     const seen = new Set<ResumeSectionKind>();
     let entries = 0;
     let bullets = 0;
@@ -166,30 +198,33 @@ export const resumeContent = z
   });
 export type ResumeContent = z.infer<typeof resumeContent>;
 
-export const coverLetterContent = z.object({
-  title: z
-    .string()
-    .trim()
-    .max(120)
-    .nullable()
-    .optional()
-    .describe(
-      "Optional professional title beneath the sender name. Use only the supplied profile headline; omit to use it unchanged, null to hide it.",
-    ),
-  greeting: z.string().trim().min(1).max(80),
-  paragraphs: z
-    .array(
-      z.object({
-        text: z.string().trim().min(1).max(700),
-        evidenceIds,
-        contextIds: z.array(z.string().min(1).max(64)).max(8).optional(),
-      }),
-    )
-    .min(2)
-    .max(4),
-  closing: z.string().trim().min(1).max(40),
-  signature: z.string().trim().min(1).max(80),
-});
+export const coverLetterContent = z
+  .object({
+    formatting: documentFormatting.optional(),
+    title: z
+      .string()
+      .trim()
+      .max(120)
+      .nullable()
+      .optional()
+      .describe(
+        "Optional professional title beneath the sender name. Use only the supplied profile headline; omit to use it unchanged, null to hide it.",
+      ),
+    greeting: z.string().trim().min(1).max(80),
+    paragraphs: z
+      .array(
+        z.object({
+          text: z.string().trim().min(1).max(700),
+          evidenceIds,
+          contextIds: z.array(z.string().min(1).max(64)).max(8).optional(),
+        }),
+      )
+      .min(2)
+      .max(4),
+    closing: z.string().trim().min(1).max(40),
+    signature: z.string().trim().min(1).max(80),
+  })
+  .superRefine((content, ctx) => validateFormatting("cover_letter", content, ctx));
 export type CoverLetterContent = z.infer<typeof coverLetterContent>;
 
 export const messageVariants = ["email", "linkedin"] as const;
@@ -228,6 +263,7 @@ export type ProfileLink = z.infer<typeof profileLink>;
 
 export const snapshot = z.object({
   capturedAt: z.iso.datetime(),
+  resumeContacts: resumeContactSelection.optional(),
   profile: z.object({
     id: z.string(),
     displayName: z.string(),
@@ -361,10 +397,28 @@ export const pasteBackInput = z.object({
 });
 export type PasteBackInput = z.infer<typeof pasteBackInput>;
 
-export const editUnitInput = z.object({
-  /** The revision the editor was showing; a newer one means another tab saved first. */
-  expectedRevisionId: z.uuid(),
-  path: z.string().min(1).max(200),
-  text: z.string().trim().max(2000),
-});
+export const editUnitInput = z
+  .object({
+    /** The revision the editor was showing; a newer one means another tab saved first. */
+    expectedRevisionId: z.uuid(),
+    path: z.string().min(1).max(200),
+    text: z.string().max(2000),
+    segments: z.array(textSegment).max(2000).optional(),
+  })
+  .superRefine((input, ctx) => {
+    if (
+      input.segments !== undefined &&
+      input.segments.map((segment) => segment.text).join("") !== input.text
+    )
+      ctx.addIssue({
+        code: "custom",
+        path: ["segments"],
+        message: "Formatted text must exactly match the field text",
+      });
+  })
+  .transform((input) => ({
+    ...input,
+    text: input.text.trim(),
+    ...(input.segments !== undefined ? { segments: trimSegments(input.segments) } : {}),
+  }));
 export type EditUnitInput = z.infer<typeof editUnitInput>;

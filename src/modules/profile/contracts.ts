@@ -45,6 +45,27 @@ export const createProfileInput = z.object({
 });
 export type CreateProfileInput = z.infer<typeof createProfileInput>;
 
+export const resumeContactIds = [
+  "phone",
+  "email",
+  "location",
+  "linkedin",
+  "github",
+  "website",
+] as const;
+export type ResumeContactId = (typeof resumeContactIds)[number];
+export const resumeContactSelection = z
+  .array(z.enum(resumeContactIds))
+  .max(6)
+  .refine((items) => new Set(items).size === items.length, "Choose each contact once");
+export const defaultResumeContacts: ResumeContactId[] = [
+  "phone",
+  "email",
+  "location",
+  "linkedin",
+  "github",
+];
+
 export const workArrangements = ["remote", "hybrid", "onsite"] as const;
 
 export const updateProfileInput = z.object({
@@ -66,6 +87,10 @@ export const updateProfileInput = z.object({
   linkedinUrl: optionalUrl,
   githubUrl: optionalUrl,
   websiteUrl: optionalUrl,
+  resumeContacts: z.preprocess(
+    (value) => (typeof value === "string" ? value.split(",").filter(Boolean) : value),
+    resumeContactSelection.optional(),
+  ),
 });
 export type UpdateProfileInput = z.infer<typeof updateProfileInput>;
 
@@ -179,6 +204,7 @@ export const profilePatchInput = z.strictObject({
   linkedinUrl: patchUrl,
   githubUrl: patchUrl,
   websiteUrl: patchUrl,
+  resumeContacts: resumeContactSelection.nullable().optional(),
 });
 export const employmentPatchInput = z.strictObject({
   ...patchVersion,

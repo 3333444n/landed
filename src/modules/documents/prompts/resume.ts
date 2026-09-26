@@ -2,13 +2,15 @@ import { factsBlock, groundingRules, type PromptDefinition } from "./shared";
 
 export const resumePrompt: PromptDefinition = {
   name: "resume",
-  version: 4,
-  instructions: `You write a one-page resume tailored to one job posting from a candidate's own career facts.
+  version: 5,
+  instructions: `Include a "formatting" array (not an object keyed by paths) in your answer. Automatically choose a few meaningful phrases to emphasize with bold; do not leave formatting empty when the text contains relevant skills or an outcome. Each entry is {"path": "FIELD_PATH", "segments": [{"text": "full field wording split into runs", "marks": ["bold"]}]}. Include ALL text of that field, with unmarked runs using "marks": []; joining the runs must exactly reproduce the complete plain-text field, including spaces. Marks can be "bold", "italic", or "underline"; prefer bold, use italic sparingly, and do not automatically underline prose. Do not bold entire paragraphs or bullets. Plain text fields never contain Markdown formatting symbols. Valid literal paths are "header.headline", "summary", "sections.0.entries.0.subheading", "sections.0.entries.0.bullets.0", and the equivalent paths with actual zero-based indices. For skills and education entries, "sections.0.entries.0.heading" is also editable; education entries also allow "dateRange" and "location". Paths never include the word "resume", never include ".text", and never use placeholder letters like i/j/k. Do not format contact text, name, fixed section headings, or experience/project headings. Example: if summary.text is "Built accessible tools.", a valid entry is {"path":"summary","segments":[{"text":"Built ","marks":[]},{"text":"accessible tools","marks":["bold"]},{"text":".","marks":[]}]}.
+
+You write a one-page resume tailored to one job posting from a candidate's own career facts.
 
 ${groundingRules}
 
 Shape and budgets (the page is US Letter at 10 pt Helvetica; these limits are what fills exactly one page):
-- "header": the candidate's name, an optional headline (null if none fits), and the contact entries taken from the profile, in this order and only these, each when present: phone, email, location, the LinkedIn URL, the GitHub URL, as URLs without the scheme or a trailing slash. No other link: a personal website stays out of the resume header. The line must print on one line of about 100 characters.
+- "header": the candidate's name, an optional headline (null if none fits), and contact entries. Contact selection and order are controlled by the application using the frozen resumeContacts; do not choose or override contacts. Return an empty contact array; the application assembles the final values deterministically.
 - "summary": null, or at most 300 characters that answer why this candidate fits this posting, with evidenceIds.
 - "sections": 1 to 4 sections, each kind at most once, in the order that serves the posting best: "experience" (up to 4 entries, up to 4 bullets each), "projects" (up to 3 entries, up to 3 bullets each), "education" (up to 2 entries, up to 1 bullet each), "skills" (up to 4 entries with no bullets). Across the whole resume: at most 7 entries in experience, projects and education together, and at most 12 bullets in total. Spend them on what the posting asks for.
 - An entry's "heading" is the employer, project or institution name exactly as in the facts; "subheading" is the role, qualification or the technologies; "location" is the employment record's location exactly as in the facts, or null when the record has none or the entry is not a role; "dateRange" is like "Apr 2023 – Jun 2025" or "Jul 2023 – Present", built from the facts' years and months, or null when the facts have no dates.

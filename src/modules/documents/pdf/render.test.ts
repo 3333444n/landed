@@ -1,4 +1,7 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { execFileSync, spawnSync } from "node:child_process";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { demoSnapshot } from "../../../../tests/helpers/demo-snapshot";
 import { coverLetterContent, resumeContent, resumeTotals } from "../contracts";
@@ -202,3 +205,49 @@ it("lets long footer details flow onto later pages instead of overlapping the le
   expect(pdfPageCount(pdf)).toBeGreaterThan(1);
   expect(pdf.toString("latin1")).toContain(snapshot.profile.links[0]!.url);
 });
+
+it("renders combined inline styles as standard PDF fonts and frozen contact links", async () => {
+  const snapshot = demoSnapshot();
+  const content = resumeContent.parse(fixture("resume"));
+  content.contactSelection = ["email", "phone"];
+  content.formatting = [
+    {
+      path: "header.headline",
+      segments: [{ text: content.header.headline ?? "", marks: ["bold", "italic", "underline"] }],
+    },
+  ];
+  const pdf = await renderResumePdf(content, snapshot);
+  const source = pdf.toString("latin1");
+  expect(source).toContain("Helvetica-BoldOblique");
+  expect(source).toContain("/Subtype /Link");
+  expect(source).toContain("mailto:alex@example.com");
+  expect(pdfPageCount(pdf)).toBe(1);
+});
+
+// Optional local interoperability check; the renderer itself has no Poppler dependency.
+it.skipIf(spawnSync("pdftotext", ["-v"]).error !== undefined)(
+  "preserves text across style boundaries when extracted from PDF",
+  async () => {
+    const directory = mkdtempSync(join(tmpdir(), "landed-pdf-text-"));
+    try {
+      const content = resumeContent.parse(fixture("resume"));
+      const text = content.summary!.text;
+      content.formatting = [
+        {
+          path: "summary",
+          segments: [
+            { text: text.slice(0, 10), marks: ["bold"] },
+            { text: text.slice(10, 24), marks: ["italic", "underline"] },
+            { text: text.slice(24), marks: ["bold", "italic"] },
+          ],
+        },
+      ];
+      const path = join(directory, "resume.pdf");
+      writeFileSync(path, await renderResumePdf(content));
+      const extracted = execFileSync("pdftotext", [path, "-"], { encoding: "utf8" });
+      expect(extracted.replace(/\s+/g, " ")).toContain(text.replace(/\s+/g, " "));
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  },
+);

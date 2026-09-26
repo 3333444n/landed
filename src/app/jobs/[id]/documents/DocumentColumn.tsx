@@ -20,7 +20,12 @@ import {
   type CoverLetterContent,
   type DocumentType,
 } from "@/modules/documents";
-import { editUnitAction, generateDocumentAction, markReviewedAction } from "../document-actions";
+import {
+  setResumeContactsAction,
+  editUnitAction,
+  generateDocumentAction,
+  markReviewedAction,
+} from "../document-actions";
 import { ActionButton } from "./ActionButton";
 import { DocumentPreview } from "./DocumentPreview";
 import { documentIcons } from "./icons";
@@ -120,6 +125,17 @@ export async function DocumentColumn({ jobId, type }: { jobId: string; type: Doc
                 )
               : undefined
           }
+          snapshot={run?.snapshot ?? null}
+          profileDefault={
+            profile.preferences.resumeContacts ?? [
+              "phone",
+              "email",
+              "location",
+              "linkedin",
+              "github",
+            ]
+          }
+          contactAction={setResumeContactsAction}
           editAction={editUnitAction}
         />
       ) : (

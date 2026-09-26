@@ -27,6 +27,8 @@ import {
   type Snapshot,
 } from "./contracts";
 import { prompts, type PromptDefinition } from "./prompts";
+import { withFieldFormatting } from "./formatting";
+import { selectedResumeContacts, defaultContactSelection } from "./contacts";
 import * as repo from "./repository";
 import {
   documentFacts,
@@ -172,7 +174,11 @@ export async function submitPastedAnswer(
   }
   const saved = await saveRevision(deps, profileId, run, checked.data, null, run.mode, at);
   if (!saved.ok) return saved;
-  return { ok: true, value: { run: saved.value.run, revision: saved.value.revision! } };
+  if (!saved.value.revision)
+    return validation({
+      json: ["The answer does not match the document shape after applying contact preferences"],
+    });
+  return { ok: true, value: { run: saved.value.run, revision: saved.value.revision } };
 }
 
 /** Marks runs left `running` for longer than the limit as interrupted (docs/05). */
@@ -190,6 +196,7 @@ export interface DocumentView {
   revision: repo.DocumentRevisionRecord | null;
   latestRun: repo.GenerationRunRecord | null;
   warnings: GroundingWarning[];
+  revisionSnapshot?: Snapshot | null;
 }
 
 export async function getDocumentView(
@@ -220,7 +227,10 @@ export async function getDocumentView(
     };
   }
   const latestRun = runs[0] ?? null;
-  return { document, revision, latestRun, warnings: revision?.warnings ?? [] };
+  const revisionSnapshot = revision?.generationRunId
+    ? (runs.find((run) => run.id === revision.generationRunId)?.snapshot ?? null)
+    : null;
+  return { document, revision, latestRun, warnings: revision?.warnings ?? [], revisionSnapshot };
 }
 
 export async function listRunsForDocument(
@@ -257,12 +267,21 @@ export async function editUnit(
     return await deps.db.transaction(async (tx) => {
       const current = await repo.findRevision(tx, profileId, input.expectedRevisionId);
       if (!current) return notFound("Revision");
+      if (!(await repo.lockDocument(tx, profileId, current.documentId)))
+        return notFound("Document");
       const latest = await repo.latestRevision(tx, profileId, current.documentId);
       if (!latest || latest.id !== current.id) return stale();
       const type = await documentType(tx, profileId, current.documentId);
       if (!type) return notFound("Document");
-      const edited = withUnitText(type, current.content, input.path, input.text);
+      let edited = withUnitText(type, current.content, input.path, input.text);
       if (!edited) return validation({ text: ["That part of the document no longer exists"] });
+      if (input.segments !== undefined) {
+        if (input.segments.map((segment) => segment.text).join("") !== input.text)
+          return validation({ segments: ["Formatted text must exactly match the field text"] });
+        if (type === "recruiter_message")
+          return validation({ segments: ["This document supports plain text only"] });
+        edited = withFieldFormatting(edited, input.path, input.segments);
+      }
       const checked = contentSchemas[type].safeParse(edited);
       if (!checked.success) {
         const issue = checked.error.issues[0];
@@ -359,6 +378,19 @@ async function saveRevision(
   Result<{ run: repo.GenerationRunRecord; revision: repo.DocumentRevisionRecord | null }>
 > {
   const type = run.documentType;
+  // Contact facts and their order are application-owned, frozen before generation.
+  if (type === "resume" && value && typeof value === "object" && !Array.isArray(value)) {
+    const answer = value as Record<string, unknown>;
+    const selection = run.snapshot.resumeContacts ?? defaultContactSelection;
+    value = {
+      ...answer,
+      contactSelection: selection,
+      header: {
+        ...(answer.header && typeof answer.header === "object" ? answer.header : {}),
+        contact: selectedResumeContacts(run.snapshot, selection).map((item) => item.text),
+      },
+    };
+  }
   const checked = contentSchemas[type].safeParse(value);
   if (!checked.success) {
     const failed = await repo.updateRun(deps.db, profileId, run.id, {
@@ -386,6 +418,7 @@ async function saveRevision(
           createdAt: at,
           updatedAt: at,
         }));
+      if (!(await repo.lockDocument(tx, profileId, document.id))) return notFound("Document");
       const revision = await repo.insertRevision(tx, {
         id: newId(deps),
         profileId,

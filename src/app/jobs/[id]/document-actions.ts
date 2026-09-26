@@ -54,7 +54,18 @@ export async function editUnitAction(
   formData: FormData,
 ): Promise<ActionState> {
   const profile = await requireProfile();
-  const result = await editUnit(deps(), profile.id, formDataToObject(formData));
+  const input = formDataToObject(formData);
+  if (typeof input.segments === "string") {
+    try {
+      input.segments = JSON.parse(input.segments);
+    } catch {
+      return errorState(previous, formData, {
+        kind: "validation",
+        fieldErrors: { segments: ["Invalid text formatting. Please try again."] },
+      });
+    }
+  }
+  const result = await editUnit(deps(), profile.id, input);
   if (!result.ok) return errorState(previous, formData, result.error);
   revalidatePath("/", "layout");
   return { status: "saved", recordId: result.value.id };
@@ -69,6 +80,23 @@ export async function markReviewedAction(
 ): Promise<ActionState> {
   const profile = await requireProfile();
   const result = await markReviewed(deps(), profile.id, revisionId, reviewed);
+  if (!result.ok) return errorState(previous, formData, result.error);
+  revalidatePath("/", "layout");
+  return { status: "saved", recordId: result.value.id };
+}
+
+export async function setResumeContactsAction(
+  previous: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const profile = await requireProfile();
+  const { setResumeContacts } = await import("@/modules/documents");
+  const result = await setResumeContacts(deps(), profile.id, {
+    expectedRevisionId: formData.get("expectedRevisionId"),
+    selection: String(formData.get("selection") ?? "")
+      .split(",")
+      .filter(Boolean),
+  });
   if (!result.ok) return errorState(previous, formData, result.error);
   revalidatePath("/", "layout");
   return { status: "saved", recordId: result.value.id };

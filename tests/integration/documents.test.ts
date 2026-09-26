@@ -16,6 +16,7 @@ import { pursueJob } from "@/app/jobs/pursue-job";
 import { getApplicationForJob } from "@/modules/applications";
 import {
   editUnit,
+  setResumeContacts,
   getDocumentView,
   getRun,
   listRunsForDocument,
@@ -724,4 +725,138 @@ describe("cover-letter professional title", () => {
     expect((historical!.content as CoverLetterContent).title).toBeUndefined();
     expect((await getRun(deps(), demo.profileId, run.id))!.snapshot).toEqual(run.snapshot);
   });
+});
+
+describe("frozen resume contacts", () => {
+  it("ignores model contact overrides and freezes the profile used by an unanswered brief", async () => {
+    const { application } = await pasteJob();
+    unwrap(
+      await updateProfile(deps(), demo.profileId, {
+        displayName: "Alex Rivera",
+        email: "frozen@example.com",
+        websiteUrl: "https://frozen.example.com",
+        resumeContacts: ["website", "email"],
+      }),
+    );
+    const brief = unwrap(await preparePasteBack(deps(), demo.profileId, demo.jobId, "resume"));
+    unwrap(
+      await updateProfile(deps(), demo.profileId, {
+        displayName: "Alex Rivera",
+        email: "changed@example.com",
+        websiteUrl: "https://changed.example.com",
+        resumeContacts: ["email"],
+      }),
+    );
+    const answer = JSON.parse(fixture("resume")) as ResumeContent;
+    answer.contactSelection = ["location"];
+    answer.header.contact = ["untrusted.example.com"];
+    const saved = unwrap(
+      await submitPastedAnswer(deps(), demo.profileId, {
+        runId: brief.run.id,
+        json: JSON.stringify(answer),
+      }),
+    );
+    expect((saved.revision.content as ResumeContent).contactSelection).toEqual([
+      "website",
+      "email",
+    ]);
+    expect((saved.revision.content as ResumeContent).header.contact).toEqual([
+      "frozen.example.com",
+      "frozen@example.com",
+    ]);
+    const edited = unwrap(
+      await setResumeContacts(deps(), demo.profileId, {
+        expectedRevisionId: saved.revision.id,
+        selection: ["email", "website"],
+      }),
+    );
+    expect((edited.content as ResumeContent).header.contact).toEqual([
+      "frozen@example.com",
+      "frozen.example.com",
+    ]);
+    expect(edited.reviewedAt).toBeNull();
+    const view = await getDocumentView(deps(), demo.profileId, application.id, "resume");
+    expect(view.revisionSnapshot?.profile.email).toBe("frozen@example.com");
+    const next = unwrap(await prepareGeneration(deps(), demo.profileId, demo.jobId, "resume"));
+    expect(next.snapshot.resumeContacts).toEqual(["email", "website"]);
+    expect(next.snapshot.profile.email).toBe("changed@example.com");
+    expect((saved.revision.content as ResumeContent).header.contact).toEqual([
+      "frozen.example.com",
+      "frozen@example.com",
+    ]);
+  });
+
+  it("freezes an explicitly empty selection even when the model supplies contacts", async () => {
+    await pasteJob();
+    unwrap(
+      await updateProfile(deps(), demo.profileId, {
+        displayName: "Alex Rivera",
+        email: "alex@example.com",
+        resumeContacts: [],
+      }),
+    );
+    const brief = unwrap(await preparePasteBack(deps(), demo.profileId, demo.jobId, "resume"));
+    const saved = unwrap(
+      await submitPastedAnswer(deps(), demo.profileId, {
+        runId: brief.run.id,
+        json: fixture("resume"),
+      }),
+    );
+    expect((saved.revision.content as ResumeContent).contactSelection).toEqual([]);
+    expect((saved.revision.content as ResumeContent).header.contact).toEqual([]);
+  });
+});
+
+describe("serialized document revisions", () => {
+  it.each(["contact", "text"] as const)(
+    "refuses one concurrent %s edit against the same resume revision",
+    async (competingEdit) => {
+      const { application } = await pasteJob();
+      await generateDocument(deps(), fake, demo.profileId, demo.jobId, "resume");
+      const initial = (await getDocumentView(deps(), demo.profileId, application.id, "resume"))
+        .revision!;
+      // A fixed older clock must not leave a successful edit ordered before its parent.
+      const fixedDeps = { ...deps(), now: () => new Date(initial.createdAt.getTime() - 1000) };
+      const results = await Promise.all([
+        setResumeContacts(fixedDeps, demo.profileId, {
+          expectedRevisionId: initial.id,
+          selection: ["email"],
+        }),
+        competingEdit === "contact"
+          ? setResumeContacts(fixedDeps, demo.profileId, {
+              expectedRevisionId: initial.id,
+              selection: [],
+            })
+          : editUnit(fixedDeps, demo.profileId, {
+              expectedRevisionId: initial.id,
+              path: "header.headline",
+              text: "A concurrent text edit",
+            }),
+      ]);
+      const successes = results.filter((result) => result.ok);
+      const failures = results.filter((result) => !result.ok);
+      expect(successes).toHaveLength(1);
+      expect(failures).toHaveLength(1);
+      expect(failures[0]).toMatchObject({ ok: false, error: { kind: "stale" } });
+      const saved = unwrap(successes[0]!);
+      const view = await getDocumentView(deps(), demo.profileId, application.id, "resume");
+      expect(view.revision?.id).toBe(saved.id);
+      expect(saved.createdAt.getTime()).toBe(initial.createdAt.getTime() + 1);
+      expect(saved.reviewedAt).toBeNull();
+      const second = unwrap(
+        await setResumeContacts(fixedDeps, demo.profileId, {
+          expectedRevisionId: saved.id,
+          selection: ["location", "email"],
+        }),
+      );
+      expect(second.createdAt.getTime()).toBe(saved.createdAt.getTime() + 1);
+      const run = unwrap(
+        await generateDocument(fixedDeps, fake, demo.profileId, demo.jobId, "resume"),
+      );
+      const regenerated = (await getDocumentView(deps(), demo.profileId, application.id, "resume"))
+        .revision!;
+      expect(regenerated.generationRunId).toBe(run.id);
+      expect(regenerated.createdAt.getTime()).toBe(second.createdAt.getTime() + 1);
+    },
+  );
 });

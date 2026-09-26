@@ -4,6 +4,9 @@
  */
 export {
   contentSchemas,
+  textSegment,
+  type TextSegment,
+  type InlineMark,
   coverLetterContent,
   documentSlugs,
   documentTypeFromSlug,
@@ -78,3 +81,8 @@ export type {
 } from "./repository";
 
 export { letterHeaderFrom, letterSalutation, type LetterHeader } from "./presentation";
+
+export { formattingSegments, withFieldFormatting } from "./formatting";
+
+export { setResumeContacts, setResumeContactsInput } from "./contact-service";
+export { availableResumeContacts, resumeContactSelection, resumeContacts } from "./contacts";

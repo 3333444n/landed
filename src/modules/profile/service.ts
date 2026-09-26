@@ -117,7 +117,14 @@ export async function updateProfile(
           email: input.email ?? null,
           phone: input.phone ?? null,
           location: input.location ?? null,
-          preferences,
+          preferences: {
+            ...preferences,
+            ...(input.resumeContacts !== undefined
+              ? { resumeContacts: input.resumeContacts }
+              : current.preferences.resumeContacts !== undefined
+                ? { resumeContacts: current.preferences.resumeContacts }
+                : {}),
+          },
           links,
           updatedAt: nextVersion(deps, current.updatedAt),
         },
@@ -684,6 +691,7 @@ export async function patchProfile(
     linkedinUrl,
     githubUrl,
     websiteUrl,
+    resumeContacts,
     ...fields
   } = parsed.data;
   try {
@@ -691,6 +699,8 @@ export async function patchProfile(
       const current = await repo.findProfileById(tx, profileId);
       if (!current) return notFound("Profile");
       const preferences = { ...current.preferences };
+      if (resumeContacts === null) delete preferences.resumeContacts;
+      else if (resumeContacts !== undefined) preferences.resumeContacts = resumeContacts;
       if (desiredRoles !== undefined) preferences.desiredRoles = desiredRoles;
       if (locations !== undefined) preferences.locations = locations;
       if (workArrangement !== undefined) preferences.workArrangement = workArrangement;

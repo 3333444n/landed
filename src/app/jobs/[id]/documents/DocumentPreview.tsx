@@ -15,11 +15,17 @@ import {
   type GroundingWarning,
   type RecruiterMessageContent,
   type ResumeContent,
+  type TextSegment,
+  type Snapshot,
 } from "@/modules/documents/contracts";
 import { CopyButton } from "@/components/CopyButton";
 import { editableFields } from "@/modules/documents/rules";
 import { letterSalutation, type LetterHeader } from "@/modules/documents/presentation";
 import styles from "./documents.module.css";
+import { ResumeContactEditor } from "./ResumeContactEditor";
+import { type ContactId } from "@/modules/documents/contacts";
+import { RichTextEditor } from "./RichTextEditor";
+import { formattingSegments, salutationFormattingSegments } from "@/modules/documents/formatting";
 
 interface PreviewProps {
   type: DocumentType;
@@ -28,6 +34,9 @@ interface PreviewProps {
   revisionId: string;
   evidence: Record<string, string>;
   letterHeader?: LetterHeader;
+  snapshot: Snapshot | null;
+  profileDefault: ContactId[];
+  contactAction: (state: ActionState, formData: FormData) => Promise<ActionState>;
   editAction: (state: ActionState, formData: FormData) => Promise<ActionState>;
 }
 
@@ -57,9 +66,27 @@ function ResumePreview({ ctx, content }: { ctx: Ctx; content: ResumeContent }) {
       <div>
         <p className={styles.name}>{content.header.name}</p>
         <TextField ctx={ctx} path="header.headline" placeholder="Add headline" />
-        {content.header.contact.length > 0 ? (
-          <p className={styles.contact}>{content.header.contact.join(" · ")}</p>
+        {ctx.warnings.some((warning) => warning.path === "header") ? (
+          <div className={styles.chips}>
+            {ctx.warnings
+              .filter((warning) => warning.path === "header")
+              .map((warning, index) => (
+                <Chip key={index} tone="warning">
+                  {warningLabels[warning.kind]}
+                </Chip>
+              ))}
+          </div>
         ) : null}
+        <ResumeContactEditor
+          content={content}
+          snapshot={ctx.snapshot}
+          profileDefault={ctx.profileDefault}
+          revisionId={ctx.revisionId}
+          action={ctx.contactAction}
+          open={ctx.editing === "contacts"}
+          onOpen={() => ctx.setEditing("contacts")}
+          onClose={() => ctx.setEditing(null)}
+        />
       </div>
       {content.summary ? (
         <section className={styles.preview}>
@@ -322,6 +349,7 @@ function Unit({
         label={label}
         text={unit.text}
         compact={compact}
+        className={className}
         onDone={() => ctx.setEditing(null)}
       />
     );
@@ -335,7 +363,17 @@ function Unit({
         aria-label={`Edit ${label}`}
         onClick={() => ctx.setEditing(path)}
       >
-        {unit.text ? (displayText ?? unit.text) : placeholder}
+        {unit.text ? (
+          <FormattedText
+            segments={
+              displayText !== undefined
+                ? salutationFormattingSegments(ctx.content, path, unit.text)
+                : formattingSegments(ctx.content, path, unit.text)
+            }
+          />
+        ) : (
+          placeholder
+        )}
       </button>
       {warnings.length > 0 ? (
         <div className={styles.chips}>
@@ -361,6 +399,7 @@ function UnitEditor({
   label,
   text,
   compact,
+  className,
   onDone,
 }: {
   ctx: Ctx;
@@ -368,6 +407,7 @@ function UnitEditor({
   label: string;
   text: string;
   compact: boolean;
+  className?: string;
   onDone: () => void;
 }) {
   const [state, formAction, pending] = useActionState(ctx.editAction, idleState);
@@ -379,15 +419,29 @@ function UnitEditor({
     <form action={formAction} className={styles.editor}>
       <input type="hidden" name="expectedRevisionId" value={ctx.revisionId} />
       <input type="hidden" name="path" value={path} />
-      <AutoGrowTextarea
-        key={fieldsKey(state)}
-        name="text"
-        aria-label={`Text of ${label}`}
-        className={fieldStyles.control}
-        rows={compact ? 1 : 4}
-        defaultValue={state.status === "error" ? state.values.text : text}
-        autoFocus
-      />
+      {ctx.type === "recruiter_message" ? (
+        <AutoGrowTextarea
+          key={fieldsKey(state)}
+          name="text"
+          aria-label={`Text of ${label}`}
+          className={fieldStyles.control}
+          rows={compact ? 1 : 4}
+          defaultValue={state.status === "error" ? state.values.text : text}
+          autoFocus
+        />
+      ) : (
+        <RichTextEditor
+          key={fieldsKey(state)}
+          label={label}
+          className={`${compact ? "" : styles.proseEditor} ${className ?? ""}`}
+          initialSegments={
+            state.status === "error"
+              ? submittedSegments(state.values.segments, state.values.text ?? text)
+              : formattingSegments(ctx.content, path, text)
+          }
+          disabled={pending}
+        />
+      )}
       {errors.length > 0 ? (
         <p className={fieldStyles.error} role="alert">
           {errors.join(" ")}
@@ -402,5 +456,30 @@ function UnitEditor({
         </Button>
       </div>
     </form>
+  );
+}
+
+function submittedSegments(value: string | undefined, text: string): TextSegment[] {
+  if (value) {
+    try {
+      return JSON.parse(value) as TextSegment[];
+    } catch {
+      /* Keep plain text when a submitted payload was malformed. */
+    }
+  }
+  return text ? [{ text, marks: [] }] : [];
+}
+
+function FormattedText({ segments }: { segments: TextSegment[] }) {
+  return (
+    <>
+      {segments.map((segment, i) => {
+        let text = <>{segment.text}</>;
+        if (segment.marks.includes("bold")) text = <strong>{text}</strong>;
+        if (segment.marks.includes("italic")) text = <em>{text}</em>;
+        if (segment.marks.includes("underline")) text = <u>{text}</u>;
+        return <span key={i}>{text}</span>;
+      })}
+    </>
   );
 }
