@@ -28,6 +28,7 @@ import {
 } from "./contracts";
 import { prompts, type PromptDefinition } from "./prompts";
 import { withFieldFormatting } from "./formatting";
+import { selectedResumeContacts, defaultContactSelection } from "./contacts";
 import * as repo from "./repository";
 import {
   documentFacts,
@@ -173,7 +174,11 @@ export async function submitPastedAnswer(
   }
   const saved = await saveRevision(deps, profileId, run, checked.data, null, run.mode, at);
   if (!saved.ok) return saved;
-  return { ok: true, value: { run: saved.value.run, revision: saved.value.revision! } };
+  if (!saved.value.revision)
+    return validation({
+      json: ["The answer does not match the document shape after applying contact preferences"],
+    });
+  return { ok: true, value: { run: saved.value.run, revision: saved.value.revision } };
 }
 
 /** Marks runs left `running` for longer than the limit as interrupted (docs/05). */
@@ -191,6 +196,7 @@ export interface DocumentView {
   revision: repo.DocumentRevisionRecord | null;
   latestRun: repo.GenerationRunRecord | null;
   warnings: GroundingWarning[];
+  revisionSnapshot?: Snapshot | null;
 }
 
 export async function getDocumentView(
@@ -221,7 +227,10 @@ export async function getDocumentView(
     };
   }
   const latestRun = runs[0] ?? null;
-  return { document, revision, latestRun, warnings: revision?.warnings ?? [] };
+  const revisionSnapshot = revision?.generationRunId
+    ? (runs.find((run) => run.id === revision.generationRunId)?.snapshot ?? null)
+    : null;
+  return { document, revision, latestRun, warnings: revision?.warnings ?? [], revisionSnapshot };
 }
 
 export async function listRunsForDocument(
@@ -369,6 +378,19 @@ async function saveRevision(
   Result<{ run: repo.GenerationRunRecord; revision: repo.DocumentRevisionRecord | null }>
 > {
   const type = run.documentType;
+  // Contact facts and their order are application-owned, frozen before generation.
+  if (type === "resume" && value && typeof value === "object" && !Array.isArray(value)) {
+    const answer = value as Record<string, unknown>;
+    const selection = run.snapshot.resumeContacts ?? defaultContactSelection;
+    value = {
+      ...answer,
+      contactSelection: selection,
+      header: {
+        ...(answer.header && typeof answer.header === "object" ? answer.header : {}),
+        contact: selectedResumeContacts(run.snapshot, selection).map((item) => item.text),
+      },
+    };
+  }
   const checked = contentSchemas[type].safeParse(value);
   if (!checked.success) {
     const failed = await repo.updateRun(deps.db, profileId, run.id, {

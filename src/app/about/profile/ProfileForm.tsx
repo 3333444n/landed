@@ -1,6 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
+import { ContactSelection } from "@/components/ContactSelection";
+import { defaultResumeContacts, type ResumeContactId } from "@/modules/profile/contracts";
 import { Button } from "@/components/Button";
 import { Checkbox } from "@/components/Checkbox";
 import { PillInput } from "@/components/PillInput";
@@ -71,6 +73,12 @@ function Fields({
 }) {
   // FormValues keeps only the last string per key, so a multi-value checkbox group cannot be read
   // back from the echoed submission. After an error the checkboxes show the stored selection.
+  const [contacts, setContacts] = useState<ResumeContactId[]>(
+    values.resumeContacts === undefined
+      ? defaultResumeContacts
+      : (values.resumeContacts.split(",").filter(Boolean) as ResumeContactId[]),
+  );
+  const [contactValues, setContactValues] = useState(values);
   const checked = new Set((record.workArrangement ?? "").split(",").filter(Boolean));
   return (
     <>
@@ -104,6 +112,9 @@ function Fields({
         inputMode="email"
         autoComplete="email"
         defaultValue={values.email}
+        onChange={(event) =>
+          setContactValues((current) => ({ ...current, email: event.target.value }))
+        }
         errors={errors.email}
       />
       <Field
@@ -113,12 +124,18 @@ function Fields({
         inputMode="tel"
         autoComplete="tel"
         defaultValue={values.phone}
+        onChange={(event) =>
+          setContactValues((current) => ({ ...current, phone: event.target.value }))
+        }
         errors={errors.phone}
       />
       <Field
         label="Location"
         name="location"
         defaultValue={values.location}
+        onChange={(event) =>
+          setContactValues((current) => ({ ...current, location: event.target.value }))
+        }
         errors={errors.location}
       />
       <Field
@@ -128,6 +145,9 @@ function Fields({
         inputMode="url"
         helper="Shown in the resume header. Optional."
         defaultValue={values.linkedinUrl}
+        onChange={(event) =>
+          setContactValues((current) => ({ ...current, linkedinUrl: event.target.value }))
+        }
         errors={errors.linkedinUrl}
       />
       <Field
@@ -136,6 +156,9 @@ function Fields({
         type="url"
         inputMode="url"
         defaultValue={values.githubUrl}
+        onChange={(event) =>
+          setContactValues((current) => ({ ...current, githubUrl: event.target.value }))
+        }
         errors={errors.githubUrl}
       />
       <Field
@@ -144,7 +167,24 @@ function Fields({
         type="url"
         inputMode="url"
         defaultValue={values.websiteUrl}
+        onChange={(event) =>
+          setContactValues((current) => ({ ...current, websiteUrl: event.target.value }))
+        }
         errors={errors.websiteUrl}
+      />
+      <input type="hidden" name="resumeContacts" value={contacts.join(",")} />
+      <ContactSelection
+        title="Resume contact defaults"
+        value={contacts}
+        onChange={setContacts}
+        labels={{
+          phone: contactValues.phone,
+          email: contactValues.email,
+          location: contactValues.location,
+          linkedin: contactValues.linkedinUrl,
+          github: contactValues.githubUrl,
+          website: contactValues.websiteUrl,
+        }}
       />
       <PillInput
         label="Desired roles"

@@ -103,6 +103,7 @@ function profileRecord(row: ProfileRecord) {
     locations: preferences.locations ?? [],
     work_arrangement: preferences.workArrangement ?? [],
     constraints: preferences.constraints ?? null,
+    resume_contacts: preferences.resumeContacts ?? null,
     linkedin_url: links.find((link) => link.label === "LinkedIn")?.url ?? null,
     github_url: links.find((link) => link.label === "GitHub")?.url ?? null,
     website_url: links.find((link) => link.label === "Website")?.url ?? null,

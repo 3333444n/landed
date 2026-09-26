@@ -22,7 +22,8 @@ import { CopyButton } from "@/components/CopyButton";
 import { editableFields } from "@/modules/documents/rules";
 import { letterSalutation, type LetterHeader } from "@/modules/documents/presentation";
 import styles from "./documents.module.css";
-import { resumeContacts } from "@/modules/documents/contacts";
+import { ResumeContactEditor } from "./ResumeContactEditor";
+import { type ContactId } from "@/modules/documents/contacts";
 import { RichTextEditor } from "./RichTextEditor";
 import { formattingSegments, salutationFormattingSegments } from "@/modules/documents/formatting";
 
@@ -34,6 +35,8 @@ interface PreviewProps {
   evidence: Record<string, string>;
   letterHeader?: LetterHeader;
   snapshot: Snapshot | null;
+  profileDefault: ContactId[];
+  contactAction: (state: ActionState, formData: FormData) => Promise<ActionState>;
   editAction: (state: ActionState, formData: FormData) => Promise<ActionState>;
 }
 
@@ -74,22 +77,16 @@ function ResumePreview({ ctx, content }: { ctx: Ctx; content: ResumeContent }) {
               ))}
           </div>
         ) : null}
-        {content.header.contact.length > 0 ? (
-          <p className={styles.contact}>
-            {resumeContacts(content, ctx.snapshot).map((item, index) => (
-              <span key={index}>
-                {index ? " · " : ""}
-                {item.href ? (
-                  <a href={item.href} target="_blank" rel="noopener noreferrer">
-                    {item.text}
-                  </a>
-                ) : (
-                  item.text
-                )}
-              </span>
-            ))}
-          </p>
-        ) : null}
+        <ResumeContactEditor
+          content={content}
+          snapshot={ctx.snapshot}
+          profileDefault={ctx.profileDefault}
+          revisionId={ctx.revisionId}
+          action={ctx.contactAction}
+          open={ctx.editing === "contacts"}
+          onOpen={() => ctx.setEditing("contacts")}
+          onClose={() => ctx.setEditing(null)}
+        />
       </div>
       {content.summary ? (
         <section className={styles.preview}>

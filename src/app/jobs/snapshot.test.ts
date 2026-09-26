@@ -149,3 +149,20 @@ describe("buildSnapshot", () => {
     expect(text).not.toContain("reviewed");
   });
 });
+
+it("freezes profile contact selection including an explicitly empty row", () => {
+  const input = sources();
+  expect(buildSnapshot(input).resumeContacts).toEqual([
+    "phone",
+    "email",
+    "location",
+    "linkedin",
+    "github",
+  ]);
+  input.profile.preferences.resumeContacts = ["website", "email"];
+  const snapshot = buildSnapshot(input);
+  input.profile.preferences.resumeContacts.reverse();
+  expect(snapshot.resumeContacts).toEqual(["website", "email"]);
+  input.profile.preferences.resumeContacts = [];
+  expect(buildSnapshot(input).resumeContacts).toEqual([]);
+});

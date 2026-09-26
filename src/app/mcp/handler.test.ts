@@ -63,6 +63,7 @@ describe("buildMcpHandler", () => {
         "get_job",
         "list_jobs",
         "render_pdf",
+        "set_resume_contacts",
         "submit_document",
       ].sort(),
     );

@@ -84,3 +84,20 @@ export async function markReviewedAction(
   revalidatePath("/", "layout");
   return { status: "saved", recordId: result.value.id };
 }
+
+export async function setResumeContactsAction(
+  previous: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const profile = await requireProfile();
+  const { setResumeContacts } = await import("@/modules/documents");
+  const result = await setResumeContacts(deps(), profile.id, {
+    expectedRevisionId: formData.get("expectedRevisionId"),
+    selection: String(formData.get("selection") ?? "")
+      .split(",")
+      .filter(Boolean),
+  });
+  if (!result.ok) return errorState(previous, formData, result.error);
+  revalidatePath("/", "layout");
+  return { status: "saved", recordId: result.value.id };
+}

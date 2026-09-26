@@ -11,6 +11,7 @@ import {
   contentSchemas,
   finishRun,
   getRun,
+  getDocumentView,
   type DocumentContent,
   promptFor,
   startRun,
@@ -30,6 +31,7 @@ import {
 } from "@/modules/profile";
 import type { Result } from "@/modules/shared/contracts";
 import { notFound, now, type BaseDeps } from "@/modules/shared/service";
+import { resumeContactSelection } from "@/modules/documents/contacts";
 import { buildSnapshot } from "./snapshot";
 
 export interface GenerationTarget {
@@ -70,6 +72,18 @@ export async function prepareGeneration(
     job: { ...job, companyName: company?.name ?? "", logoHref: company ? logoHref(company) : null },
     capturedAt: now(deps),
   });
+  if (type === "resume") {
+    const existing = await getDocumentView(deps, profileId, application.id, "resume");
+    if (existing.revision) {
+      const oldRun = existing.revision.generationRunId
+        ? await getRun(deps, profileId, existing.revision.generationRunId)
+        : null;
+      snapshot.resumeContacts = resumeContactSelection(
+        existing.revision.content as import("@/modules/documents").ResumeContent,
+        oldRun?.snapshot ?? null,
+      );
+    }
+  }
   if (type === "cover_letter") {
     const [availableFindings, selectedIds] = company
       ? await Promise.all([
