@@ -11,7 +11,7 @@ import { Font, StyleSheet } from "@react-pdf/renderer";
 // Never break a word at a line end: a resume line is read in seconds and parsed as text.
 Font.registerHyphenationCallback((word) => [word]);
 
-export const templateVersion = 2;
+export const templateVersion = 8;
 
 /** Black on white only: no greys, so a copier or a strict parser sees one tone. */
 export const colors = {
@@ -81,7 +81,46 @@ export function resumeStyles(spacing: number) {
 export const styles = StyleSheet.create({
   page,
   ...header,
-  letterBody: { fontSize: 10.5, marginTop: 8 },
-  letterParagraph: { marginBottom: 8 },
-  letterMeta: { marginTop: 12, fontSize: 10 },
+  letterPage: { ...page, paddingTop: 54, paddingBottom: 54, paddingHorizontal: 54, fontSize: 12 },
+  letterhead: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 24,
+    paddingBottom: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.rule,
+  },
+  letterIdentity: { flex: 1 },
+  letterName: { fontSize: 32, fontFamily: "Helvetica-Bold", lineHeight: 1.1 },
+  letterTitle: { fontSize: 12, marginTop: 12, fontFamily: "Helvetica" },
+  letterLinks: { fontSize: 12, width: 216 },
+  letterLink: { color: colors.text, textDecoration: "none" },
+  letterContent: { flexGrow: 1, justifyContent: "center" },
+  letterRecipient: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 24,
+    marginTop: 24,
+    marginBottom: 24,
+    fontSize: 14,
+  },
+  letterTo: { flex: 1 },
+  letterDate: { fontSize: 12 },
+  letterStrong: { fontFamily: "Helvetica-Bold" },
+  letterReference: { fontSize: 12, marginTop: 8, fontFamily: "Helvetica-Bold" },
+  letterRole: { fontFamily: "Helvetica-Oblique" },
+  letterFooter: {
+    marginTop: 24,
+    borderTopWidth: 1,
+    borderTopColor: colors.rule,
+    paddingTop: 12,
+    flexDirection: "row",
+    gap: 24,
+    fontSize: 12,
+  },
+  letterFooterColumn: { flex: 1 },
+  letterGreeting: { marginBottom: 16 },
+  letterParagraph: { marginBottom: 10 },
+  letterSignature: { marginTop: 54 },
+  letterSignatureName: { marginTop: 10, fontFamily: "Helvetica-Bold" },
 });

@@ -18,6 +18,7 @@ import {
 } from "@/modules/documents/contracts";
 import { CopyButton } from "@/components/CopyButton";
 import { editableFields } from "@/modules/documents/rules";
+import { letterSalutation, type LetterHeader } from "@/modules/documents/presentation";
 import styles from "./documents.module.css";
 
 interface PreviewProps {
@@ -26,6 +27,7 @@ interface PreviewProps {
   warnings: GroundingWarning[];
   revisionId: string;
   evidence: Record<string, string>;
+  letterHeader?: LetterHeader;
   editAction: (state: ActionState, formData: FormData) => Promise<ActionState>;
 }
 
@@ -141,24 +143,101 @@ function ResumePreview({ ctx, content }: { ctx: Ctx; content: ResumeContent }) {
 }
 
 function CoverLetterPreview({ ctx, content }: { ctx: Ctx; content: CoverLetterContent }) {
+  const header = ctx.letterHeader;
   return (
-    <div className={styles.preview}>
-      <p className="body-lg">{content.greeting},</p>
-      {content.paragraphs.map((paragraph, i) => (
-        <Unit
-          key={i}
-          ctx={ctx}
-          path={`paragraphs.${i}`}
-          label={`paragraph ${i + 1}`}
-          unit={paragraph}
-        />
-      ))}
-      <p className="body-lg">{content.closing},</p>
-      <p className="body-lg">{content.signature}</p>
-    </div>
+    <article className={styles.letter} aria-label="Cover letter preview">
+      {header ? (
+        <>
+          <header className={styles.letterhead}>
+            <div className={styles.letterIdentity}>
+              <p className={styles.letterName}>
+                {header.nameLines.map((line, i) => (
+                  <span key={i}>{line}</span>
+                ))}
+              </p>
+              <TextField
+                ctx={ctx}
+                path="title"
+                className={styles.letterTitle}
+                placeholder="Add professional title"
+              />
+            </div>
+            {header.topContact.length > 0 ? (
+              <div className={styles.letterLinks}>
+                {header.topContact.map((link, i) => (
+                  <p key={i} className={link.strong ? styles.heading : undefined}>
+                    {link.href ? (
+                      <a href={link.href} target="_blank" rel="noopener noreferrer">
+                        {link.text}
+                      </a>
+                    ) : (
+                      link.text
+                    )}
+                  </p>
+                ))}
+              </div>
+            ) : null}
+          </header>
+          <div className={styles.letterRecipient}>
+            <div>
+              {header.company ? <p className={styles.heading}>{header.company}</p> : null}
+              {header?.role ? (
+                <p className={styles.letterReference}>
+                  Job reference: <em>{header.role}</em>
+                </p>
+              ) : null}
+            </div>
+            <p className={styles.letterDate}>{header.date}</p>
+          </div>
+        </>
+      ) : null}
+      <div className={styles.letterContent}>
+        <div className={styles.letterBody}>
+          <TextField ctx={ctx} path="greeting" displayText={letterSalutation(content.greeting)} />
+          {content.paragraphs.map((paragraph, i) => (
+            <Unit
+              key={i}
+              ctx={ctx}
+              path={`paragraphs.${i}`}
+              label={`paragraph ${i + 1}`}
+              unit={paragraph}
+            />
+          ))}
+        </div>
+        <div className={styles.letterSignature}>
+          <TextField ctx={ctx} path="closing" displayText={letterSalutation(content.closing)} />
+          <TextField ctx={ctx} path="signature" className={styles.heading} />
+        </div>
+      </div>
+      {header && (header.locationLines.length > 0 || header.footerLinks.length > 0) ? (
+        <footer className={styles.letterFooter}>
+          <div>
+            {header.locationLines.map((line, i) => (
+              <p key={i} className={styles.heading}>
+                {line}
+              </p>
+            ))}
+          </div>
+          <div>
+            {header.footerLinks.map((link, i) => (
+              <p key={i}>
+                {link.href ? (
+                  <a href={link.href} target="_blank" rel="noopener noreferrer">
+                    {link.text}
+                  </a>
+                ) : (
+                  link.text
+                )}
+              </p>
+            ))}
+          </div>
+        </footer>
+      ) : null}
+    </article>
   );
 }
 
+/** Metadata shares the editor without pretending it carries prose citations. */
 function TextField({
   ctx,
   path,

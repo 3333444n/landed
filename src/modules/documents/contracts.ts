@@ -167,6 +167,15 @@ export const resumeContent = z
 export type ResumeContent = z.infer<typeof resumeContent>;
 
 export const coverLetterContent = z.object({
+  title: z
+    .string()
+    .trim()
+    .max(120)
+    .nullable()
+    .optional()
+    .describe(
+      "Optional professional title beneath the sender name. Use only the supplied profile headline; omit to use it unchanged, null to hide it.",
+    ),
   greeting: z.string().trim().min(1).max(80),
   paragraphs: z
     .array(

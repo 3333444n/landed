@@ -25,6 +25,7 @@ import {
   submitPastedAnswer,
   sweepInterruptedRuns,
   type ResumeContent,
+  type CoverLetterContent,
 } from "@/modules/documents";
 import { documentRevisions, documents, generationRuns } from "@/modules/documents/schema";
 import { deleteJob } from "@/modules/jobs";
@@ -612,7 +613,7 @@ describe("PDF artifacts", () => {
     const { mkdtemp, readdir, rm, stat } = await import("node:fs/promises");
     const os = await import("node:os");
     const path = await import("node:path");
-    const { getOrRenderPdf, pdfPageCount } = await import("@/modules/documents");
+    const { getOrRenderPdf, pdfPageCount, templateVersion } = await import("@/modules/documents");
     const { documentArtifacts } = await import("@/modules/documents/schema");
     const dir = await mkdtemp(path.join(os.tmpdir(), "landed-artifacts-"));
     try {
@@ -638,6 +639,18 @@ describe("PDF artifacts", () => {
       expect(second.bytes.equals(first.bytes)).toBe(true);
       expect(await connection.db.select().from(documentArtifacts)).toHaveLength(1);
 
+      // A previous template version must not satisfy the current artifact cache.
+      await connection.db
+        .update(documentArtifacts)
+        .set({ templateVersion: templateVersion - 1 })
+        .where(eq(documentArtifacts.id, rows[0]!.id));
+      const updatedTemplate = unwrap(
+        await getOrRenderPdf(deps(), demo.profileId, view.revision!.id, dir, "Example Analytics"),
+      );
+      expect(updatedTemplate.reused).toBe(false);
+      expect(await connection.db.select().from(documentArtifacts)).toHaveLength(2);
+      await connection.db.delete(documentArtifacts).where(eq(documentArtifacts.id, rows[0]!.id));
+
       // A missing file is rendered again into the same key without a second row.
       await rm(file);
       const third = unwrap(
@@ -660,5 +673,55 @@ describe("PDF artifacts", () => {
     } finally {
       await rm(dir, { recursive: true, force: true });
     }
+  });
+});
+
+describe("cover-letter professional title", () => {
+  it("projects a frozen default without rewriting history and preserves explicit clearing", async () => {
+    unwrap(
+      await updateProfile(deps(), demo.profileId, {
+        displayName: "Alex Rivera",
+        headline: "Software developer",
+      }),
+    );
+    const { application } = await pasteJob();
+    const run = unwrap(
+      await generateDocument(deps(), fake, demo.profileId, demo.jobId, "cover_letter"),
+    );
+    const first = (await getDocumentView(deps(), demo.profileId, application.id, "cover_letter"))
+      .revision!;
+    expect((first.content as CoverLetterContent).title).toBe("Software developer");
+    unwrap(
+      await updateProfile(deps(), demo.profileId, {
+        displayName: "Alex Rivera",
+        headline: "Changed profile title",
+      }),
+    );
+    expect(
+      (
+        (await getDocumentView(deps(), demo.profileId, application.id, "cover_letter")).revision!
+          .content as CoverLetterContent
+      ).title,
+    ).toBe("Software developer");
+    const cleared = unwrap(
+      await editUnit(deps(), demo.profileId, {
+        expectedRevisionId: first.id,
+        path: "title",
+        text: "",
+      }),
+    );
+    expect((cleared.content as CoverLetterContent).title).toBeNull();
+    expect(
+      (
+        (await getDocumentView(deps(), demo.profileId, application.id, "cover_letter")).revision!
+          .content as CoverLetterContent
+      ).title,
+    ).toBeNull();
+    const [historical] = await connection.db
+      .select()
+      .from(documentRevisions)
+      .where(eq(documentRevisions.id, first.id));
+    expect((historical!.content as CoverLetterContent).title).toBeUndefined();
+    expect((await getRun(deps(), demo.profileId, run.id))!.snapshot).toEqual(run.snapshot);
   });
 });

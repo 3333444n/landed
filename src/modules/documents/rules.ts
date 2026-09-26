@@ -95,7 +95,11 @@ export function editableFields(type: DocumentType, content: DocumentContent): Ed
     );
   } else if (type === "cover_letter") {
     const letter = content as CoverLetterContent;
+    add("title", "professional title", letter.title ?? null, true);
+    add("greeting", "greeting", letter.greeting);
     letter.paragraphs.forEach((p, i) => add(`paragraphs.${i}`, `paragraph ${i + 1}`, p.text));
+    add("closing", "closing", letter.closing);
+    add("signature", "signature", letter.signature);
   } else {
     const message = content as RecruiterMessageContent;
     add("subject", "subject", message.subject);
@@ -444,6 +448,14 @@ export function withUnitText(
     }
     case "cover_letter": {
       const letter = copy as CoverLetterContent;
+      if (path === "title") {
+        letter.title = value;
+        return letter;
+      }
+      if (path === "greeting" || path === "closing" || path === "signature") {
+        letter[path] = text;
+        return letter;
+      }
       const m = /^paragraphs\.(\d+)$/.exec(path);
       const paragraph = m ? letter.paragraphs[Number(m[1])] : undefined;
       if (!paragraph) return null;

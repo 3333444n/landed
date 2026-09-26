@@ -113,8 +113,13 @@ Jobs use one optional Company selector and inline creation; remove the free-text
 
 For MCP intake, resolve or create the company first, then pass optional company_id to add_job. The former free-text company and job logo_url inputs are removed. Company create/update accepts logo_url with the same guarded fetch as browser address entry; omit preserves and null clears. Upload remains a browser flow. Invalid image/URL or stale-version failures cannot overwrite the saved company logo. Linked-company deletion is refused; job deletion does not remove the shared company or its image.
 
-## Resume metadata editing (implemented, pending merge)
 
-The preview and MCP share the Documents edit operation. Its explicit allowlist adds the resume headline, work-history and project subtitles, skill group labels and comma-separated lists, and education institution, qualification, dates and location. Save validates the complete result, reruns grounding/layout checks and preserves citations while creating a new unapproved revision. Education institution edits can retain the existing heading warning when they differ from frozen evidence.
+## Expanded inline document editing (local implementation)
 
-Invalid or stale saves preserve submitted browser text; Cancel returns to the saved display. Clearing optional text stores null and leaves an Add control to restore it. Required fields reject blank values. Entry creation/deletion/reordering, resume name/contact editing and underlying career-record changes are outside this operation. Existing summary, bullet, cover-letter paragraph and message editing remain available; cover-letter metadata and design are unchanged in this layer.
+The preview and MCP share the Documents edit operation. An explicit field allowlist permits the resume headline; role/project subtitles; skill group labels and lists; education institution, subtitle, dates and location; letter professional title, greeting, closing and signature; and existing prose/message fields. Save validates the complete result, reruns grounding/layout checks, preserves citations and snapshot identity, and creates an unapproved revision. Stale or invalid saves keep submitted browser text visible. Clearing a nullable field stores null and leaves an Add control to restore it. Entry creation/deletion/reordering and underlying career-record changes are not part of this operation.
+
+Cover-letter preview and PDF share snapshot-derived letterhead data, including the captured date; later profile/company edits and download times do not change the letter. The preview follows the app theme and wraps its header on narrow columns. The PDF uses the monochrome layout in DESIGN-DOCS.md; downloading never approves the revision.
+
+The optional cover-letter professional title appears beneath the name and is editable in the document only. Old letters inherit the frozen profile headline; clearing stores null and exposes Add professional title. Web links in the preview open a new tab; PDF navigation follows the reader’s settings.
+
+Cover-letter phone links open WhatsApp click-to-chat using the saved international phone number, with punctuation removed only from the destination.

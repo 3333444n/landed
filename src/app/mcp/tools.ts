@@ -260,7 +260,7 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
     {
       title: "Edit unit",
       description:
-        "Replaces one editable field (including resume headlines, subtitles, skills and education) in the latest revision, producing a new revision that is checked again. `revision_id` must be the latest; when it is stale, call get_document again.",
+        "Replaces one editable field (including headlines, subtitles, skills, education and letter title/greeting/closing/signature) in the latest revision, producing a new revision that is checked again. `revision_id` must be the latest; when it is stale, call get_document again.",
       inputSchema: z.object({
         revision_id: z.uuid(),
         path: z
