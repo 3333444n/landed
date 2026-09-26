@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { demoSnapshot, readFixture } from "../../../tests/helpers/demo-snapshot";
 import { contentSchemas, type CoverLetterContent, type ResumeContent } from "./contracts";
 import { contentUnits, editableFields, groundingCheck, withUnitText } from "./rules";
+import { letterHeaderFrom, letterSalutation, letterLink, splitLetterName } from "./presentation";
 
 const resume = readFixture<ResumeContent>("resume");
 const letter = readFixture<CoverLetterContent>("cover-letter");
@@ -85,6 +86,19 @@ describe("document metadata editing", () => {
       ).success,
     ).toBe(false);
   });
+  it.each(["greeting", "closing", "signature"])(
+    "edits letter %s while preserving both citation namespaces",
+    (path) => {
+      const original = structuredClone(letter);
+      original.paragraphs[0]!.contextIds = ["company-context"];
+      const edited = withUnitText("cover_letter", original, path, "Updated") as CoverLetterContent;
+      expect(edited.paragraphs).toEqual(original.paragraphs);
+      expect(editableFields("cover_letter", edited).find((f) => f.path === path)?.text).toBe(
+        "Updated",
+      );
+      expect(contentUnits("cover_letter", edited)).toEqual(contentUnits("cover_letter", original));
+    },
+  );
   it("retains education heading warnings", () => {
     const edited = withUnitText(
       "resume",
@@ -99,4 +113,101 @@ describe("document metadata editing", () => {
       }),
     );
   });
+});
+
+describe("letter presentation", () => {
+  it.each(["Dear team", "Dear team,", "Dear team,,", "Dear team, ,  "])(
+    "punctuates %s exactly once",
+    (text) => {
+      expect(letterSalutation(text)).toBe("Dear team,");
+    },
+  );
+  it("projects saved identity, recipient and date with a stable timezone", () => {
+    const snapshot = demoSnapshot();
+    snapshot.capturedAt = "2026-09-14T00:00:00Z";
+    const header = letterHeaderFrom(snapshot, new Date("2030-01-01"));
+    expect(header).toMatchObject({
+      name: snapshot.profile.displayName,
+      company: snapshot.job.companyName,
+      role: snapshot.job.title,
+      date: "September 14, 2026",
+    });
+    expect(header.topContact.map((item) => item.text)).toContain(snapshot.profile.email);
+    expect(letterHeaderFrom(snapshot, new Date("2040-01-01"))).toEqual(header);
+  });
+  it("omits missing context without consulting current records", () => {
+    expect(letterHeaderFrom(null, new Date("2026-09-14"), "Alex Rivera")).toEqual({
+      name: "Alex Rivera",
+      nameLines: ["Alex", "Rivera"],
+      title: null,
+      topContact: [],
+      footerLinks: [],
+      locationLines: [],
+      date: "September 14, 2026",
+      company: null,
+      role: null,
+    });
+    const snapshot = demoSnapshot();
+    snapshot.job.companyName = "";
+    expect(letterHeaderFrom(snapshot, new Date()).company).toBeNull();
+  });
+});
+
+it("splits display names and preserves clickable destinations without www labels", () => {
+  expect(splitLetterName("Alex Rivera Morgan")).toEqual(["Alex", "Rivera Morgan"]);
+  expect(splitLetterName("Alex")).toEqual(["Alex"]);
+  expect(letterLink("https://www.example.com/profile/")).toEqual({
+    text: "example.com/profile",
+    href: "https://www.example.com/profile/",
+  });
+  expect(letterLink("example.com")).toEqual({ text: "example.com", href: "https://example.com/" });
+  expect(letterLink("javascript:alert(1)").href).toBeNull();
+  const snapshot = demoSnapshot();
+  snapshot.profile.links = [{ label: "Website", url: "https://www.example.com/" }];
+  const header = letterHeaderFrom(snapshot, new Date());
+  expect(header.topContact.map((item) => item.text)).not.toContain("example.com");
+  expect(header.footerLinks).toEqual([{ text: "example.com", href: "https://www.example.com/" }]);
+});
+
+it("edits and clears the professional title without changing prose", () => {
+  const edited = withUnitText(
+    "cover_letter",
+    letter,
+    "title",
+    "Software developer",
+  ) as CoverLetterContent;
+  expect(edited.title).toBe("Software developer");
+  expect(edited.paragraphs).toEqual(letter.paragraphs);
+  expect(
+    (withUnitText("cover_letter", edited, "title", "") as CoverLetterContent).title,
+  ).toBeNull();
+  expect(
+    contentSchemas.cover_letter.safeParse(
+      withUnitText("cover_letter", letter, "title", "x".repeat(121)),
+    ).success,
+  ).toBe(false);
+});
+it("groups header contacts and footer details", () => {
+  const snapshot = demoSnapshot();
+  snapshot.profile.location = "Example City, Example Country";
+  snapshot.profile.phone = "+1 555 0100";
+  snapshot.profile.links = [
+    { label: "Website", url: "https://www.example.com/" },
+    { label: "GitHub", url: "https://github.com/example" },
+    { label: "LinkedIn", url: "https://www.linkedin.com/in/example" },
+  ];
+  const header = letterHeaderFrom(snapshot, new Date());
+  expect(header.topContact.find((line) => line.text === snapshot.profile.phone)?.href).toBe(
+    "https://wa.me/15550100",
+  );
+  expect(header.topContact.map((line) => line.text)).toEqual([
+    "linkedin.com/in/example",
+    "alex@example.com",
+    "+1 555 0100",
+  ]);
+  expect(header.footerLinks.map((line) => line.text)).toEqual([
+    "github.com/example",
+    "example.com",
+  ]);
+  expect(header.locationLines).toEqual(["Example City", "Example Country"]);
 });

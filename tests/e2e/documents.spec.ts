@@ -1,5 +1,5 @@
 import { createJobCompany } from "./company-helpers";
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 
 // Values from examples/demo-profile.json (fictional). The server runs the fake model adapter,
@@ -45,6 +45,12 @@ test("a document is generated, reviewed in place, and another is pasted back", a
     await page.getByRole("button", { name: "Create profile" }).click();
     await expect(page.getByRole("heading", { name: demo.displayName })).toBeVisible();
   }
+
+  // Saved links keep their destinations while the letter shortens their visible labels.
+  await page.goto("/about/profile");
+  await page.getByLabel("Website", { exact: true }).fill("https://www.example.com/");
+  await page.getByRole("button", { name: "Save general info", exact: true }).click();
+  await expect(page.getByText("Saved", { exact: true })).toBeVisible();
 
   await page.goto("/jobs/new");
   await page.getByLabel("Title").fill(demo.title);
@@ -222,11 +228,73 @@ test("a document is generated, reviewed in place, and another is pasted back", a
   await expect(page.getByText("Dear hiring team")).toBeVisible();
   await expect(page.getByRole("button", { name: "Edit paragraph 1" })).toBeVisible();
 
-  // The settings column names the test double and never a key.
+  await editText(page, "professional title", "Software developer");
+  await page.reload();
+  await expect(
+    page.getByRole("button", { name: "Edit professional title", exact: true }),
+  ).toHaveText("Software developer");
+  await editText(page, "professional title", "");
+  await expect(
+    page.getByRole("button", { name: "Edit professional title", exact: true }),
+  ).toHaveText("Add professional title");
+  await editText(page, "professional title", "Software developer");
+  await editText(page, "greeting", "Dear team,,");
+  await editText(page, "closing", "Best regards,,");
+  await editText(page, "signature", "Alex R.");
+  await page.reload();
+  await expect(page.getByRole("button", { name: "Edit greeting", exact: true })).toHaveText(
+    "Dear team,",
+  );
+  await expect(page.getByRole("button", { name: "Edit closing", exact: true })).toHaveText(
+    "Best regards,",
+  );
+  await expect(page.getByRole("button", { name: "Edit signature", exact: true })).toHaveText(
+    "Alex R.",
+  );
+  const letter = page.getByRole("article", { name: "Cover letter preview" });
+  await expect(letter.getByRole("link", { name: "example.com", exact: true })).toHaveAttribute(
+    "href",
+    "https://www.example.com/",
+  );
+  await expect(letter.getByRole("link", { name: "example.com", exact: true })).toHaveAttribute(
+    "target",
+    "_blank",
+  );
+  await expect(letter.getByText(demo.companyName, { exact: true })).toBeVisible();
+  await expect(letter.getByText(demo.title, { exact: true })).toHaveCSS("font-style", "italic");
+  await expect(letter.getByText("Job reference:", { exact: false })).toBeVisible();
+  await page.getByRole("button", { name: "Edit greeting", exact: true }).click();
+  await page.getByLabel("Text of greeting", { exact: true }).fill("");
+  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(editorError(page, "greeting")).toBeVisible();
+  await expect(page.getByLabel("Text of greeting", { exact: true })).toHaveValue("");
+  await page.getByRole("button", { name: "Cancel", exact: true }).click();
+  for (const width of [390, 1440]) {
+    await page.setViewportSize({ width, height: 1000 });
+    for (const theme of ["dark", "light"]) {
+      await page.evaluate((value) => {
+        document.documentElement.dataset.theme = value;
+      }, theme);
+      await expect(letter).toBeVisible();
+      expect(await letter.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(
+        true,
+      );
+      await page.screenshot({
+        path: `artifacts-test/letter-${width}-${theme}.png`,
+        fullPage: true,
+        animations: "disabled",
+      });
+    }
+  }
+  const letterPdf = await page.request.get(`${jobUrl}/cover-letter/pdf`);
+  expect(letterPdf.status()).toBe(200);
+  writeFileSync("artifacts-test/letter-review.pdf", await letterPdf.body());
+
+  // The settings column names the test double and never a key
   await page.goto("/settings/model");
   await expect(page.getByText("Test double", { exact: false }).first()).toBeVisible();
 
-  // Deleting the job removes its documents and runs.
+  // Deleting the job removes its documents and runs with it; the specs share one database
   await page.goto(jobUrl);
   await page.getByRole("button", { name: "Delete" }).click();
   await page.getByRole("button", { name: "Delete", exact: true }).last().click();

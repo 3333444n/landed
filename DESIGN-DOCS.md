@@ -14,7 +14,7 @@ The documents are conservative on purpose. A recruiter spends seconds on a resum
 6. **Plain structure for parsers.** Reading order is a single column from top to bottom: header, then sections. Dates are on the same line as the employer, right-aligned, and a role's location on the same line as the role, right-aligned, in a form a parser reads ("Aug 2019 – May 2023", "Jul 2023 – Present"). Bullets use a real bullet character with a hanging indent.
 7. **Facts only.** Every bullet in a generated document traces to an evidence record in the input snapshot. The renderer never adds text; it renders what was reviewed.
 
-## Page
+## Resume page
 
 | Property | Value |
 | --- | --- |
@@ -25,7 +25,7 @@ The documents are conservative on purpose. A recruiter spends seconds on a resum
 | Rules | `#000000`, 2 pt |
 | Line height | 1.25 |
 
-## Type scale
+## Resume type scale
 
 | Element | Size | Weight | Notes |
 | --- | --- | --- | --- |
@@ -38,7 +38,7 @@ The documents are conservative on purpose. A recruiter spends seconds on a resum
 | Bullets | 10 pt | regular | Bullet "•", hanging indent 10 pt, one printed line each (530 pt), 1 pt between bullets, 4 pt between entries; no hyphenation |
 | Skills lines | 10 pt | regular | Label in bold followed by a comma-separated list: "Languages: TypeScript, Go" |
 
-Cover letter: same page and type scale, always a single column; the sender's name and contact line as a header, the date and greeting, body text at 10.5 pt with 8 pt between paragraphs, then the closing and name. New drafts target three or four body sentences, roughly 80–150 words in two or three paragraphs. Date, greeting and signature are outside that budget. Existing two-to-four-paragraph content remains valid. Whitespace is intentional: do not add padding prose or stretch the cover letter to fill the page. No letterhead graphics.
+Cover letter (template version 8): US Letter with 54 pt margins, black on white and built-in Helvetica. The sender name uses 32 pt bold, split after the first word into two lines (single-word names remain one line). An optional, editable 12 pt regular professional title sits beneath the name. Bold LinkedIn, regular email and regular phone sit at upper right in that order. Phone links use WhatsApp click-to-chat (`https://wa.me/` plus the saved international number’s digits), preserving visible formatting. A ruled footer places bold location on the left (split at the last comma into two rows) and regular GitHub/website links on the right. The footer follows the letter in document flow and appears once at its end; short letters place it near the bottom margin, while long contact details wrap without overlapping the body. Contact, link, date, greeting, body and closing text are 12 pt; company is 14 pt. The header keeps a 24 pt gutter and a 1 pt black divider. Full HTTP(S) destinations are explicit clickable PDF links; display labels omit the scheme, leading www and final slash. Unsafe schemes render as plain text. The frozen company name appears below the rule alongside the frozen date. A bold “Job reference:” label introduces the italic, 12 pt job title directly below the company name. The greeting/body/closing group is vertically centered in the remaining page area, with 10 pt paragraph gaps and 54 pt extra space before the closing. Longer historical letters flow to further pages at 12 pt instead of being clipped or shrunk. No logo or signature image. The two letterhead blocks are an exception to the resume's single-column header rule; body reading order remains top to bottom. New drafts target three or four body sentences, roughly 80–150 words in two or three paragraphs. Date, greeting and signature are outside that budget. Existing two-to-four-paragraph content remains valid. Whitespace is intentional: do not add padding prose or stretch the cover letter to fill the page. No letterhead graphics. Missing contact or company data is omitted. Context comes from the saved generation snapshot, never live profile/company records or the download date. Historical revisions without a snapshot use their signature and creation date, without invented contact or recipient details.
 
 A letter connects the specific role and company to stated user motivation and one supported career story. Career accomplishments cite career records; company claims and personal motivation cite distinct frozen context. The app displays citation details and review warnings, but the recipient-facing PDF prints only the letter. Company websites are stored addresses, never evidence that a page was read.
 
@@ -52,4 +52,4 @@ Plain text, copied rather than rendered: a subject line and a body of at most 90
 
 ## Don'ts
 
-Uppercase anywhere but section headings. Hyphenated line ends. A second typeface or font download. Colour of any kind. Two-column layouts, sidebars, skill bars, icons, photos, logos. Text shrunk to fit. Anything generated that the user did not review.
+Uppercase anywhere but section headings. Hyphenated line ends. A second typeface or font download. Colour of any kind. Two-column bodies, sidebars, skill bars, icons, photos, logos. Text shrunk to fit. Anything generated that the user did not review.

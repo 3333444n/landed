@@ -61,11 +61,9 @@ export async function getOrRenderPdf(
       : await renderCoverLetterPdf(
           revision.content as CoverLetterContent,
           letterHeaderFrom(
-            run?.snapshot ??
-              ({
-                profile: { displayName: name, phone: null, email: null, location: null, links: [] },
-              } as never),
-            now(deps),
+            run?.snapshot ?? null,
+            revision.createdAt,
+            (revision.content as CoverLetterContent).signature,
           ),
         );
   const storageKey =
