@@ -4,6 +4,8 @@ Status: Phase 0 complete (career data entry, packaged Docker installation, colum
 
 Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is merged. The ADR 011 writing-context and canonical-company extensions are implemented and merged in PRs #43–47 (2026-09-23). See [current verification](09-decisions-and-readiness.md#smaller-pr-stack-verification-2026-09-23).
 
+Expanded document field editing and cover-letter template 8 are implemented for review, pending merge. See [the current feature contract and validation](09-decisions-and-readiness.md#expanded-document-editing-and-cover-letter-layout-2026-09-26-implemented-pending-merge).
+
 Numbers establish reading order, not software release versions. Accepted choices are distinguished from proposals, and each document says which parts are implemented; a diagram describes the intended structure, and its labels say which phase each part belongs to.
 
 | Document | Question answered | Status |
