@@ -548,4 +548,49 @@ describe("formatted document edits", () => {
       { text: "Updated summary.", marks: [] },
     ]);
   });
+
+  it("sets contact order from frozen values and retains it through regeneration", async () => {
+    const brief = await call<{ run_id: string }>("get_document_brief", {
+      job_id: demo.jobId,
+      type: "resume",
+    });
+    const saved = await call<{ revision_id: string }>("submit_document", {
+      run_id: brief.run_id,
+      content: fixture("resume"),
+    });
+    const selected = ["website", "email", "phone"];
+    const edit = await call<{ revision_id: string }>("set_resume_contacts", {
+      revision_id: saved.revision_id,
+      selection: selected,
+    });
+    type Detail = {
+      revision_id: string;
+      contacts: { selected: string[]; items: { text: string; href: string | null }[] };
+    };
+    const detail = await call<Detail>("get_document", { job_id: demo.jobId, type: "resume" });
+    expect(detail.contacts.selected).toEqual(selected);
+    expect(detail.contacts.items.every((item) => item.href !== null)).toBe(true);
+    expect(
+      await callExpectingError("set_resume_contacts", {
+        revision_id: saved.revision_id,
+        selection: [],
+      }),
+    ).toContain("stale");
+    expect(
+      await callExpectingError("set_resume_contacts", {
+        revision_id: edit.revision_id,
+        selection: ["email", "email"],
+      }),
+    ).toContain("validation");
+    const next = await call<{ run_id: string }>("get_document_brief", {
+      job_id: demo.jobId,
+      type: "resume",
+    });
+    await call("submit_document", { run_id: next.run_id, content: fixture("resume") });
+    const regenerated = await call<Detail>("get_document", { job_id: demo.jobId, type: "resume" });
+    expect(regenerated.contacts.selected).toEqual(selected);
+    await call("set_resume_contacts", { revision_id: regenerated.revision_id, selection: [] });
+    const empty = await call<Detail>("get_document", { job_id: demo.jobId, type: "resume" });
+    expect(empty.contacts.items).toEqual([]);
+  });
 });

@@ -25,6 +25,7 @@ import {
   documentTypes,
   editUnit,
   textSegment,
+  setResumeContacts,
   getDocumentView,
   getOrRenderPdf,
   getRun,
@@ -294,6 +295,30 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
           ? failure("stale: a newer revision exists; call get_document again and edit that one")
           : refused(result.error);
       }
+      return json({ revision_id: result.value.id, warnings: result.value.warnings.map(warning) });
+    }),
+  );
+
+  server.registerTool(
+    "set_resume_contacts",
+    {
+      title: "Set resume contacts",
+      description:
+        "Select and order the resume's frozen profile contacts. An empty selection hides the row. Creates an unapproved revision; revision_id must be current.",
+      inputSchema: z.object({
+        revision_id: z.uuid(),
+        selection: z
+          .array(z.enum(["phone", "email", "location", "linkedin", "github", "website"]))
+          .max(6),
+      }),
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
+    },
+    tool(async ({ revision_id, selection }, profileId) => {
+      const result = await setResumeContacts(ctx.deps, profileId, {
+        expectedRevisionId: revision_id,
+        selection,
+      });
+      if (!result.ok) return refused(result.error);
       return json({ revision_id: result.value.id, warnings: result.value.warnings.map(warning) });
     }),
   );

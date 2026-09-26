@@ -7,6 +7,10 @@ import type { ApplicationRecord } from "@/modules/applications";
 import {
   contentUnits,
   formattingSegments,
+  availableResumeContacts,
+  resumeContactSelection,
+  resumeContacts,
+  type ResumeContent,
   editableFields,
   type DocumentType,
   type DocumentView,
@@ -94,6 +98,18 @@ export function documentDetail(type: DocumentType, view: DocumentView) {
             : {}),
         }))
       : [],
+    ...(type === "resume" && revision
+      ? {
+          contacts: {
+            available: view.revisionSnapshot ? availableResumeContacts(view.revisionSnapshot) : [],
+            selected: resumeContactSelection(
+              revision.content as ResumeContent,
+              view.revisionSnapshot ?? null,
+            ),
+            items: resumeContacts(revision.content as ResumeContent, view.revisionSnapshot ?? null),
+          },
+        }
+      : {}),
     units: revision
       ? contentUnits(type, revision.content).map((u) => ({
           path: u.path,

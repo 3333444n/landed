@@ -32,6 +32,9 @@ export default async function ProfilePage() {
           locations: (preferences.locations ?? []).join(", "),
           workArrangement: (preferences.workArrangement ?? []).join(","),
           constraints: preferences.constraints ?? "",
+          resumeContacts: (
+            preferences.resumeContacts ?? ["phone", "email", "location", "linkedin", "github"]
+          ).join(","),
           linkedinUrl: profile.links.find((l) => l.label === "LinkedIn")?.url ?? "",
           githubUrl: profile.links.find((l) => l.label === "GitHub")?.url ?? "",
           websiteUrl: profile.links.find((l) => l.label === "Website")?.url ?? "",

@@ -56,6 +56,10 @@ test("a document is generated, reviewed in place, and another is pasted back", a
   await page.getByLabel("Website", { exact: true }).fill("https://www.example.com/");
   await page.getByLabel("Email", { exact: true }).fill("alex@example.com");
   await page.getByLabel("Location", { exact: true }).fill("Example City");
+  const defaults = page.getByRole("group", { name: "Resume contact defaults", exact: true });
+  for (const label of ["Phone", "Email", "Location", "LinkedIn", "GitHub"])
+    await defaults.getByRole("checkbox", { name: `Show ${label}`, exact: true }).check();
+  await defaults.getByRole("checkbox", { name: "Show Website", exact: true }).uncheck();
   await page.getByRole("button", { name: "Save general info", exact: true }).click();
   await expect(page.getByText("Saved", { exact: true })).toBeVisible();
 
@@ -92,7 +96,42 @@ test("a document is generated, reviewed in place, and another is pasted back", a
     page.getByRole("list", { name: "Jobs" }).getByText("Needs review", { exact: true }),
   ).toBeVisible();
 
+  // Contact controls select snapshot facts, preserve their order, and explicitly restore defaults.
   await page.goto(`${jobUrl}/resume`);
+  const contactRow = page.getByLabel("Resume contact row", { exact: true });
+  await expect(contactRow).toContainText("Example City");
+  await expect(contactRow.getByRole("link", { name: "example.com", exact: true })).toHaveCount(0);
+  await page.getByRole("button", { name: "Resume contact row", exact: true }).click();
+  const contacts = page.getByRole("group", { name: "Resume contact details", exact: true });
+  await contacts.getByRole("checkbox", { name: "Show Location", exact: true }).uncheck();
+  await contacts.getByRole("checkbox", { name: "Show Website", exact: true }).check();
+  for (let i = 0; i < 4; i++)
+    await contacts.getByRole("button", { name: "Move Website up", exact: true }).click();
+  await page.getByRole("button", { name: "Save contact row", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Resume contact row", exact: true })).toBeVisible();
+  await expect(contactRow).not.toContainText("Example City");
+  await expect(contactRow).toHaveText(/^example\.com/);
+  await expect(contactRow.getByRole("link")).toHaveCount(0);
+  await page.reload();
+  await expect(contactRow).toHaveText(/^example\.com/);
+  await page.getByRole("button", { name: "Resume contact row", exact: true }).click();
+  await expect(
+    page
+      .getByLabel("Contact links", { exact: true })
+      .getByRole("link", { name: "example.com", exact: true }),
+  ).toHaveAttribute("href", "https://www.example.com/");
+  await page.getByRole("button", { name: "Apply profile default", exact: true }).click();
+  await expect(
+    contacts.getByRole("checkbox", { name: "Show Location", exact: true }),
+  ).toBeChecked();
+  await expect(
+    contacts.getByRole("checkbox", { name: "Show Website", exact: true }),
+  ).not.toBeChecked();
+  await page.getByRole("button", { name: "Save contact row", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Resume contact row", exact: true })).toBeVisible();
+  await expect(contactRow).toContainText("Example City");
+  await expect(contactRow.getByRole("link", { name: "example.com", exact: true })).toHaveCount(0);
+
   // Inline editing saves a new revision
   await page.getByRole("button", { name: "Edit bullet 1 of Example Workshop" }).click();
   await page

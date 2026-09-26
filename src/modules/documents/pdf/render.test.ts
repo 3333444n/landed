@@ -209,7 +209,7 @@ it("lets long footer details flow onto later pages instead of overlapping the le
 it("renders combined inline styles as standard PDF fonts and frozen contact links", async () => {
   const snapshot = demoSnapshot();
   const content = resumeContent.parse(fixture("resume"));
-  content.header.contact = [snapshot.profile.email!];
+  content.contactSelection = ["email", "phone"];
   content.formatting = [
     {
       path: "header.headline",

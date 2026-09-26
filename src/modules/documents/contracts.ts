@@ -72,6 +72,20 @@ export const documentFormatting = z
   )
   .max(100);
 export type DocumentFormatting = z.infer<typeof documentFormatting>;
+export const resumeContactIds = [
+  "phone",
+  "email",
+  "location",
+  "linkedin",
+  "github",
+  "website",
+] as const;
+export type ResumeContactId = (typeof resumeContactIds)[number];
+export const resumeContactSelection = z
+  .array(z.enum(resumeContactIds))
+  .max(6)
+  .refine((ids) => new Set(ids).size === ids.length, "Contact selections must be unique");
+
 const evidenceIds = z
   .array(z.string().min(1).max(64))
   .max(6)
@@ -123,10 +137,11 @@ export const summaryHeading = "Summary";
 export const resumeContent = z
   .object({
     formatting: documentFormatting.optional(),
+    contactSelection: resumeContactSelection.optional(),
     header: z.object({
       name: z.string().trim().min(1).max(80),
       headline: z.string().trim().max(120).nullable(),
-      contact: z.array(z.string().trim().min(1).max(80)).max(6),
+      contact: z.array(z.string().trim().min(1).max(2048)).max(6),
     }),
     summary: z
       .object({ text: z.string().trim().min(1).max(300), evidenceIds })
@@ -248,6 +263,7 @@ export type ProfileLink = z.infer<typeof profileLink>;
 
 export const snapshot = z.object({
   capturedAt: z.iso.datetime(),
+  resumeContacts: resumeContactSelection.optional(),
   profile: z.object({
     id: z.string(),
     displayName: z.string(),
