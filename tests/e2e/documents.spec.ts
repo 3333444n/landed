@@ -14,7 +14,12 @@ const demo = {
 
 async function editText(page: Page, label: string, text: string, newLabel = label) {
   await page.getByRole("button", { name: `Edit ${label}`, exact: true }).click();
-  await page.getByLabel(`Text of ${label}`, { exact: true }).fill(text);
+  const editor = page.getByLabel(`Text of ${label}`, { exact: true });
+  if (text) await editor.fill(text);
+  else {
+    await editor.press("ControlOrMeta+a");
+    await editor.press("Backspace");
+  }
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(page.getByRole("button", { name: `Edit ${newLabel}`, exact: true })).toBeVisible();
 }
@@ -49,6 +54,8 @@ test("a document is generated, reviewed in place, and another is pasted back", a
   // Saved links keep their destinations while the letter shortens their visible labels.
   await page.goto("/about/profile");
   await page.getByLabel("Website", { exact: true }).fill("https://www.example.com/");
+  await page.getByLabel("Email", { exact: true }).fill("alex@example.com");
+  await page.getByLabel("Location", { exact: true }).fill("Example City");
   await page.getByRole("button", { name: "Save general info", exact: true }).click();
   await expect(page.getByText("Saved", { exact: true })).toBeVisible();
 
@@ -85,8 +92,8 @@ test("a document is generated, reviewed in place, and another is pasted back", a
     page.getByRole("list", { name: "Jobs" }).getByText("Needs review", { exact: true }),
   ).toBeVisible();
 
-  // Inline editing saves a new revision
   await page.goto(`${jobUrl}/resume`);
+  // Inline editing saves a new revision
   await page.getByRole("button", { name: "Edit bullet 1 of Example Workshop" }).click();
   await page
     .getByLabel("Text of bullet 1 of Example Workshop")
@@ -140,7 +147,7 @@ test("a document is generated, reviewed in place, and another is pasted back", a
   await page.getByLabel("Text of headline", { exact: true }).fill("x".repeat(121));
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(editorError(page, "headline")).toBeVisible();
-  await expect(page.getByLabel("Text of headline", { exact: true })).toHaveValue("x".repeat(121));
+  await expect(page.getByLabel("Text of headline", { exact: true })).toHaveText("x".repeat(121));
   await page.getByRole("button", { name: "Cancel", exact: true }).click();
   await expect(headline).toHaveText("Add headline");
   await editText(page, "headline", "Software developer");
@@ -150,15 +157,82 @@ test("a document is generated, reviewed in place, and another is pasted back", a
   await oldTab.goto(`${jobUrl}/resume`);
   await oldTab.getByRole("button", { name: "Edit headline", exact: true }).click();
   await oldTab.getByLabel("Text of headline", { exact: true }).fill("Text from the older tab");
+  await oldTab.getByLabel("Text of headline", { exact: true }).press("ControlOrMeta+a");
+  await oldTab
+    .getByRole("group", { name: "Selection formatting", exact: true })
+    .getByRole("button", { name: "Italic", exact: true })
+    .click();
   await editText(page, "headline", "Updated software developer");
   await oldTab.getByRole("button", { name: "Save", exact: true }).click();
   await expect(editorError(oldTab, "headline")).toHaveText(
     "This record changed since you opened it. Reload to see the latest version.",
   );
-  await expect(oldTab.getByLabel("Text of headline", { exact: true })).toHaveValue(
+  await expect(oldTab.getByLabel("Text of headline", { exact: true })).toHaveText(
+    "Text from the older tab",
+  );
+  await expect(oldTab.getByLabel("Text of headline", { exact: true }).locator("em")).toHaveText(
     "Text from the older tab",
   );
   await oldTab.close();
+
+  // Visual formatting survives save and reload; clearing changes marks, never the words.
+  await page.getByRole("button", { name: "Edit headline", exact: true }).click();
+  const formattedEditor = page.getByLabel("Text of headline", { exact: true });
+  await expect(page.getByRole("group", { name: "Text formatting", exact: true })).toHaveCount(0);
+  await expect(
+    page.getByRole("group", { name: "Selection formatting", exact: true }),
+  ).not.toBeVisible();
+  await formattedEditor.press("ControlOrMeta+a");
+  await expect(
+    page.getByRole("group", { name: "Selection formatting", exact: true }),
+  ).toBeVisible();
+  const formatControls = page.getByRole("group", { name: "Selection formatting", exact: true });
+  await formatControls.getByRole("button", { name: "Bold", exact: true }).click();
+  await formatControls.getByRole("button", { name: "Underline", exact: true }).click();
+  await expect(formattedEditor.locator("strong")).toHaveText("Updated software developer");
+
+  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(headline.locator("strong")).toHaveText("Updated software developer");
+  await page.reload();
+  await expect(headline.locator("u")).toHaveText("Updated software developer");
+  await headline.click();
+  await formattedEditor.press("ControlOrMeta+a");
+  await formatControls.getByRole("button", { name: "Clear formatting", exact: true }).click();
+  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(headline).toHaveText("Updated software developer");
+  await expect(headline.locator("strong, em, u")).toHaveCount(0);
+
+  // HTML paste retains only supported marks; link destinations and arbitrary styles are discarded.
+  await headline.click();
+  await formattedEditor.press("ControlOrMeta+a");
+  await formattedEditor.evaluate((element) => {
+    const clipboardData = new DataTransfer();
+    clipboardData.setData("text/plain", "Updated software developer");
+    clipboardData.setData(
+      "text/html",
+      '<p><strong>Updated</strong> <a href="https://example.com"><em>software</em></a> <span style="color:red;font-size:48px"><u>developer</u></span></p>',
+    );
+    element.dispatchEvent(
+      new ClipboardEvent("paste", { clipboardData, bubbles: true, cancelable: true }),
+    );
+  });
+  await expect(formattedEditor.locator("strong")).toHaveText("Updated");
+  await expect(formattedEditor.locator("em")).toHaveText("software");
+  await expect(formattedEditor.locator("u")).toHaveText("developer");
+  await expect(formattedEditor.locator("a, [style], img")).toHaveCount(0);
+  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(headline.locator("strong")).toHaveText("Updated");
+
+  // Clearing inline marks keeps the template's already-bold heading style.
+  await page.getByRole("button", { name: "Edit skill group of Engineering", exact: true }).click();
+  const headingEditor = page.getByLabel("Text of skill group of Engineering", { exact: true });
+  await expect(headingEditor).toHaveCSS("font-weight", "600");
+  await headingEditor.press("ControlOrMeta+a");
+  await formatControls.getByRole("button", { name: "Italic", exact: true }).click();
+  await formatControls.getByRole("button", { name: "Clear formatting", exact: true }).click();
+  await expect(headingEditor.locator("strong, em, u")).toHaveCount(0);
+  await expect(headingEditor).toHaveCSS("font-weight", "600");
+  await page.getByRole("button", { name: "Cancel", exact: true }).click();
 
   // Reviewed is a person's decision; the card shows it
   await page.getByRole("button", { name: "Approve?", exact: true }).click();
@@ -264,10 +338,11 @@ test("a document is generated, reviewed in place, and another is pasted back", a
   await expect(letter.getByText(demo.title, { exact: true })).toHaveCSS("font-style", "italic");
   await expect(letter.getByText("Job reference:", { exact: false })).toBeVisible();
   await page.getByRole("button", { name: "Edit greeting", exact: true }).click();
-  await page.getByLabel("Text of greeting", { exact: true }).fill("");
+  await page.getByLabel("Text of greeting", { exact: true }).press("ControlOrMeta+a");
+  await page.getByLabel("Text of greeting", { exact: true }).press("Backspace");
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(editorError(page, "greeting")).toBeVisible();
-  await expect(page.getByLabel("Text of greeting", { exact: true })).toHaveValue("");
+  await expect(page.getByLabel("Text of greeting", { exact: true })).toHaveText("");
   await page.getByRole("button", { name: "Cancel", exact: true }).click();
   for (const width of [390, 1440]) {
     await page.setViewportSize({ width, height: 1000 });

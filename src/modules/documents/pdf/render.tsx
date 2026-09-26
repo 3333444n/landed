@@ -3,7 +3,7 @@
  * and the template version, which is why a test can assert the page count on a fixture.
  */
 import { renderToBuffer } from "@react-pdf/renderer";
-import type { CoverLetterContent, ResumeContent } from "../contracts";
+import type { CoverLetterContent, ResumeContent, Snapshot } from "../contracts";
 import { CoverLetterPdf } from "./CoverLetterPdf";
 import type { LetterHeader } from "../presentation";
 export { letterHeaderFrom } from "../presentation";
@@ -30,9 +30,14 @@ export interface FittedResume {
  * and a render is a few tens of milliseconds). Text is never shrunk: at the base scale the
  * content schema's budgets already guarantee one page, and only the gaps grow.
  */
-export async function fitResume(content: ResumeContent): Promise<FittedResume> {
+export async function fitResume(
+  content: ResumeContent,
+  snapshot: Snapshot | null = null,
+): Promise<FittedResume> {
   const render = async (spacing: number) =>
-    Buffer.from(await renderToBuffer(<ResumePdf content={content} spacing={spacing} />));
+    Buffer.from(
+      await renderToBuffer(<ResumePdf content={content} spacing={spacing} snapshot={snapshot} />),
+    );
   let low: number = spacingBounds.min;
   let best = await render(low);
   if (pdfPageCount(best) !== 1) return { pdf: best, spacing: low };
@@ -52,8 +57,11 @@ export async function fitResume(content: ResumeContent): Promise<FittedResume> {
   return { pdf: best, spacing: low };
 }
 
-export async function renderResumePdf(content: ResumeContent): Promise<Buffer> {
-  return (await fitResume(content)).pdf;
+export async function renderResumePdf(
+  content: ResumeContent,
+  snapshot: Snapshot | null = null,
+): Promise<Buffer> {
+  return (await fitResume(content, snapshot)).pdf;
 }
 
 export async function renderCoverLetterPdf(

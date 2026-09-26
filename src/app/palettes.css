@@ -18,6 +18,7 @@
   --l-text-primary: #171c21;
   --l-text-secondary: #4c5f6b;
   --l-text-tertiary: #7e939c;
+  --l-document-link: #175cd3;
   --l-accent: #4c5f6b;
   --l-accent-contrast: #ffffff;
   --l-accent-soft: #dde4e1;
@@ -45,6 +46,7 @@
   --d-text-primary: #eef0ee;
   --d-text-secondary: #a8b3b8;
   --d-text-tertiary: #6f7c83;
+  --d-document-link: #8bb8ff;
   --d-accent: #9fb3ba;
   --d-accent-contrast: #0c0e10;
   --d-accent-soft: #1f272c;

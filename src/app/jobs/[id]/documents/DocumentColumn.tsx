@@ -120,6 +120,7 @@ export async function DocumentColumn({ jobId, type }: { jobId: string; type: Doc
                 )
               : undefined
           }
+          snapshot={run?.snapshot ?? null}
           editAction={editUnitAction}
         />
       ) : (

@@ -24,6 +24,7 @@ import {
   documentSlugs,
   documentTypes,
   editUnit,
+  textSegment,
   getDocumentView,
   getOrRenderPdf,
   getRun,
@@ -271,14 +272,22 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
             "A path from get_document editable_fields; empty text clears only clearable fields",
           ),
         text: z.string().max(2000),
+        segments: z
+          .array(textSegment)
+          .max(2000)
+          .optional()
+          .describe(
+            "Optional styled segments for resume or cover-letter fields; their concatenation must equal text. Marks: bold, italic, underline. Unmarked segments clear inline styles.",
+          ),
       }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
     },
-    tool(async ({ revision_id, path, text }, profileId) => {
+    tool(async ({ revision_id, path, text, segments }, profileId) => {
       const result = await editUnit(ctx.deps, profileId, {
         expectedRevisionId: revision_id,
         path,
         text,
+        segments,
       });
       if (!result.ok) {
         return result.error.kind === "stale"

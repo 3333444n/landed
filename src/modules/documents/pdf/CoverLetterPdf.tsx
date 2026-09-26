@@ -1,6 +1,7 @@
 import { Document, Link, Page, Text, View } from "@react-pdf/renderer";
 import type { CoverLetterContent } from "../contracts";
-import { letterSalutation, type LetterHeader, type LetterLink } from "../presentation";
+import { type LetterHeader, type LetterLink } from "../presentation";
+import { FormattedText } from "./FormattedText";
 import { styles } from "./styles";
 import { textWidth } from "../helvetica";
 
@@ -19,7 +20,11 @@ export function CoverLetterPdf({
         <View style={styles.letterhead} wrap={false}>
           <View style={styles.letterIdentity}>
             <Text style={styles.letterName}>{header.nameLines.join("\n")}</Text>
-            {title ? <Text style={styles.letterTitle}>{title}</Text> : null}
+            {title ? (
+              <Text style={styles.letterTitle}>
+                <FormattedText content={content} path="title" text={title} />
+              </Text>
+            ) : null}
           </View>
           {header.topContact.length > 0 ? (
             <View style={styles.letterLinks}>
@@ -41,15 +46,21 @@ export function CoverLetterPdf({
           <Text style={styles.letterDate}>{header.date}</Text>
         </View>
         <View style={styles.letterContent}>
-          <Text style={styles.letterGreeting}>{letterSalutation(content.greeting)}</Text>
+          <Text style={styles.letterGreeting}>
+            <FormattedText content={content} path="greeting" text={content.greeting} salutation />
+          </Text>
           {content.paragraphs.map((p, i) => (
             <Text key={i} style={styles.letterParagraph} orphans={3} widows={3}>
-              {p.text}
+              <FormattedText content={content} path={`paragraphs.${i}`} text={p.text} />
             </Text>
           ))}
           <View style={styles.letterSignature} wrap={false}>
-            <Text>{letterSalutation(content.closing)}</Text>
-            <Text style={styles.letterSignatureName}>{content.signature}</Text>
+            <Text>
+              <FormattedText content={content} path="closing" text={content.closing} salutation />
+            </Text>
+            <Text style={styles.letterSignatureName}>
+              <FormattedText content={content} path="signature" text={content.signature} bold />
+            </Text>
           </View>
         </View>
         {header.locationLines.length > 0 || header.footerLinks.length > 0 ? (
