@@ -244,7 +244,7 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
     {
       title: "Get document",
       description:
-        "The latest revision of one document as editable units with their evidence ids, its grounding and layout warnings, and the latest run.",
+        "The latest revision of one document, its citation-bearing units, editable_fields with allowed paths and clearing flags, grounding/layout warnings, and the latest run.",
       inputSchema: z.object({ job_id: jobId, type }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
     },
@@ -260,11 +260,17 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
     {
       title: "Edit unit",
       description:
-        "Replaces the text of one unit (a bullet, the summary, a paragraph, the subject or body) in the latest revision, producing a new revision that is checked again. `revision_id` must be the latest; when it is stale, call get_document again.",
+        "Replaces one editable field (including headlines, subtitles, skills, education and letter title/greeting/closing/signature) in the latest revision, producing a new revision that is checked again. `revision_id` must be the latest; when it is stale, call get_document again.",
       inputSchema: z.object({
         revision_id: z.uuid(),
-        path: z.string().min(1).max(200).describe("The unit path from get_document"),
-        text: z.string().min(1).max(2000),
+        path: z
+          .string()
+          .min(1)
+          .max(200)
+          .describe(
+            "A path from get_document editable_fields; empty text clears only clearable fields",
+          ),
+        text: z.string().max(2000),
       }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
     },

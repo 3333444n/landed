@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import { idleState, type ActionState } from "@/app/form-state";
+import { fieldsKey, idleState, type ActionState } from "@/app/form-state";
 import { Button } from "@/components/Button";
 import { Chip } from "@/components/Chip";
 import { AutoGrowTextarea } from "@/components/AutoGrowTextarea";
@@ -17,6 +17,8 @@ import {
   type ResumeContent,
 } from "@/modules/documents/contracts";
 import { CopyButton } from "@/components/CopyButton";
+import { editableFields } from "@/modules/documents/rules";
+import { letterSalutation, type LetterHeader } from "@/modules/documents/presentation";
 import styles from "./documents.module.css";
 
 interface PreviewProps {
@@ -25,6 +27,7 @@ interface PreviewProps {
   warnings: GroundingWarning[];
   revisionId: string;
   evidence: Record<string, string>;
+  letterHeader?: LetterHeader;
   editAction: (state: ActionState, formData: FormData) => Promise<ActionState>;
 }
 
@@ -53,7 +56,7 @@ function ResumePreview({ ctx, content }: { ctx: Ctx; content: ResumeContent }) {
     <div className={styles.preview}>
       <div>
         <p className={styles.name}>{content.header.name}</p>
-        {content.header.headline ? <p>{content.header.headline}</p> : null}
+        <TextField ctx={ctx} path="header.headline" placeholder="Add headline" />
         {content.header.contact.length > 0 ? (
           <p className={styles.contact}>{content.header.contact.join(" · ")}</p>
         ) : null}
@@ -73,19 +76,40 @@ function ResumePreview({ ctx, content }: { ctx: Ctx; content: ResumeContent }) {
             return (
               <div key={entryPath} className={styles.entry}>
                 <div className={styles.entryHead}>
-                  <span className={styles.heading}>{entry.heading}</span>
-                  {entry.dateRange ? (
+                  {section.kind === "skills" || section.kind === "education" ? (
+                    <TextField ctx={ctx} path={`${entryPath}.heading`} className={styles.heading} />
+                  ) : (
+                    <span className={styles.heading}>{entry.heading}</span>
+                  )}
+                  {section.kind === "education" ? (
+                    <TextField
+                      ctx={ctx}
+                      path={`${entryPath}.dateRange`}
+                      className={styles.dateRange}
+                      placeholder="Add dates"
+                    />
+                  ) : entry.dateRange ? (
                     <span className={styles.dateRange}>{entry.dateRange}</span>
                   ) : null}
                 </div>
-                {entry.subheading || entry.location ? (
-                  <div className={styles.entryHead}>
-                    <p className={styles.subheading}>{entry.subheading}</p>
-                    {entry.location ? (
-                      <span className={styles.dateRange}>{entry.location}</span>
-                    ) : null}
-                  </div>
-                ) : null}
+                <div className={styles.entryHead}>
+                  <TextField
+                    ctx={ctx}
+                    path={`${entryPath}.subheading`}
+                    className={styles.subheading}
+                    placeholder={section.kind === "skills" ? "Add skills" : "Add subtitle"}
+                  />
+                  {section.kind === "education" ? (
+                    <TextField
+                      ctx={ctx}
+                      path={`${entryPath}.location`}
+                      className={styles.dateRange}
+                      placeholder="Add location"
+                    />
+                  ) : entry.location ? (
+                    <span className={styles.dateRange}>{entry.location}</span>
+                  ) : null}
+                </div>
                 {entryWarnings.length > 0 ? (
                   <div className={styles.chips}>
                     {entryWarnings.map((w, k) => (
@@ -119,21 +143,128 @@ function ResumePreview({ ctx, content }: { ctx: Ctx; content: ResumeContent }) {
 }
 
 function CoverLetterPreview({ ctx, content }: { ctx: Ctx; content: CoverLetterContent }) {
+  const header = ctx.letterHeader;
   return (
-    <div className={styles.preview}>
-      <p className="body-lg">{content.greeting},</p>
-      {content.paragraphs.map((paragraph, i) => (
-        <Unit
-          key={i}
-          ctx={ctx}
-          path={`paragraphs.${i}`}
-          label={`paragraph ${i + 1}`}
-          unit={paragraph}
-        />
-      ))}
-      <p className="body-lg">{content.closing},</p>
-      <p className="body-lg">{content.signature}</p>
-    </div>
+    <article className={styles.letter} aria-label="Cover letter preview">
+      {header ? (
+        <>
+          <header className={styles.letterhead}>
+            <div className={styles.letterIdentity}>
+              <p className={styles.letterName}>
+                {header.nameLines.map((line, i) => (
+                  <span key={i}>{line}</span>
+                ))}
+              </p>
+              <TextField
+                ctx={ctx}
+                path="title"
+                className={styles.letterTitle}
+                placeholder="Add professional title"
+              />
+            </div>
+            {header.topContact.length > 0 ? (
+              <div className={styles.letterLinks}>
+                {header.topContact.map((link, i) => (
+                  <p key={i} className={link.strong ? styles.heading : undefined}>
+                    {link.href ? (
+                      <a href={link.href} target="_blank" rel="noopener noreferrer">
+                        {link.text}
+                      </a>
+                    ) : (
+                      link.text
+                    )}
+                  </p>
+                ))}
+              </div>
+            ) : null}
+          </header>
+          <div className={styles.letterRecipient}>
+            <div>
+              {header.company ? <p className={styles.heading}>{header.company}</p> : null}
+              {header?.role ? (
+                <p className={styles.letterReference}>
+                  Job reference: <em>{header.role}</em>
+                </p>
+              ) : null}
+            </div>
+            <p className={styles.letterDate}>{header.date}</p>
+          </div>
+        </>
+      ) : null}
+      <div className={styles.letterContent}>
+        <div className={styles.letterBody}>
+          <TextField ctx={ctx} path="greeting" displayText={letterSalutation(content.greeting)} />
+          {content.paragraphs.map((paragraph, i) => (
+            <Unit
+              key={i}
+              ctx={ctx}
+              path={`paragraphs.${i}`}
+              label={`paragraph ${i + 1}`}
+              unit={paragraph}
+            />
+          ))}
+        </div>
+        <div className={styles.letterSignature}>
+          <TextField ctx={ctx} path="closing" displayText={letterSalutation(content.closing)} />
+          <TextField ctx={ctx} path="signature" className={styles.heading} />
+        </div>
+      </div>
+      {header && (header.locationLines.length > 0 || header.footerLinks.length > 0) ? (
+        <footer className={styles.letterFooter}>
+          <div>
+            {header.locationLines.map((line, i) => (
+              <p key={i} className={styles.heading}>
+                {line}
+              </p>
+            ))}
+          </div>
+          <div>
+            {header.footerLinks.map((link, i) => (
+              <p key={i}>
+                {link.href ? (
+                  <a href={link.href} target="_blank" rel="noopener noreferrer">
+                    {link.text}
+                  </a>
+                ) : (
+                  link.text
+                )}
+              </p>
+            ))}
+          </div>
+        </footer>
+      ) : null}
+    </article>
+  );
+}
+
+/** Metadata shares the editor without pretending it carries prose citations. */
+function TextField({
+  ctx,
+  path,
+  className,
+  placeholder,
+  displayText,
+}: {
+  ctx: Ctx;
+  path: string;
+  className?: string;
+  placeholder?: string;
+  displayText?: string;
+}) {
+  const field = editableFields(ctx.type, ctx.content).find((item) => item.path === path);
+  if (!field) return null;
+  return (
+    <Unit
+      ctx={ctx}
+      path={path}
+      label={field.label}
+      unit={{ text: field.text, evidenceIds: [] }}
+      showEvidence={false}
+      className={className}
+      placeholder={placeholder}
+      displayText={displayText}
+      compact
+    />
   );
 }
 
@@ -167,12 +298,20 @@ function Unit({
   label,
   unit,
   showEvidence = true,
+  className,
+  placeholder,
+  displayText,
+  compact = false,
 }: {
   ctx: Ctx;
   path: string;
   label: string;
   unit: { text: string; evidenceIds: string[] };
   showEvidence?: boolean;
+  className?: string;
+  placeholder?: string;
+  displayText?: string;
+  compact?: boolean;
 }) {
   const warnings = ctx.warnings.filter((w) => w.path === path);
   if (ctx.editing === path) {
@@ -182,20 +321,21 @@ function Unit({
         path={path}
         label={label}
         text={unit.text}
+        compact={compact}
         onDone={() => ctx.setEditing(null)}
       />
     );
   }
   const cited = unit.evidenceIds.map((id) => ctx.evidence[id] ?? `Unknown record ${id}`);
   return (
-    <div className={styles.unit}>
+    <div className={`${styles.unit} ${className ?? ""}`}>
       <button
         type="button"
-        className={styles.unitText}
+        className={`${styles.unitText} ${compact ? styles.fieldText : ""} ${!unit.text ? styles.emptyField : ""}`}
         aria-label={`Edit ${label}`}
         onClick={() => ctx.setEditing(path)}
       >
-        {unit.text}
+        {unit.text ? (displayText ?? unit.text) : placeholder}
       </button>
       {warnings.length > 0 ? (
         <div className={styles.chips}>
@@ -220,12 +360,14 @@ function UnitEditor({
   path,
   label,
   text,
+  compact,
   onDone,
 }: {
   ctx: Ctx;
   path: string;
   label: string;
   text: string;
+  compact: boolean;
   onDone: () => void;
 }) {
   const [state, formAction, pending] = useActionState(ctx.editAction, idleState);
@@ -238,11 +380,12 @@ function UnitEditor({
       <input type="hidden" name="expectedRevisionId" value={ctx.revisionId} />
       <input type="hidden" name="path" value={path} />
       <AutoGrowTextarea
+        key={fieldsKey(state)}
         name="text"
         aria-label={`Text of ${label}`}
         className={fieldStyles.control}
-        rows={4}
-        defaultValue={text}
+        rows={compact ? 1 : 4}
+        defaultValue={state.status === "error" ? state.values.text : text}
         autoFocus
       />
       {errors.length > 0 ? (

@@ -346,6 +346,57 @@ describe("get_document_brief and submit_document", () => {
 });
 
 describe("get_document, edit_unit and render_pdf", () => {
+  it("discovers metadata fields, clears optional text and rejects required clears and stale edits", async () => {
+    for (const type of ["resume", "cover_letter"] as const) {
+      const brief = await call<{ run_id: string }>("get_document_brief", {
+        job_id: demo.jobId,
+        type,
+      });
+      await call("submit_document", {
+        run_id: brief.run_id,
+        content: fixture(type === "resume" ? "resume" : "cover-letter"),
+      });
+      type Detail = {
+        revision_id: string;
+        editable_fields: { path: string; text: string; clearable: boolean }[];
+        units: unknown[];
+      };
+      let detail = await call<Detail>("get_document", { job_id: demo.jobId, type });
+      const units = detail.units;
+      const originalId = detail.revision_id;
+      const path = type === "resume" ? "header.headline" : "greeting";
+      expect(detail.editable_fields.find((f) => f.path === path)).toMatchObject({
+        clearable: type === "resume",
+      });
+      const edit = await call<{ revision_id: string }>("edit_unit", {
+        revision_id: detail.revision_id,
+        path,
+        text: "Updated text",
+      });
+      detail = await call<Detail>("get_document", { job_id: demo.jobId, type });
+      expect(detail.revision_id).toBe(edit.revision_id);
+      expect(detail.units).toEqual(units);
+      expect(detail.editable_fields.find((f) => f.path === path)?.text).toBe("Updated text");
+      expect(
+        await callExpectingError("edit_unit", { revision_id: originalId, path, text: "Stale" }),
+      ).toContain("stale");
+      if (type === "resume") {
+        await call("edit_unit", { revision_id: detail.revision_id, path, text: "" });
+        detail = await call<Detail>("get_document", { job_id: demo.jobId, type });
+        expect(detail.editable_fields.find((f) => f.path === path)?.text).toBe("");
+        await call("edit_unit", { revision_id: detail.revision_id, path, text: "Restored" });
+      } else {
+        expect(
+          await callExpectingError("edit_unit", {
+            revision_id: detail.revision_id,
+            path,
+            text: "",
+          }),
+        ).toContain("validation");
+      }
+    }
+  });
+
   it("edit one unit, refuse a stale revision, and render the PDF once", async () => {
     const brief = await call<{ run_id: string }>("get_document_brief", {
       job_id: demo.jobId,

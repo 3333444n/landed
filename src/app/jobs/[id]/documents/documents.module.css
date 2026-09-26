@@ -247,3 +247,148 @@
   align-items: center;
   gap: var(--space-2);
 }
+
+/* A letterhead within the review surface; the controls keep the application's theme. */
+.letter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  font-size: var(--document-body-size);
+  line-height: var(--document-body-leading);
+  overflow-wrap: anywhere;
+}
+.letterhead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+  align-items: flex-start;
+  padding-bottom: var(--space-6);
+  border-bottom: var(--document-rule-width) solid var(--text-primary);
+}
+.letterIdentity {
+  flex: 1 1 var(--letter-header-column-min);
+}
+.letterName {
+  font-size: var(--letter-name-size);
+  line-height: var(--letter-name-leading);
+  font-weight: var(--document-weight-strong);
+}
+.letterContact,
+.letterLinks {
+  font-size: var(--letter-contact-size);
+  line-height: var(--letter-contact-leading);
+  color: var(--text-secondary);
+}
+.letterRecipient {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-4);
+  font-size: var(--letter-recipient-size);
+  line-height: var(--letter-recipient-leading);
+}
+.letterDate {
+  color: var(--text-secondary);
+}
+.letterBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.letterSignature {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.unitText.fieldText {
+  font: inherit;
+  color: inherit;
+}
+.emptyField {
+  color: var(--text-secondary);
+  font-weight: normal;
+}
+.unitText:focus-visible {
+  outline: var(--document-focus-width) solid var(--accent);
+  outline-offset: var(--document-focus-width);
+  border-radius: var(--radius-sm);
+}
+.entryHead > * {
+  min-width: 0;
+}
+.entryHead > .unit {
+  flex: 1;
+}
+.entryHead > .editor {
+  flex: 1;
+  min-width: 0;
+}
+.unitText {
+  overflow-wrap: anywhere;
+}
+
+.letter .unit {
+  margin: 0;
+  padding: var(--space-1) 0;
+}
+
+.entryHead > .dateRange {
+  flex: 0 1 auto;
+}
+.dateRange .unitText {
+  text-align: right;
+}
+
+.letter {
+  min-height: var(--letter-preview-min-height);
+}
+.letterName span {
+  display: block;
+}
+.letterContact {
+  margin-top: var(--space-3);
+}
+.letterLinks {
+  flex: 1 1 var(--letter-header-column-min);
+}
+.letterLinks a,
+.letterFooter a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: var(--space-1);
+}
+.letterContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.letterSignature {
+  margin-top: var(--letter-closing-gap);
+}
+.letterDate {
+  font-size: var(--letter-contact-size);
+}
+
+.letterTitle {
+  margin-top: var(--space-3);
+  font-weight: normal;
+  font-size: var(--letter-contact-size);
+}
+.letterReference {
+  margin-top: var(--space-2);
+  font-size: var(--document-body-size);
+  font-weight: var(--document-weight-strong);
+}
+.letterReference em {
+  font-weight: normal;
+}
+.letterFooter {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-6);
+  border-top: var(--document-rule-width) solid var(--text-primary);
+  padding-top: var(--space-4);
+  font-size: var(--letter-contact-size);
+  line-height: var(--letter-contact-leading);
+}

@@ -167,6 +167,15 @@ export const resumeContent = z
 export type ResumeContent = z.infer<typeof resumeContent>;
 
 export const coverLetterContent = z.object({
+  title: z
+    .string()
+    .trim()
+    .max(120)
+    .nullable()
+    .optional()
+    .describe(
+      "Optional professional title beneath the sender name. Use only the supplied profile headline; omit to use it unchanged, null to hide it.",
+    ),
   greeting: z.string().trim().min(1).max(80),
   paragraphs: z
     .array(
@@ -356,6 +365,6 @@ export const editUnitInput = z.object({
   /** The revision the editor was showing; a newer one means another tab saved first. */
   expectedRevisionId: z.uuid(),
   path: z.string().min(1).max(200),
-  text: z.string().trim().min(1, "Write something or cancel").max(2000),
+  text: z.string().trim().max(2000),
 });
 export type EditUnitInput = z.infer<typeof editUnitInput>;

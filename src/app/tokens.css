@@ -64,6 +64,23 @@
   --space-12: 48px;
   --space-16: 64px;
 
+  --letter-preview-min-height: 960px;
+  --letter-closing-gap: 72px;
+  --letter-contact-size: 16px;
+  --letter-contact-leading: 22px;
+  --letter-recipient-size: 18px;
+  --letter-recipient-leading: 24px;
+  --letter-name-size: 32px;
+  --letter-name-leading: 36px;
+  --document-rule-width: 1px;
+  --document-meta-size: 13px;
+  --document-meta-leading: 18px;
+  --document-body-size: 17px;
+  --document-body-leading: 26px;
+  --document-weight-strong: 600;
+  --document-focus-width: 2px;
+  --letter-header-column-min: 180px;
+
   --width-sidebar: 220px;
   --width-detail-max: 720px;
 

@@ -19,6 +19,7 @@ import {
   editUnitInput,
   pasteBackInput,
   type DocumentContent,
+  type CoverLetterContent,
   type DocumentType,
   type GroundingWarning,
   type RevisionSource,
@@ -201,7 +202,23 @@ export async function getDocumentView(
     repo.findDocument(deps.db, profileId, applicationId, type),
     repo.listRuns(deps.db, profileId, applicationId, type),
   ]);
-  const revision = document ? await repo.latestRevision(deps.db, profileId, document.id) : null;
+  let revision = document ? await repo.latestRevision(deps.db, profileId, document.id) : null;
+  // Older letters inherit only their frozen headline; explicit null means the user hid it.
+  if (
+    revision &&
+    type === "cover_letter" &&
+    (revision.content as CoverLetterContent).title === undefined
+  ) {
+    const generationRunId = revision.generationRunId;
+    const source = runs.find((run) => run.id === generationRunId);
+    revision = {
+      ...revision,
+      content: {
+        ...(revision.content as CoverLetterContent),
+        title: source?.snapshot.profile.headline ?? null,
+      },
+    };
+  }
   const latestRun = runs[0] ?? null;
   return { document, revision, latestRun, warnings: revision?.warnings ?? [] };
 }

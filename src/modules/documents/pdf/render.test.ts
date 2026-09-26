@@ -141,11 +141,64 @@ describe("PDF rendering (DESIGN-DOCS.md)", () => {
   it("renders the cover letter fixture on one page with the snapshot header", async () => {
     const header = letterHeaderFrom(demoSnapshot(), new Date("2026-09-14T00:00:00Z"));
     expect(header.name).toBe("Alex Rivera");
-    expect(header.contact).toContain("alex@example.com");
+    expect(header.topContact.map((item) => item.text)).toContain("alex@example.com");
     const pdf = await renderCoverLetterPdf(
       coverLetterContent.parse(fixture("cover-letter")),
       header,
     );
     expect(pdfPageCount(pdf)).toBe(1);
   });
+});
+
+it("renders long and sparse letters without losing the closing", async () => {
+  const content = coverLetterContent.parse(fixture("cover-letter"));
+  const header = letterHeaderFrom(demoSnapshot(), new Date());
+  for (const sparse of [false, true]) {
+    const pdf = await renderCoverLetterPdf(
+      content,
+      sparse
+        ? {
+            ...header,
+            topContact: [],
+            footerLinks: [],
+            locationLines: [],
+            company: null,
+            role: null,
+          }
+        : header,
+    );
+    expect(pdfPageCount(pdf)).toBe(1);
+  }
+  content.paragraphs = Array.from({ length: 4 }, () => ({
+    text: "A supported career story with practical details. ".repeat(14),
+    evidenceIds: [],
+  }));
+  expect(coverLetterContent.safeParse(content).success).toBe(true);
+  // Legacy long drafts flow onto another page rather than shrinking below 12 pt.
+  expect(pdfPageCount(await renderCoverLetterPdf(content, header))).toBe(2);
+});
+
+it("embeds explicit web link annotations with the full destination", async () => {
+  const snapshot = demoSnapshot();
+  snapshot.profile.links = [{ label: "Website", url: "https://www.example.com/" }];
+  const pdf = await renderCoverLetterPdf(
+    coverLetterContent.parse(fixture("cover-letter")),
+    letterHeaderFrom(snapshot, new Date()),
+  );
+  expect(pdf.toString("latin1")).toContain("/Subtype /Link");
+  expect(pdf.toString("latin1")).toContain("https://www.example.com/");
+});
+
+it("lets long footer details flow onto later pages instead of overlapping the letter", async () => {
+  const snapshot = demoSnapshot();
+  snapshot.profile.location = `${"Harbor district ".repeat(240)}, Portugal`;
+  snapshot.profile.links = [
+    { label: "Website", url: `https://example.com/${"long-path/".repeat(120)}` },
+  ];
+  const pdf = await renderCoverLetterPdf(
+    coverLetterContent.parse(fixture("cover-letter")),
+    letterHeaderFrom(snapshot, new Date()),
+  );
+  expect(pdfPageCount(pdf)).toBeGreaterThan(1);
+  expect(pdf.toString("latin1")).toContain(snapshot.profile.links[0]!.url);
 });
