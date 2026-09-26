@@ -67,7 +67,7 @@ Implemented and tested: the Jobs and Applications modules with the shared result
 
 ## Phase 1b complete (2026-09-14)
 
-Implemented and tested: the Documents module (`generation_runs`, `documents`, `document_revisions`, `document_artifacts` in migration 0002, with `profiles.links` and the owner-aware key on applications); the model adapter interface with the AI SDK implementation for `anthropic`, `openai`, `gateway` and `openai_compatible`, the fixture-driven fake and the environment-only factory; paste-back mode; the grounding check with warning chips; the review column with inline editing, the Evidence, Paste back and Runs columns; the Model setup page; one-page resume and cover-letter PDFs stored as artifacts; the synthetic evaluation set behind `pnpm eval`; the run and draft facts feeding the Jobs chip. Verified with 86 unit tests, 41 integration tests against PostgreSQL and 4 browser journeys against the production build, every one with the fake adapter, plus the migration drift check. Known gaps, carried rather than blocking: only OpenRouter with `google/gemini-3.1-flash-lite` has been run through `pnpm eval` (2026-09-14, doc 06); header, headings, dates, greeting and closing are not editable in place; no drag-and-drop reordering; a Paste back visit creates a queued run (superseded on the next visit); the PowerShell launcher backs up the database but not the artifacts volume; submissions do not pin revisions; the unresolved Phase 0 and 1a gaps remain; the missing run/draft facts were resolved in this phase. Link import and scoring stay in Phase 2A; automatic generation and remote access are later phases.
+Implemented and tested: the Documents module (`generation_runs`, `documents`, `document_revisions`, `document_artifacts` in migration 0002, with `profiles.links` and the owner-aware key on applications); the model adapter interface with the AI SDK implementation for `anthropic`, `openai`, `gateway` and `openai_compatible`, the fixture-driven fake and the environment-only factory; paste-back mode; the grounding check with warning chips; the review column with inline editing, the Evidence, Paste back and Runs columns; the Model setup page; one-page resume and cover-letter PDFs stored as artifacts; the synthetic evaluation set behind `pnpm eval`; the run and draft facts feeding the Jobs chip. Verified with 86 unit tests, 41 integration tests against PostgreSQL and 4 browser journeys against the production build, every one with the fake adapter, plus the migration drift check. Known gaps, carried rather than blocking: only OpenRouter with `google/gemini-3.1-flash-lite` has been run through `pnpm eval` (2026-09-14, doc 06); at this milestone header, headings, dates, greeting and closing were not editable in place (expanded editing below addresses the selected metadata fields); no drag-and-drop reordering; a Paste back visit creates a queued run (superseded on the next visit); the PowerShell launcher backs up the database but not the artifacts volume; submissions do not pin revisions; the unresolved Phase 0 and 1a gaps remain; the missing run/draft facts were resolved in this phase. Link import and scoring stay in Phase 2A; automatic generation and remote access are later phases.
 
 ## Phase 1c additions complete (2026-09-14)
 
@@ -179,3 +179,30 @@ Each layer was checked independently with fictional data in a separate test data
 | Shared company identity | 159 | 102 | 12 | 0011 |
 
 Generated Drizzle JSON snapshots are marked as generated for GitHub review; SQL migrations remain visible. The previously evaluated prompt, document schema and provider behavior are unchanged by the split, so the recorded real-provider results above still apply. Historical verification counts describe their original scope.
+
+
+## Expanded document editing and cover-letter layout (2026-09-26, implemented, pending merge)
+
+The preview and MCP edit the resume headline, role/project subtitles, skill labels/lists, all displayed education fields, and the cover-letter professional title, greeting, closing and signature. Optional values can clear and be restored; required fields remain nonempty. Saves validate the complete document, rerun grounding/layout checks and create unapproved immutable revisions, preserving citations, career records and frozen inputs. Stale or invalid browser saves retain the submitted text. `editable_fields` exposes the allowlist separately from citation-bearing `units`. Name/contact editing, entry management and reordering remain outside this change.
+
+The final cover-letter layout is template 8. A two-line sender name and regular-weight editable title occupy the left header; a bold LinkedIn link followed by regular email and WhatsApp phone links occupy the right. A 14 pt company name and saved date precede “Job reference:” and the italic role directly below the company. The greeting/body/closing group centers in the available area, with 12 pt text and 54 pt extra closing space. A ruled footer at the end of the letter contains the bold location and regular GitHub/website links; it flows after the body so long contact details cannot overlap it. Web labels omit scheme/www without losing clickable destinations; browser links open new tabs, while PDF navigation follows the viewer. Short letters remain one page; longer historical letters can continue without shrinking. See [document design](../DESIGN-DOCS.md) and [interface design](../DESIGN.md) for the exact contracts.
+
+Letterhead context comes from the frozen generation snapshot. Cover-letter content adds optional nullable `title` (120 characters): omitted uses the frozen profile headline, null hides it. Historical JSON stays valid and is not rewritten. This is a generated-content schema change, with no SQL migration, dependency or prompt-text change. Template-version cache invalidation regenerates downloads on demand.
+
+Local validation before publication: `pnpm verify:full` passed with 199 unit tests, 105 PostgreSQL integration tests, migration consistency, production build and 12 Chromium journeys. Checks use fictional inputs and the fake adapter; short, sparse and long PDFs, oversized footer details and responsive light/dark previews were visually inspected. This verification does not establish new packaged-install or platform coverage. The feature remains pending merge.
+
+### Schema evaluation, 2026-09-26
+
+The required schema-change evaluation passed all nine cases with OpenRouter / `google/gemini-3.1-flash-lite`. One generated letter retained the existing sentence-count warning; no schema or grounding failures occurred. All three generated letters fit one page. Later presentation changes did not change the evaluated content schema, prompt or provider behavior.
+
+| Case | Document | Outcome | Warnings | Input tokens | Output tokens | Latency ms | Cost USD |
+| --- | --- | --- | --- | ---: | ---: | ---: | ---: |
+| fit | resume | ok | none | 3123 | 863 | 3330 | 0.00207525 |
+| fit | cover_letter | ok | letter_length=1 | 2493 | 346 | 2110 | 0.00114225 |
+| fit | recruiter_message | ok | none | 1885 | 231 | 1999 | 0.00081775 |
+| mismatch | resume | ok | none | 3123 | 909 | 3210 | 0.00214425 |
+| mismatch | cover_letter | ok | none | 2220 | 245 | 1637 | 0.0009225 |
+| mismatch | recruiter_message | ok | none | 1885 | 229 | 1636 | 0.00081475 |
+| partial-fit | resume | ok | none | 3120 | 1087 | 3887 | 0.0024105 |
+| partial-fit | cover_letter | ok | none | 2217 | 315 | 1890 | 0.00102675 |
+| partial-fit | recruiter_message | ok | none | 1882 | 243 | 1458 | 0.000835 |

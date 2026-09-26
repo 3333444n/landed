@@ -40,6 +40,8 @@ export {
 } from "./contracts";
 export {
   contentUnits,
+  editableFields,
+  type EditableField,
   documentFacts,
   groundingCheck,
   layoutCheck,
@@ -74,3 +76,5 @@ export type {
   DocumentRevisionRecord,
   GenerationRunRecord,
 } from "./repository";
+
+export { letterHeaderFrom, letterSalutation, type LetterHeader } from "./presentation";

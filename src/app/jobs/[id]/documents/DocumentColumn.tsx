@@ -13,7 +13,13 @@ import { deps } from "@/app/current-profile";
 import { getModelStatus } from "@/infrastructure/server";
 import { Chip } from "@/components/Chip";
 import { Column, EmptyState } from "@/components/Column";
-import { failureLabels, getRun, type DocumentType } from "@/modules/documents";
+import {
+  failureLabels,
+  getRun,
+  letterHeaderFrom,
+  type CoverLetterContent,
+  type DocumentType,
+} from "@/modules/documents";
 import { editUnitAction, generateDocumentAction, markReviewedAction } from "../document-actions";
 import { ActionButton } from "./ActionButton";
 import { DocumentPreview } from "./DocumentPreview";
@@ -105,6 +111,15 @@ export async function DocumentColumn({ jobId, type }: { jobId: string; type: Doc
           warnings={revision.warnings}
           revisionId={revision.id}
           evidence={evidence}
+          letterHeader={
+            type === "cover_letter"
+              ? letterHeaderFrom(
+                  revision.generationRunId ? (run?.snapshot ?? null) : null,
+                  revision.createdAt,
+                  (revision.content as CoverLetterContent).signature,
+                )
+              : undefined
+          }
           editAction={editUnitAction}
         />
       ) : (
