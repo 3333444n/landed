@@ -51,8 +51,8 @@ The original ADR 008 tool contract (profile management is the additive ADR 009 c
 | `get_job` | `{ job_id }` | `getJob`, the application and the three document summaries: description, company, location, salary, source URL, availability, application status and notes, and per document `{ state: none \| draft \| reviewed, revision_id, warnings_count }` | read only |
 | `get_document_brief` | `{ job_id, type, assistant?: string }` | `prepareAssistantBrief`: opens a queued `assistant` run with the provider set to the client's `User-Agent` and the model to `assistant` (or `unreported`); returns `{ run_id, document_type, instructions, input, schema, budgets, rules }`, the schema being the portable JSON schema without length keywords and `budgets` null except for the resume | not idempotent |
 | `submit_document` | `{ run_id, content: object \| string }` | Objects are stringified; `submitPastedAnswer`. Success: `{ run_id, revision_id, warnings: [{ kind, path, message }], units: [{ path, text, evidence_ids }] }`. Validation failure: the run is recorded as failed (`pasted_invalid`), a fresh queued run is opened by `reopenAssistantRun`, and the result is an error carrying the field errors and `new_run_id` | not destructive |
-| `get_document` | `{ job_id, type }` | `getDocumentView`: `{ revision_id, reviewed, units: [{ path, text, evidence_ids }], warnings, latest_run: { id, mode, state, provider, model } }` | read only |
-| `edit_unit` | `{ revision_id, path, text }` | `editUnit` with the revision id as the expected version; returns `{ revision_id, warnings }` of the new revision; a stale id is an error that says to call `get_document` again. Units are the resume summary and bullets, the cover letter paragraphs and the recruiter message body; the subject, headings and contact lines change only through a resubmission | not destructive |
+| `get_document` | `{ job_id, type }` | `getDocumentView`: `{ revision_id, reviewed, units: [{ path, text, evidence_ids }], editable_fields: [{ path, label, text, clearable }], warnings, latest_run: { id, mode, state, provider, model } }` | read only |
+| `edit_unit` | `{ revision_id, path, text }` | `editUnit` with the revision id as the expected version; returns `{ revision_id, warnings }` of the new revision; a stale id is an error that says to call `get_document` again. Use a path from `editable_fields`; empty text clears fields marked `clearable`. Resume metadata and existing summary/bullet/paragraph/message fields are supported; citations are preserved and validation reruns | not destructive |
 | `render_pdf` | `{ job_id, type: "resume" \| "cover_letter" }` | `getOrRenderPdf` with the same file label as the browser route, so filenames match; returns `{ filename, pages, size_bytes, download_url, reused }` | not destructive |
 | `add_job` | `{ job_id?, title, company, description, location?, salary?, source_url? }` | `pursueJob`, the same composition the paste form uses: the job and its application in one transaction; returns `{ job_id, application_id }`. A client-minted `job_id` replays to the same records, so a retry after a lost response never duplicates. Validation errors name the tool's parameters | idempotent, not destructive |
 
@@ -150,3 +150,16 @@ create_company and update_company accept optional nullable logo_url: omit preser
 
 
 The revised `add_job` explicitly rejects the removed `company` argument rather than silently discarding it. The tool description directs the harness to call `create_company` (or resolve an existing record) and pass its `company_id`; omit company_id only for an intentionally unlinked job. The removed job logo_url is likewise not accepted. Company logo storage uses a unique write UUID plus checksum in every new filename; legacy artifact keys remain readable, and migration does not delete their files.
+
+### Resume editable fields (implemented, pending merge)
+
+`get_document` adds `editable_fields` without changing its citation-bearing `units`. Each field has a dot `path`, accessible `label`, current `text` (empty for null) and boolean `clearable`. Empty documents return both collections empty. `edit_unit` retains its input/result shape and accepts empty text only for nullable fields. No new tool, model call or generated-content schema change is introduced.
+
+| Resume area | Added paths |
+| --- | --- |
+| Header | `header.headline` |
+| Experience/projects | `sections.i.entries.j.subheading` |
+| Skills | `sections.i.entries.j.heading`, `sections.i.entries.j.subheading` |
+| Education | `sections.i.entries.j.heading`, `sections.i.entries.j.subheading`, `sections.i.entries.j.dateRange`, `sections.i.entries.j.location` |
+
+Indices refer to current saved content, not a fixed section order. Headline, subheading, dates and location are nullable; required headings cannot clear. Arbitrary properties, wrong section kinds and invalid indices are rejected. Metadata discovery is separate from prose grounding, so metadata gains no misleading missing-citation warning. Education headings still receive the existing evidence heading check. Existing summary/bullet/paragraph and message subject/body paths remain supported; letter metadata is unchanged.

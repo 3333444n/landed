@@ -179,3 +179,9 @@ Each layer was checked independently with fictional data in a separate test data
 | Shared company identity | 159 | 102 | 12 | 0011 |
 
 Generated Drizzle JSON snapshots are marked as generated for GitHub review; SQL migrations remain visible. The previously evaluated prompt, document schema and provider behavior are unchanged by the split, so the recorded real-provider results above still apply. Historical verification counts describe their original scope.
+
+## Resume metadata editing (2026-09-26, implemented, pending merge)
+
+The preview and MCP add edits for the resume headline, role/project subtitles, skill group labels/lists, and all displayed education fields. Optional values clear to null and remain restorable; required headings reject blanks. Saves preserve citations and frozen inputs, rerun validation, and create unapproved immutable revisions. Invalid or stale saves retain submitted browser text. `editable_fields` exposes the allowlist separately from citation-bearing `units`.
+
+This layer preserves existing prose/message editing and leaves cover-letter metadata and presentation unchanged. Entry management, resume name/contact editing and changes to career records are outside scope. No database migration, dependency, prompt or generated-content schema change is introduced, so a new real-provider evaluation is not required. Tests cover paths and section restrictions, nullable clearing/restoration, required fields, immutable history, ownership, approval reset, stale saves and browser Save/Cancel behavior. Browser assertions scope error alerts to the active editor, and browser cleanup runs after each test to avoid carrying failures into later cases. `pnpm verify:full` passed for this layer: 184 unit tests, 104 integration tests, migration consistency, production build and 12 Chromium journeys, using fictional data and the fake provider. Historical counts above describe earlier implementation boundaries.

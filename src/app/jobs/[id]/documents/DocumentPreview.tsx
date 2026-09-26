@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import { idleState, type ActionState } from "@/app/form-state";
+import { fieldsKey, idleState, type ActionState } from "@/app/form-state";
 import { Button } from "@/components/Button";
 import { Chip } from "@/components/Chip";
 import { AutoGrowTextarea } from "@/components/AutoGrowTextarea";
@@ -17,6 +17,7 @@ import {
   type ResumeContent,
 } from "@/modules/documents/contracts";
 import { CopyButton } from "@/components/CopyButton";
+import { editableFields } from "@/modules/documents/rules";
 import styles from "./documents.module.css";
 
 interface PreviewProps {
@@ -53,7 +54,7 @@ function ResumePreview({ ctx, content }: { ctx: Ctx; content: ResumeContent }) {
     <div className={styles.preview}>
       <div>
         <p className={styles.name}>{content.header.name}</p>
-        {content.header.headline ? <p>{content.header.headline}</p> : null}
+        <TextField ctx={ctx} path="header.headline" placeholder="Add headline" />
         {content.header.contact.length > 0 ? (
           <p className={styles.contact}>{content.header.contact.join(" · ")}</p>
         ) : null}
@@ -73,19 +74,40 @@ function ResumePreview({ ctx, content }: { ctx: Ctx; content: ResumeContent }) {
             return (
               <div key={entryPath} className={styles.entry}>
                 <div className={styles.entryHead}>
-                  <span className={styles.heading}>{entry.heading}</span>
-                  {entry.dateRange ? (
+                  {section.kind === "skills" || section.kind === "education" ? (
+                    <TextField ctx={ctx} path={`${entryPath}.heading`} className={styles.heading} />
+                  ) : (
+                    <span className={styles.heading}>{entry.heading}</span>
+                  )}
+                  {section.kind === "education" ? (
+                    <TextField
+                      ctx={ctx}
+                      path={`${entryPath}.dateRange`}
+                      className={styles.dateRange}
+                      placeholder="Add dates"
+                    />
+                  ) : entry.dateRange ? (
                     <span className={styles.dateRange}>{entry.dateRange}</span>
                   ) : null}
                 </div>
-                {entry.subheading || entry.location ? (
-                  <div className={styles.entryHead}>
-                    <p className={styles.subheading}>{entry.subheading}</p>
-                    {entry.location ? (
-                      <span className={styles.dateRange}>{entry.location}</span>
-                    ) : null}
-                  </div>
-                ) : null}
+                <div className={styles.entryHead}>
+                  <TextField
+                    ctx={ctx}
+                    path={`${entryPath}.subheading`}
+                    className={styles.subheading}
+                    placeholder={section.kind === "skills" ? "Add skills" : "Add subtitle"}
+                  />
+                  {section.kind === "education" ? (
+                    <TextField
+                      ctx={ctx}
+                      path={`${entryPath}.location`}
+                      className={styles.dateRange}
+                      placeholder="Add location"
+                    />
+                  ) : entry.location ? (
+                    <span className={styles.dateRange}>{entry.location}</span>
+                  ) : null}
+                </div>
                 {entryWarnings.length > 0 ? (
                   <div className={styles.chips}>
                     {entryWarnings.map((w, k) => (
@@ -137,6 +159,36 @@ function CoverLetterPreview({ ctx, content }: { ctx: Ctx; content: CoverLetterCo
   );
 }
 
+function TextField({
+  ctx,
+  path,
+  className,
+  placeholder,
+  displayText,
+}: {
+  ctx: Ctx;
+  path: string;
+  className?: string;
+  placeholder?: string;
+  displayText?: string;
+}) {
+  const field = editableFields(ctx.type, ctx.content).find((item) => item.path === path);
+  if (!field) return null;
+  return (
+    <Unit
+      ctx={ctx}
+      path={path}
+      label={field.label}
+      unit={{ text: field.text, evidenceIds: [] }}
+      showEvidence={false}
+      className={className}
+      placeholder={placeholder}
+      displayText={displayText}
+      compact
+    />
+  );
+}
+
 function MessagePreview({ ctx, content }: { ctx: Ctx; content: RecruiterMessageContent }) {
   const text = `Subject: ${content.subject}\n\n${content.body}`;
   return (
@@ -167,12 +219,20 @@ function Unit({
   label,
   unit,
   showEvidence = true,
+  className,
+  placeholder,
+  displayText,
+  compact = false,
 }: {
   ctx: Ctx;
   path: string;
   label: string;
   unit: { text: string; evidenceIds: string[] };
   showEvidence?: boolean;
+  className?: string;
+  placeholder?: string;
+  displayText?: string;
+  compact?: boolean;
 }) {
   const warnings = ctx.warnings.filter((w) => w.path === path);
   if (ctx.editing === path) {
@@ -182,20 +242,21 @@ function Unit({
         path={path}
         label={label}
         text={unit.text}
+        compact={compact}
         onDone={() => ctx.setEditing(null)}
       />
     );
   }
   const cited = unit.evidenceIds.map((id) => ctx.evidence[id] ?? `Unknown record ${id}`);
   return (
-    <div className={styles.unit}>
+    <div className={`${styles.unit} ${className ?? ""}`}>
       <button
         type="button"
-        className={styles.unitText}
+        className={`${styles.unitText} ${compact ? styles.fieldText : ""} ${!unit.text ? styles.emptyField : ""}`}
         aria-label={`Edit ${label}`}
         onClick={() => ctx.setEditing(path)}
       >
-        {unit.text}
+        {unit.text ? (displayText ?? unit.text) : placeholder}
       </button>
       {warnings.length > 0 ? (
         <div className={styles.chips}>
@@ -220,12 +281,14 @@ function UnitEditor({
   path,
   label,
   text,
+  compact,
   onDone,
 }: {
   ctx: Ctx;
   path: string;
   label: string;
   text: string;
+  compact: boolean;
   onDone: () => void;
 }) {
   const [state, formAction, pending] = useActionState(ctx.editAction, idleState);
@@ -238,11 +301,12 @@ function UnitEditor({
       <input type="hidden" name="expectedRevisionId" value={ctx.revisionId} />
       <input type="hidden" name="path" value={path} />
       <AutoGrowTextarea
+        key={fieldsKey(state)}
         name="text"
         aria-label={`Text of ${label}`}
         className={fieldStyles.control}
-        rows={4}
-        defaultValue={text}
+        rows={compact ? 1 : 4}
+        defaultValue={state.status === "error" ? state.values.text : text}
         autoFocus
       />
       {errors.length > 0 ? (

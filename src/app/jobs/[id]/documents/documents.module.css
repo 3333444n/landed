@@ -247,3 +247,37 @@
   align-items: center;
   gap: var(--space-2);
 }
+
+.unitText.fieldText {
+  font: inherit;
+  color: inherit;
+}
+.emptyField {
+  color: var(--text-secondary);
+  font-weight: normal;
+}
+.unitText:focus-visible {
+  outline: var(--document-focus-width) solid var(--accent);
+  outline-offset: var(--document-focus-width);
+  border-radius: var(--radius-sm);
+}
+.entryHead > * {
+  min-width: 0;
+}
+.entryHead > .unit {
+  flex: 1;
+}
+.entryHead > .editor {
+  flex: 1;
+  min-width: 0;
+}
+.unitText {
+  overflow-wrap: anywhere;
+}
+
+.entryHead > .dateRange {
+  flex: 0 1 auto;
+}
+.dateRange .unitText {
+  text-align: right;
+}

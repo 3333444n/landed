@@ -6,6 +6,7 @@ import type { JobRow } from "@/app/jobs/list-jobs";
 import type { ApplicationRecord } from "@/modules/applications";
 import {
   contentUnits,
+  editableFields,
   type DocumentType,
   type DocumentView,
   type GroundingWarning,
@@ -81,6 +82,7 @@ export function documentDetail(type: DocumentType, view: DocumentView) {
   return {
     revision_id: revision?.id ?? null,
     reviewed: revision ? revision.reviewedAt !== null : false,
+    editable_fields: revision ? editableFields(type, revision.content) : [],
     units: revision
       ? contentUnits(type, revision.content).map((u) => ({
           path: u.path,
