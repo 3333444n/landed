@@ -52,7 +52,8 @@ The original ADR 008 tool contract (profile management is the additive ADR 009 c
 | `get_document_brief` | `{ job_id, type, assistant?: string }` | `prepareAssistantBrief`: opens a queued `assistant` run with the provider set to the client's `User-Agent` and the model to `assistant` (or `unreported`); returns `{ run_id, document_type, instructions, input, schema, budgets, rules }`, the schema being the portable JSON schema without length keywords and `budgets` null except for the resume | not idempotent |
 | `submit_document` | `{ run_id, content: object \| string }` | Objects are stringified; `submitPastedAnswer`. Success: `{ run_id, revision_id, warnings: [{ kind, path, message }], units: [{ path, text, evidence_ids }] }`. Validation failure: the run is recorded as failed (`pasted_invalid`), a fresh queued run is opened by `reopenAssistantRun`, and the result is an error carrying the field errors and `new_run_id` | not destructive |
 | `get_document` | `{ job_id, type }` | `getDocumentView`: `{ revision_id, reviewed, units: [{ path, text, evidence_ids }], editable_fields: [{ path, label, text, clearable }], warnings, latest_run: { id, mode, state, provider, model } }` | read only |
-| `edit_unit` | `{ revision_id, path, text }` | `editUnit` with the revision id as the expected version; returns `{ revision_id, warnings }` of the new revision; a stale id is an error that says to call `get_document` again. Use a path from `editable_fields`; empty text clears only fields marked `clearable`. Includes metadata and existing prose; preserves citations and reruns validation | not destructive |
+| `edit_unit` | `{ revision_id, path, text, segments? }` | `editUnit` with the revision id as the expected version; returns `{ revision_id, warnings }` of the new revision; a stale id is an error that says to call `get_document` again. Use a path from `editable_fields`; empty text clears only fields marked `clearable`. Includes metadata and existing prose; preserves citations and reruns validation | not destructive |
+| `set_resume_contacts` (ADR 012, local) | `{ revision_id, selection }` | `setResumeContacts`: ordered saved contact ids; returns `{ revision_id, warnings }`. Empty selection hides the row. Snapshot values only; stale ids are refused. | not destructive |
 | `render_pdf` | `{ job_id, type: "resume" \| "cover_letter" }` | `getOrRenderPdf` with the same file label as the browser route, so filenames match; returns `{ filename, pages, size_bytes, download_url, reused }` | not destructive |
 | `add_job` | `{ job_id?, title, company, description, location?, salary?, source_url? }` | `pursueJob`, the same composition the paste form uses: the job and its application in one transaction; returns `{ job_id, application_id }`. A client-minted `job_id` replays to the same records, so a retry after a lost response never duplicates. Validation errors name the tool's parameters | idempotent, not destructive |
 
@@ -112,7 +113,7 @@ Skill context extension (merged): `add_skill` accepts optional `role_ids` and `p
 
 ## Writing context, company and source tools (ADR 011, implemented)
 
-The endpoint has **42 tools**: the original eight, 18 profile tools, one Interest tool, four Job Source tools and 11 company/context tools. This extension is implemented and merged; historical verification counts above describe their original milestones.
+The merged ADR 011 baseline has **42 tools**: the original eight, 18 profile tools, one Interest tool, four Job Source tools and 11 company/context tools. This extension is implemented and merged; historical verification counts above describe their original milestones.
 
 | Tool | Input / behavior |
 |---|---|
@@ -152,7 +153,7 @@ create_company and update_company accept optional nullable logo_url: omit preser
 The revised `add_job` explicitly rejects the removed `company` argument rather than silently discarding it. The tool description directs the harness to call `create_company` (or resolve an existing record) and pass its `company_id`; omit company_id only for an intentionally unlinked job. The removed job logo_url is likewise not accepted. Company logo storage uses a unique write UUID plus checksum in every new filename; legacy artifact keys remain readable, and migration does not delete their files.
 
 
-### Editable document fields (local implementation)
+### Editable document fields (implemented and merged)
 
 `get_document` adds `editable_fields` without changing its citation-bearing `units`. Each field has a dot `path`, accessible `label`, current `text` (empty for null) and boolean `clearable`. Empty documents return both collections empty. `edit_unit` keeps its existing input and result shape; empty text is newly accepted for nullable fields only. Limits still come from the generated-content schema. No new tool or model call is added.
 
@@ -165,3 +166,38 @@ The revised `add_job` explicitly rejects the removed `company` argument rather t
 | Cover letter | `title`, `greeting`, `closing`, `signature` |
 
 Indices refer to the latest saved content, not a fixed section order. Only nullable headline, professional title, subheading, dates and location can clear. Cover-letter `title` is optional nullable text (120 characters): omission uses the frozen profile headline, null hides it. The read projection exposes that frozen default without rewriting historical rows. Existing summary/bullet/paragraph and message subject/body paths remain supported. Arbitrary properties and invalid indices are rejected. Metadata discovery is separate from prose grounding, so a greeting or subtitle does not become an uncited prose unit. An institution name still receives the existing heading check.
+
+
+## Document formatting and resume contacts (2026-09-26, implemented, pending merge)
+
+ADR 012 extends this branch’s endpoint to 43 tools; the implementation is verified and pending merge.
+
+| Surface | Contract |
+| --- | --- |
+| `get_document` | Resume/cover-letter `editable_fields` include `segments` and `supported_marks`; resume `contacts` contains `available`, `selected` and rendered `items` |
+| `edit_unit` | Optional `segments: [{text, marks}]`; marks are `bold`, `italic` and `underline`. Segment text must exactly concatenate to the supplied `text`; whole-field boundary whitespace is then normalized consistently |
+| `set_resume_contacts` | `revision_id` and complete ordered `selection` of `phone`, `email`, `location`, `linkedin`, `github`, `website`; returns `revision_id` and `warnings` |
+| `get_profile` / `update_profile` | Read `resume_contacts`; write `changes.resume_contacts`. Omit preserves, array replaces, `[]` hides all and null restores the built-in default |
+
+Unmarked segments clear inline styles. A plain unchanged field preserves styles; a plain rewrite clears them. Saves preserve template base styling and produce unapproved revisions. Both edit tools reject stale revision IDs atomically; reread before retrying.
+
+Contact rows are application-owned and frozen before model work. Profile preferences initialize new resumes; regeneration retains the existing resume’s selection/order. Missing values are omitted without erasing selection. Resume prompt 5 and cover-letter prompt 4 add automatic restrained emphasis. Recruiter messages remain plain text. The final real-provider evaluation and its rejected divergent-text answer are recorded in [doc 09](09-decisions-and-readiness.md#document-formatting-and-resume-contacts-2026-09-26-implemented-pending-merge).
+
+
+### Formatting-only review boundary evaluation, 2026-09-26
+
+Separate `pnpm eval` with OpenRouter / google/gemini-3.1-flash-lite: **8/9 valid**. The partial-fit cover letter returned incomplete JSON with repetitive signature text and was rejected. One valid letter retained a `letter_length` warning. Both successful letters rendered on one page. No retries were performed to hide this provider limitation.
+
+| Case | Document | Outcome | Warnings | Input tokens | Output tokens | Latency ms | Cost USD |
+| --- | --- | --- | --- | ---: | ---: | ---: | ---: |
+| fit | resume | ok | none | 3647 | 870 | 3816 | 0.00221675 |
+| fit | cover_letter | ok | letter_length=1 | 3042 | 699 | 3385 | 0.001809 |
+| fit | recruiter_message | ok | none | 1885 | 240 | 1819 | 0.00083125 |
+| mismatch | resume | ok | none | 3647 | 903 | 3277 | 0.00226625 |
+| mismatch | cover_letter | ok | none | 2769 | 522 | 2515 | 0.00147525 |
+| mismatch | recruiter_message | ok | none | 1885 | 220 | 1812 | 0.00080125 |
+| partial-fit | resume | ok | none | 3644 | 1269 | 4286 | 0.0028145 |
+| partial-fit | cover_letter | validation: The answer did not match the document schema | — | — | — | — | — |
+| partial-fit | recruiter_message | ok | none | 1882 | 155 | 1510 | 0.000703 |
+
+The later contact layer restores the previously evaluated combined schema and prompt. Its separate 8/9 result above remains applicable; these two reports cover distinct review boundaries and neither replaces the other.

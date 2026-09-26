@@ -45,7 +45,7 @@ flowchart TB
   documents["Documents<br/>Phase 1b: runs, snapshots, revisions, review (implemented)"]
   applications["Applications<br/>Phase 1a: status and notes (implemented)"]
   compose["Composition in src/app/jobs<br/>pursue-job (1a), generate-document (1b)"]
-  mcp["MCP tools in src/app/mcp<br/>42 tools, including merged ADR 011 extensions"]
+  mcp["MCP tools in src/app/mcp<br/>43 tools on this branch; ADR 012 pending merge"]
   mcp -->|"profile reads and mutations"| profile
   mcp -->|"document generation workflows"| compose
   mcp -->|"job operations"| jobs
@@ -154,3 +154,8 @@ The profile tools use the existing MCP transport and configuration. They resolve
 
 
 Career browsing refinement (local, ADR 010): `ExpandableCard` owns native disclosure presentation and a separate named edit link. `RecordCards` supplies shared read-only career details to the overview and lists. Client `CareerList` components read scoped URL filter parameters over server-loaded records, with pure context derivation in `context-filters.ts`. The Profile module owns direct skill context writes and coherent aggregate reads; MCP adapts the same public operations. `PillInput` retains the existing profile form/storage contract. The document column separates header actions, supporting links and a wrapping generation/approval row.
+
+
+## Document formatting and resume contacts (2026-09-26, implemented, pending merge)
+
+The Documents module owns optional structured inline formatting and revision-local contact selection. `editable-fields.ts` defines editable paths, `formatting.ts` normalizes and measures marked text, and `contacts.ts` derives selected contacts from snapshots. A Tiptap field editor serializes only text and supported marks, shared by browser edits and MCP. Profile owns reusable contact defaults; generation composition freezes the chosen order before provider or assistant work. See [ADR 012](adr/012-document-formatting-and-contact-selection.md).
