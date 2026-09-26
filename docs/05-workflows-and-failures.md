@@ -114,7 +114,7 @@ Jobs use one optional Company selector and inline creation; remove the free-text
 For MCP intake, resolve or create the company first, then pass optional company_id to add_job. The former free-text company and job logo_url inputs are removed. Company create/update accepts logo_url with the same guarded fetch as browser address entry; omit preserves and null clears. Upload remains a browser flow. Invalid image/URL or stale-version failures cannot overwrite the saved company logo. Linked-company deletion is refused; job deletion does not remove the shared company or its image.
 
 
-## Expanded inline document editing (local implementation)
+## Expanded inline document editing (implemented and merged)
 
 The preview and MCP share the Documents edit operation. An explicit field allowlist permits the resume headline; role/project subtitles; skill group labels and lists; education institution, subtitle, dates and location; letter professional title, greeting, closing and signature; and existing prose/message fields. Save validates the complete result, reruns grounding/layout checks, preserves citations and snapshot identity, and creates an unapproved revision. Stale or invalid saves keep submitted browser text visible. Clearing a nullable field stores null and leaves an Add control to restore it. Entry creation/deletion/reordering and underlying career-record changes are not part of this operation.
 

@@ -152,7 +152,7 @@ create_company and update_company accept optional nullable logo_url: omit preser
 The revised `add_job` explicitly rejects the removed `company` argument rather than silently discarding it. The tool description directs the harness to call `create_company` (or resolve an existing record) and pass its `company_id`; omit company_id only for an intentionally unlinked job. The removed job logo_url is likewise not accepted. Company logo storage uses a unique write UUID plus checksum in every new filename; legacy artifact keys remain readable, and migration does not delete their files.
 
 
-### Editable document fields (local implementation)
+### Editable document fields (implemented and merged)
 
 `get_document` adds `editable_fields` without changing its citation-bearing `units`. Each field has a dot `path`, accessible `label`, current `text` (empty for null) and boolean `clearable`. Empty documents return both collections empty. `edit_unit` keeps its existing input and result shape; empty text is newly accepted for nullable fields only. Limits still come from the generated-content schema. No new tool or model call is added.
 

@@ -181,7 +181,7 @@ Each layer was checked independently with fictional data in a separate test data
 Generated Drizzle JSON snapshots are marked as generated for GitHub review; SQL migrations remain visible. The previously evaluated prompt, document schema and provider behavior are unchanged by the split, so the recorded real-provider results above still apply. Historical verification counts describe their original scope.
 
 
-## Expanded document editing and cover-letter layout (2026-09-26, implemented, pending merge)
+## Expanded document editing and cover-letter layout (2026-09-26, implemented and merged)
 
 The preview and MCP edit the resume headline, role/project subtitles, skill labels/lists, all displayed education fields, and the cover-letter professional title, greeting, closing and signature. Optional values can clear and be restored; required fields remain nonempty. Saves validate the complete document, rerun grounding/layout checks and create unapproved immutable revisions, preserving citations, career records and frozen inputs. Stale or invalid browser saves retain the submitted text. `editable_fields` exposes the allowlist separately from citation-bearing `units`. Name/contact editing, entry management and reordering remain outside this change.
 
@@ -189,7 +189,7 @@ The final cover-letter layout is template 8. A two-line sender name and regular-
 
 Letterhead context comes from the frozen generation snapshot. Cover-letter content adds optional nullable `title` (120 characters): omitted uses the frozen profile headline, null hides it. Historical JSON stays valid and is not rewritten. This is a generated-content schema change, with no SQL migration, dependency or prompt-text change. Template-version cache invalidation regenerates downloads on demand.
 
-Local validation before publication: `pnpm verify:full` passed with 199 unit tests, 105 PostgreSQL integration tests, migration consistency, production build and 12 Chromium journeys. Checks use fictional inputs and the fake adapter; short, sparse and long PDFs, oversized footer details and responsive light/dark previews were visually inspected. This verification does not establish new packaged-install or platform coverage. The feature remains pending merge.
+Local validation before publication: `pnpm verify:full` passed with 199 unit tests, 105 PostgreSQL integration tests, migration consistency, production build and 12 Chromium journeys. Checks use fictional inputs and the fake adapter; short, sparse and long PDFs, oversized footer details and responsive light/dark previews were visually inspected. This verification does not establish new packaged-install or platform coverage. PRs #50–51 are merged into main.
 
 ### Schema evaluation, 2026-09-26
 
@@ -210,8 +210,10 @@ The required schema-change evaluation passed all nine cases with OpenRouter / `g
 
 ### Review split and CI correction, 2026-09-26
 
-The change is reviewed in two dependent layers: resume metadata editing first, then cover-letter editing and template 8. The resume-only layer passed `pnpm verify:full` with 184 unit tests, 104 integration tests and 12 browser journeys. The cover-letter layer reuses its shared editable-field and editor infrastructure. Merge in that order.
+The change was reviewed and merged as two dependent layers (PRs #50–51): resume metadata editing first, then cover-letter editing and template 8. The resume-only layer passed `pnpm verify:full` with 184 unit tests, 104 integration tests and 12 browser journeys. The cover-letter layer reuses its shared editable-field and editor infrastructure. Both layers are now in main; the combined tree matches the independently verified cover-letter branch.
 
 The combined review’s CI failure was a browser assertion selecting both the editor error and Next’s route announcer. Assertions now scope errors to the relevant editor form, and the journey cleans up its created job even when an assertion fails so later empty-state tests remain isolated. The correction changes test behavior, not application validation or timeouts.
 
 The dependent cover-letter layer also passed its own `pnpm verify:full`: 199 unit tests, 105 integration tests, migration consistency, production build and 12 Chromium journeys. Its combined runtime matches the accepted implementation; the split changes review boundaries and fixes the browser-test selectors/cleanup. The recorded schema evaluation above remains applicable.
+
+Post-merge verification: main at `683aad4` has the same complete tree as the verified cover-letter branch, and its merge CI passed. The post-merge documentation status correction passed `pnpm check` (199 unit tests); runtime, prompts and schemas are unchanged.
