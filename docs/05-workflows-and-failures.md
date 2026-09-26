@@ -118,8 +118,16 @@ For MCP intake, resolve or create the company first, then pass optional company_
 
 The preview and MCP share the Documents edit operation. An explicit field allowlist permits the resume headline; role/project subtitles; skill group labels and lists; education institution, subtitle, dates and location; letter professional title, greeting, closing and signature; and existing prose/message fields. Save validates the complete result, reruns grounding/layout checks, preserves citations and snapshot identity, and creates an unapproved revision. Stale or invalid saves keep submitted browser text visible. Clearing a nullable field stores null and leaves an Add control to restore it. Entry creation/deletion/reordering and underlying career-record changes are not part of this operation.
 
-Cover-letter preview and PDF share snapshot-derived letterhead data, including the captured date; later profile/company edits and download times do not change the letter. The preview follows the app theme and wraps its header on narrow columns. The PDF uses the monochrome layout in DESIGN-DOCS.md; downloading never approves the revision.
+Cover-letter preview and PDF share snapshot-derived letterhead data, including the captured date; later profile/company edits and download times do not change the letter. The preview follows the app theme and wraps its header on narrow columns. The PDF uses the layout in DESIGN-DOCS.md (black text with blue underlined links under ADR 012); downloading never approves the revision.
 
 The optional cover-letter professional title appears beneath the name and is editable in the document only. Old letters inherit the frozen profile headline; clearing stores null and exposes Add professional title. Web links in the preview open a new tab; PDF navigation follows the reader’s settings.
 
 Cover-letter phone links open WhatsApp click-to-chat using the saved international phone number, with punctuation removed only from the destination.
+
+
+## Document formatting and resume contacts (2026-09-26, implemented, pending merge)
+
+Document formatting saves retain citations, validate text/marks together, rerun layout checks and create an unapproved revision. Plain rewrites clear old marks; regeneration chooses fresh emphasis. Contact saves select/order frozen facts. Profile defaults initialize new resumes; regeneration preserves that resume’s selection. Apply profile default explicitly copies the current default into the pending selection before Save. Text/formatting and contact edits lock the document before checking the expected revision and inserting the replacement. Concurrent saves cannot both succeed from the same revision. Stale or invalid edits retain user input. Missing contacts are omitted without discarding selection. Existing warning-only overflow behavior remains.
+
+
+Formatting controls appear only while text is selected; keyboard shortcuts remain available. Clicking the highlighted resume contact row opens its selector. Its labels do not navigate outside editing; the open editor exposes clickable links. PDFs retain their clickable links.

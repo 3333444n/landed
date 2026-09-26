@@ -1,10 +1,10 @@
 # 09 — Decisions and implementation readiness
 
-Updated 2026-09-23. Accepted decisions below reflect the user's explicit instructions. Recommendations remain proposals.
+Updated 2026-09-26. Accepted decisions below reflect the user's explicit instructions. Recommendations remain proposals.
 
-Merged baseline (through 2026-09-20): Phase 0, Phase 1a, Phase 1b, all 26 MCP tools (ADRs 008/009), the achievement combobox and career browsing/document-control refinements (ADR 010) are implemented and merged into `main`. PR #40 updated this documentation and added the combined browser journey.
+Merged baseline: Phases 0, 1a and 1b, career browsing, and the assistant surface through ADR 011 are implemented, including 42 MCP tools, writing context, Companies and Job Sources. Expanded document editing and cover-letter template 8 merged in PRs #50–51 on 2026-09-26.
 
-Current implementation: 42 MCP tools, including writing context, Companies and Job Sources under [ADR 011](adr/011-writing-company-context-and-job-sources.md), implemented and merged. The final section records this extension; dated milestone sections preserve their historical scope and test counts. Unimplemented later capabilities remain design only.
+This branch implements [ADR 012](adr/012-document-formatting-and-contact-selection.md): structured inline formatting, resume contact defaults and selection/order, template 9 and 43 MCP tools. It is verified and pending merge. The final section records its validation and provider limitations; dated milestone sections preserve their historical scope and test counts. Unimplemented later capabilities remain design only.
 
 ## Accepted
 
@@ -16,7 +16,7 @@ Current implementation: 42 MCP tools, including writing context, Companies and J
 - Phase 3 automates discovery and draft generation; Phase 4 adds detailed interview tracking.
 - Prioritize an easy clean installation and fictional examples for other users.
 - Drizzle ORM for schema, typed queries, and SQL migration files ([ADR 004](adr/004-drizzle-persistence.md)).
-- Libraries: Zod for validation and structured model output, Vercel AI SDK for model access, `@modelcontextprotocol/server` for the assistant endpoint, @react-pdf/renderer for PDFs, lucide-react for interface icons, Vitest and Playwright for tests, pnpm as the package manager.
+- Libraries: Zod for validation and structured model output, Vercel AI SDK for model access, `@modelcontextprotocol/server` for the assistant endpoint, @react-pdf/renderer for PDFs, lucide-react for interface icons, Tiptap 3.31.3 for document field editing under ADR 012, Vitest and Playwright for tests, pnpm as the package manager.
 - Node 22 LTS and PostgreSQL 17 as the supported runtime versions.
 - GitHub Actions runs lint, typecheck, tests, build, and migration checks on every pull request.
 - MIT license, copyright Luis Peregrino.
@@ -33,7 +33,7 @@ Current implementation: 42 MCP tools, including writing context, Companies and J
 - Phase 1b decisions (2026-09-14, [ADR 006](adr/006-model-access-path.md), docs 04, 05, 06, [DESIGN-DOCS.md](../DESIGN-DOCS.md)):
   - Model access: the app calls a provider through one adapter interface over the Vercel AI SDK; providers `anthropic`, `openai`, `openrouter` (added 2026-09-14 as the OpenAI-compatible path with its base URL and cost reporting built in), `gateway` and `openai_compatible` (Ollama and similar by base URL), selected in the environment file only; a `fake` adapter for every automated check; paste-back mode as the zero-setup path. No key in the database or the browser.
   - Document content: Zod schemas for resume, cover letter and recruiter message, every unit carrying evidence ids that reference records in the run's frozen snapshot; budgets in the resume schema keep it to one page.
-  - One resume template and one cover-letter layout: single column, Letter, Helvetica built in, monochrome, uppercase section headings on rules, the page filled to the bottom margin by stretching gaps, never text (DESIGN-DOCS.md, refined 2026-09-15).
+  - One resume template and one cover-letter layout: single column, Letter, Helvetica built in, black text (blue underlined links under ADR 012), uppercase section headings on rules, the page filled to the bottom margin by stretching gaps, never text (DESIGN-DOCS.md, refined 2026-09-15).
   - Execution and recovery: a bounded application-owned runner (the action awaits the call; the run row is committed first) with a sweep that marks runs older than ten minutes as interrupted. No worker before Phase 3.
   - Review: text edited in place on the preview, each save a new immutable revision; Mark reviewed records the time; Ready stays a manual application status; submission stays manual.
   - Grounding: a deterministic check after every generation (evidence ids exist, numbers appear in cited evidence, and since 2026-09-14 resume bullets cite only their own entry's records) shown as warning chips; a synthetic evaluation set in `examples/generation` run by `pnpm eval` against a real provider, and by the fake adapter in CI.
@@ -104,6 +104,8 @@ Vector embeddings/indexes; separate vector storage; generalized agent framework;
 - [ADR 010 — Career browsing and skill context](adr/010-career-browsing-and-skill-context.md): expandable records, direct skill associations and derived context filters; implementation merged in PRs #35–39.
 
 - [ADR 011 — Writing context, Companies and Job Sources](adr/011-writing-company-context-and-job-sources.md): profile narratives, company context and canonical identity, sources and cover-letter grounding; implemented and merged.
+
+- [ADR 012 — Document formatting and resume contact selection](adr/012-document-formatting-and-contact-selection.md): accepted and implemented on this branch, pending merge; optional structured marks and resume contact preferences, template 9 and 43 MCP tools.
 
 ## Profile management over MCP (merged)
 
@@ -185,7 +187,7 @@ Generated Drizzle JSON snapshots are marked as generated for GitHub review; SQL 
 
 The preview and MCP edit the resume headline, role/project subtitles, skill labels/lists, all displayed education fields, and the cover-letter professional title, greeting, closing and signature. Optional values can clear and be restored; required fields remain nonempty. Saves validate the complete document, rerun grounding/layout checks and create unapproved immutable revisions, preserving citations, career records and frozen inputs. Stale or invalid browser saves retain the submitted text. `editable_fields` exposes the allowlist separately from citation-bearing `units`. Name/contact editing, entry management and reordering remain outside this change.
 
-The final cover-letter layout is template 8. A two-line sender name and regular-weight editable title occupy the left header; a bold LinkedIn link followed by regular email and WhatsApp phone links occupy the right. A 14 pt company name and saved date precede “Job reference:” and the italic role directly below the company. The greeting/body/closing group centers in the available area, with 12 pt text and 54 pt extra closing space. A ruled footer at the end of the letter contains the bold location and regular GitHub/website links; it flows after the body so long contact details cannot overlap it. Web labels omit scheme/www without losing clickable destinations; browser links open new tabs, while PDF navigation follows the viewer. Short letters remain one page; longer historical letters can continue without shrinking. See [document design](../DESIGN-DOCS.md) and [interface design](../DESIGN.md) for the exact contracts.
+PRs #50–51 introduced the cover-letter layout in template 8; ADR 012 advances it to template 9 with inline formatting and blue links. A two-line sender name and regular-weight editable title occupy the left header; a bold LinkedIn link followed by regular email and WhatsApp phone links occupy the right. A 14 pt company name and saved date precede “Job reference:” and the italic role directly below the company. The greeting/body/closing group centers in the available area, with 12 pt text and 54 pt extra closing space. A ruled footer at the end of the letter contains the bold location and regular GitHub/website links; it flows after the body so long contact details cannot overlap it. Web labels omit scheme/www without losing clickable destinations; browser links open new tabs, while PDF navigation follows the viewer. Short letters remain one page; longer historical letters can continue without shrinking. See [document design](../DESIGN-DOCS.md) and [interface design](../DESIGN.md) for the exact contracts.
 
 Letterhead context comes from the frozen generation snapshot. Cover-letter content adds optional nullable `title` (120 characters): omitted uses the frozen profile headline, null hides it. Historical JSON stays valid and is not rewritten. This is a generated-content schema change, with no SQL migration, dependency or prompt-text change. Template-version cache invalidation regenerates downloads on demand.
 
@@ -208,12 +210,32 @@ The required schema-change evaluation passed all nine cases with OpenRouter / `g
 | partial-fit | recruiter_message | ok | none | 1882 | 243 | 1458 | 0.000835 |
 
 
-### Review split and CI correction, 2026-09-26
+### Merge verification, 2026-09-26
 
-The change was reviewed and merged as two dependent layers (PRs #50–51): resume metadata editing first, then cover-letter editing and template 8. The resume-only layer passed `pnpm verify:full` with 184 unit tests, 104 integration tests and 12 browser journeys. The cover-letter layer reuses its shared editable-field and editor infrastructure. Both layers are now in main; the combined tree matches the independently verified cover-letter branch.
+PR #50 (resume metadata editing) and PR #51 (cover-letter editing and template 8) are merged. Both pull-request checks and their merge checks passed. The merged tree matched the independently verified combined implementation: 199 unit tests, 105 integration tests and 12 browser journeys, with migration consistency and production build. The schema evaluation above remains applicable to those changes. ADR 012’s later formatting and contact changes have separate validation below.
 
-The combined review’s CI failure was a browser assertion selecting both the editor error and Next’s route announcer. Assertions now scope errors to the relevant editor form, and the journey cleans up its created job even when an assertion fails so later empty-state tests remain isolated. The correction changes test behavior, not application validation or timeouts.
+## Document formatting and resume contacts (2026-09-26, implemented, pending merge)
 
-The dependent cover-letter layer also passed its own `pnpm verify:full`: 199 unit tests, 105 integration tests, migration consistency, production build and 12 Chromium journeys. Its combined runtime matches the accepted implementation; the split changes review boundaries and fixes the browser-test selectors/cleanup. The recorded schema evaluation above remains applicable.
+[ADR 012](adr/012-document-formatting-and-contact-selection.md) is accepted: visual B/I/U field editing for resumes and cover letters, blue underlined document links, profile contact defaults and revision-local selection/order. Implementation is verified on this branch and pending merge. The full local verification and provider evaluation are recorded below.
 
-Post-merge verification: main at `683aad4` has the same complete tree as the verified cover-letter branch, and its merge CI passed. The post-merge documentation status correction passed `pnpm check` (199 unit tests); runtime, prompts and schemas are unchanged.
+
+### Provider evaluation, 2026-09-26
+
+Final evaluation used OpenRouter / google/gemini-3.1-flash-lite: eight of nine answers passed schema validation. The fit resume failed because its styled segments added wording absent from the plain bullet; exact-text validation correctly rejected the answer. Successful letters contain automatically selected emphasis. All three letters rendered on one page. This remaining nondeterministic provider failure is not hidden by relaxing validation or repeating until a green table. Saved drafts still require human review.
+
+| Case | Document | Outcome | Warnings | Input tokens | Output tokens | Latency ms | Cost USD |
+| --- | --- | --- | --- | ---: | ---: | ---: | ---: |
+| fit | resume | validation: The answer did not match the document schema | — | — | — | — | — |
+| fit | cover_letter | ok | none | 3042 | 664 | 3086 | 0.0017565 |
+| fit | recruiter_message | ok | none | 1885 | 234 | 1694 | 0.00082225 |
+| mismatch | resume | ok | none | 3682 | 884 | 3556 | 0.0022465 |
+| mismatch | cover_letter | ok | none | 2769 | 234 | 1995 | 0.00104325 |
+| mismatch | recruiter_message | ok | none | 1885 | 210 | 1631 | 0.00078625 |
+| partial-fit | resume | ok | none | 3679 | 1222 | 4048 | 0.00275275 |
+| partial-fit | cover_letter | ok | none | 2766 | 286 | 1822 | 0.0011205 |
+| partial-fit | recruiter_message | ok | none | 1882 | 232 | 1688 | 0.0008185 |
+
+
+### Local verification
+
+`pnpm verify:full` passed: 217 unit tests, 112 PostgreSQL integration tests, migration consistency, production build and all 12 Chromium journeys. Checks use the fake provider and isolated test database. Browser coverage includes combined marks, floating controls, real keyboard clearing, sanitized paste, stale-input retention and contact selection/order/defaults. The final browser contract uses selection-only formatting controls, direct contact-row editing and navigable contacts inside its editor. Fictional PDFs and responsive light/dark previews were visually inspected; PDF extraction preserves text across font changes. The final provider evaluation above remains 8/9 valid, with divergent model text correctly rejected. No SQL migration is required. This verification does not establish packaged-install coverage; ADR 012 remains pending merge.

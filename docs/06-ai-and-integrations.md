@@ -52,7 +52,8 @@ The original ADR 008 tool contract (profile management is the additive ADR 009 c
 | `get_document_brief` | `{ job_id, type, assistant?: string }` | `prepareAssistantBrief`: opens a queued `assistant` run with the provider set to the client's `User-Agent` and the model to `assistant` (or `unreported`); returns `{ run_id, document_type, instructions, input, schema, budgets, rules }`, the schema being the portable JSON schema without length keywords and `budgets` null except for the resume | not idempotent |
 | `submit_document` | `{ run_id, content: object \| string }` | Objects are stringified; `submitPastedAnswer`. Success: `{ run_id, revision_id, warnings: [{ kind, path, message }], units: [{ path, text, evidence_ids }] }`. Validation failure: the run is recorded as failed (`pasted_invalid`), a fresh queued run is opened by `reopenAssistantRun`, and the result is an error carrying the field errors and `new_run_id` | not destructive |
 | `get_document` | `{ job_id, type }` | `getDocumentView`: `{ revision_id, reviewed, units: [{ path, text, evidence_ids }], editable_fields: [{ path, label, text, clearable }], warnings, latest_run: { id, mode, state, provider, model } }` | read only |
-| `edit_unit` | `{ revision_id, path, text }` | `editUnit` with the revision id as the expected version; returns `{ revision_id, warnings }` of the new revision; a stale id is an error that says to call `get_document` again. Use a path from `editable_fields`; empty text clears only fields marked `clearable`. Includes metadata and existing prose; preserves citations and reruns validation | not destructive |
+| `edit_unit` | `{ revision_id, path, text, segments? }` | `editUnit` with the revision id as the expected version; returns `{ revision_id, warnings }` of the new revision; a stale id is an error that says to call `get_document` again. Use a path from `editable_fields`; empty text clears only fields marked `clearable`. Includes metadata and existing prose; preserves citations and reruns validation | not destructive |
+| `set_resume_contacts` (ADR 012, local) | `{ revision_id, selection }` | `setResumeContacts`: ordered saved contact ids; returns `{ revision_id, warnings }`. Empty selection hides the row. Snapshot values only; stale ids are refused. | not destructive |
 | `render_pdf` | `{ job_id, type: "resume" \| "cover_letter" }` | `getOrRenderPdf` with the same file label as the browser route, so filenames match; returns `{ filename, pages, size_bytes, download_url, reused }` | not destructive |
 | `add_job` | `{ job_id?, title, company, description, location?, salary?, source_url? }` | `pursueJob`, the same composition the paste form uses: the job and its application in one transaction; returns `{ job_id, application_id }`. A client-minted `job_id` replays to the same records, so a retry after a lost response never duplicates. Validation errors name the tool's parameters | idempotent, not destructive |
 
@@ -112,7 +113,7 @@ Skill context extension (merged): `add_skill` accepts optional `role_ids` and `p
 
 ## Writing context, company and source tools (ADR 011, implemented)
 
-The endpoint has **42 tools**: the original eight, 18 profile tools, one Interest tool, four Job Source tools and 11 company/context tools. This extension is implemented and merged; historical verification counts above describe their original milestones.
+The merged ADR 011 baseline has **42 tools**: the original eight, 18 profile tools, one Interest tool, four Job Source tools and 11 company/context tools. This extension is implemented and merged; historical verification counts above describe their original milestones.
 
 | Tool | Input / behavior |
 |---|---|
@@ -165,3 +166,19 @@ The revised `add_job` explicitly rejects the removed `company` argument rather t
 | Cover letter | `title`, `greeting`, `closing`, `signature` |
 
 Indices refer to the latest saved content, not a fixed section order. Only nullable headline, professional title, subheading, dates and location can clear. Cover-letter `title` is optional nullable text (120 characters): omission uses the frozen profile headline, null hides it. The read projection exposes that frozen default without rewriting historical rows. Existing summary/bullet/paragraph and message subject/body paths remain supported. Arbitrary properties and invalid indices are rejected. Metadata discovery is separate from prose grounding, so a greeting or subtitle does not become an uncited prose unit. An institution name still receives the existing heading check.
+
+
+## Document formatting and resume contacts (2026-09-26, implemented, pending merge)
+
+ADR 012 extends this branch’s endpoint to 43 tools; the implementation is verified and pending merge.
+
+| Surface | Contract |
+| --- | --- |
+| `get_document` | Resume/cover-letter `editable_fields` include `segments` and `supported_marks`; resume `contacts` contains `available`, `selected` and rendered `items` |
+| `edit_unit` | Optional `segments: [{text, marks}]`; marks are `bold`, `italic` and `underline`. Segment text must exactly concatenate to the supplied `text`; whole-field boundary whitespace is then normalized consistently |
+| `set_resume_contacts` | `revision_id` and complete ordered `selection` of `phone`, `email`, `location`, `linkedin`, `github`, `website`; returns `revision_id` and `warnings` |
+| `get_profile` / `update_profile` | Read `resume_contacts`; write `changes.resume_contacts`. Omit preserves, array replaces, `[]` hides all and null restores the built-in default |
+
+Unmarked segments clear inline styles. A plain unchanged field preserves styles; a plain rewrite clears them. Saves preserve template base styling and produce unapproved revisions. Both edit tools reject stale revision IDs atomically; reread before retrying.
+
+Contact rows are application-owned and frozen before model work. Profile preferences initialize new resumes; regeneration retains the existing resume’s selection/order. Missing values are omitted without erasing selection. Resume prompt 5 and cover-letter prompt 4 add automatic restrained emphasis. Recruiter messages remain plain text. The final real-provider evaluation and its rejected divergent-text answer are recorded in [doc 09](09-decisions-and-readiness.md#document-formatting-and-resume-contacts-2026-09-26-implemented-pending-merge).
