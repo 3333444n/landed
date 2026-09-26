@@ -6,6 +6,7 @@ import type { JobRow } from "@/app/jobs/list-jobs";
 import type { ApplicationRecord } from "@/modules/applications";
 import {
   contentUnits,
+  formattingSegments,
   editableFields,
   type DocumentType,
   type DocumentView,
@@ -82,7 +83,17 @@ export function documentDetail(type: DocumentType, view: DocumentView) {
   return {
     revision_id: revision?.id ?? null,
     reviewed: revision ? revision.reviewedAt !== null : false,
-    editable_fields: revision ? editableFields(type, revision.content) : [],
+    editable_fields: revision
+      ? editableFields(type, revision.content).map((field) => ({
+          ...field,
+          ...(type !== "recruiter_message"
+            ? {
+                segments: formattingSegments(revision.content, field.path, field.text),
+                supported_marks: ["bold", "italic", "underline"],
+              }
+            : {}),
+        }))
+      : [],
     units: revision
       ? contentUnits(type, revision.content).map((u) => ({
           path: u.path,

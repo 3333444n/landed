@@ -18,6 +18,7 @@
   --text-primary: var(--l-text-primary);
   --text-secondary: var(--l-text-secondary);
   --text-tertiary: var(--l-text-tertiary);
+  --document-link: var(--l-document-link);
   --accent: var(--l-accent);
   --accent-contrast: var(--l-accent-contrast);
   --accent-soft: var(--l-accent-soft);
@@ -109,6 +110,7 @@
     --text-primary: var(--d-text-primary);
     --text-secondary: var(--d-text-secondary);
     --text-tertiary: var(--d-text-tertiary);
+    --document-link: var(--d-document-link);
     --accent: var(--d-accent);
     --accent-contrast: var(--d-accent-contrast);
     --accent-soft: var(--d-accent-soft);
@@ -139,6 +141,7 @@
   --text-primary: var(--d-text-primary);
   --text-secondary: var(--d-text-secondary);
   --text-tertiary: var(--d-text-tertiary);
+  --document-link: var(--d-document-link);
   --accent: var(--d-accent);
   --accent-contrast: var(--d-accent-contrast);
   --accent-soft: var(--d-accent-soft);

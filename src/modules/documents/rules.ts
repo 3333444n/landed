@@ -15,7 +15,10 @@ import type {
   RunMode,
   Snapshot,
 } from "./contracts";
-import { lineCount, textWidth } from "./helvetica";
+import { editableFields } from "./editable-fields";
+export { editableFields, type EditableField } from "./editable-fields";
+import { formattingSegments, segmentsWidth, segmentsLineCount } from "./formatting";
+import { textWidth } from "./helvetica";
 
 export interface Unit extends ContentUnit {
   contextIds?: string[];
@@ -48,64 +51,6 @@ export function contentUnits(type: DocumentType, content: DocumentContent): Unit
       return [{ path: "body", text: message.body, evidenceIds: message.evidenceIds }];
     }
   }
-}
-
-/** Editable text is distinct from prose that requires citations. */
-export interface EditableField {
-  path: string;
-  label: string;
-  text: string;
-  clearable: boolean;
-}
-
-export function editableFields(type: DocumentType, content: DocumentContent): EditableField[] {
-  const fields: EditableField[] = [];
-  const add = (path: string, label: string, text: string | null, clearable = false) => {
-    fields.push({ path, label, text: text ?? "", clearable });
-  };
-  if (type === "resume") {
-    const resume = content as ResumeContent;
-    add("header.headline", "headline", resume.header.headline, true);
-    if (resume.summary) add("summary", "summary", resume.summary.text);
-    resume.sections.forEach((section, i) =>
-      section.entries.forEach((entry, j) => {
-        const path = `sections.${i}.entries.${j}`;
-        const suffix = `of ${entry.heading}`;
-        if (section.kind === "skills" || section.kind === "education") {
-          add(
-            `${path}.heading`,
-            `${section.kind === "skills" ? "skill group" : "institution"} ${suffix}`,
-            entry.heading,
-          );
-        }
-        add(
-          `${path}.subheading`,
-          `${section.kind === "skills" ? "skills" : "subtitle"} ${suffix}`,
-          entry.subheading,
-          true,
-        );
-        if (section.kind === "education") {
-          add(`${path}.dateRange`, `dates ${suffix}`, entry.dateRange, true);
-          add(`${path}.location`, `location ${suffix}`, entry.location, true);
-        }
-        entry.bullets.forEach((bullet, k) =>
-          add(`${path}.bullets.${k}`, `bullet ${k + 1} ${suffix}`, bullet.text),
-        );
-      }),
-    );
-  } else if (type === "cover_letter") {
-    const letter = content as CoverLetterContent;
-    add("title", "professional title", letter.title ?? null, true);
-    add("greeting", "greeting", letter.greeting);
-    letter.paragraphs.forEach((p, i) => add(`paragraphs.${i}`, `paragraph ${i + 1}`, p.text));
-    add("closing", "closing", letter.closing);
-    add("signature", "signature", letter.signature);
-  } else {
-    const message = content as RecruiterMessageContent;
-    add("subject", "subject", message.subject);
-    add("body", "message", message.body);
-  }
-  return fields;
 }
 
 /** Text fields a record contributes as evidence, so a number cited from it can be found. */
@@ -383,27 +328,89 @@ export function layoutCheck(type: DocumentType, content: DocumentContent): Groun
   }
   if (
     resume.summary &&
-    lineCount(resume.summary.text, resumeLine.text, size) > resumeLine.summaryLines
+    segmentsLineCount(
+      formattingSegments(resume, "summary", resume.summary.text),
+      resumeLine.text,
+      size,
+    ) > resumeLine.summaryLines
   ) {
     wraps("summary", `The summary runs past ${resumeLine.summaryLines} lines`);
   }
+  if (
+    resume.header.headline &&
+    segmentsWidth(formattingSegments(resume, "header.headline", resume.header.headline), 10.5) >
+      resumeLine.text
+  )
+    wraps("header.headline", "The headline wraps");
   resume.sections.forEach((section, i) =>
     section.entries.forEach((entry, j) => {
       const entryPath = `sections.${i}.entries.${j}`;
+      if (section.kind !== "skills") {
+        const headingWidth = segmentsWidth(
+          formattingSegments(resume, `${entryPath}.heading`, entry.heading),
+          10.5,
+          true,
+        );
+        const dateWidth = segmentsWidth(
+          formattingSegments(resume, `${entryPath}.dateRange`, entry.dateRange ?? ""),
+          size,
+          true,
+        );
+        if (headingWidth + dateWidth > resumeLine.text)
+          wraps(`${entryPath}.heading`, "The heading and dates exceed one line");
+        const subtitleWidth = segmentsWidth(
+          formattingSegments(resume, `${entryPath}.subheading`, entry.subheading ?? ""),
+          size,
+        );
+        const locationWidth = segmentsWidth(
+          formattingSegments(resume, `${entryPath}.location`, entry.location ?? ""),
+          9,
+        );
+        if (locationWidth && subtitleWidth + locationWidth > resumeLine.text)
+          wraps(`${entryPath}.location`, "The subtitle and location exceed one line");
+      }
       if (section.kind === "skills") {
         const width =
-          textWidth(`${entry.heading}: `, size, "bold") + textWidth(entry.subheading ?? "", size);
+          segmentsWidth(
+            formattingSegments(resume, `${entryPath}.heading`, entry.heading),
+            size,
+            true,
+          ) +
+          textWidth(": ", size, "bold") +
+          segmentsWidth(
+            formattingSegments(resume, `${entryPath}.subheading`, entry.subheading ?? ""),
+            size,
+          );
         if (width > resumeLine.text) wraps(entryPath, "The skills line wraps");
-      } else if (entry.subheading && textWidth(entry.subheading, size) > resumeLine.text) {
+      } else if (
+        entry.subheading &&
+        segmentsWidth(
+          formattingSegments(resume, `${entryPath}.subheading`, entry.subheading),
+          size,
+        ) > resumeLine.text
+      ) {
         wraps(entryPath, "The subheading wraps");
       }
       entry.bullets.forEach((bullet, k) => {
-        if (textWidth(bullet.text, resumeLine.bulletFontSize) > resumeLine.bullet) {
+        if (
+          segmentsWidth(
+            formattingSegments(resume, `${entryPath}.bullets.${k}`, bullet.text),
+            resumeLine.bulletFontSize,
+          ) > resumeLine.bullet
+        ) {
           wraps(`${entryPath}.bullets.${k}`, "The bullet wraps to a second line");
         }
       });
     }),
   );
+  for (const field of editableFields(type, content)) {
+    if (
+      field.path !== "summary" &&
+      /[\r\n]/u.test(field.text) &&
+      !warnings.some((warning) => warning.path === field.path)
+    )
+      wraps(field.path, "The text contains a line break");
+  }
   return warnings;
 }
 
@@ -417,6 +424,10 @@ export function withUnitText(
   const field = editableFields(type, content).find((f) => f.path === path);
   if (!field) return null;
   const copy = structuredClone(content);
+  if (type !== "recruiter_message" && field.text !== text.trim()) {
+    const rich = copy as ResumeContent | CoverLetterContent;
+    if (rich.formatting) rich.formatting = rich.formatting.filter((entry) => entry.path !== path);
+  }
   const value = text.trim() || (field.clearable ? null : "");
   switch (type) {
     case "resume": {

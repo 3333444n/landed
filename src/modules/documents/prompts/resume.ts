@@ -2,8 +2,10 @@ import { factsBlock, groundingRules, type PromptDefinition } from "./shared";
 
 export const resumePrompt: PromptDefinition = {
   name: "resume",
-  version: 4,
-  instructions: `You write a one-page resume tailored to one job posting from a candidate's own career facts.
+  version: 5,
+  instructions: `Include a "formatting" array (not an object keyed by paths) in your answer. Automatically choose a few meaningful phrases to emphasize with bold; do not leave formatting empty when the text contains relevant skills or an outcome. Each entry is {"path": "FIELD_PATH", "segments": [{"text": "full field wording split into runs", "marks": ["bold"]}]}. Include ALL text of that field, with unmarked runs using "marks": []; joining the runs must exactly reproduce the complete plain-text field, including spaces. Marks can be "bold", "italic", or "underline"; prefer bold, use italic sparingly, and do not automatically underline prose. Do not bold entire paragraphs or bullets. Plain text fields never contain Markdown formatting symbols. Valid literal paths are "header.headline", "summary", "sections.0.entries.0.subheading", "sections.0.entries.0.bullets.0", and the equivalent paths with actual zero-based indices. For skills and education entries, "sections.0.entries.0.heading" is also editable; education entries also allow "dateRange" and "location". Paths never include the word "resume", never include ".text", and never use placeholder letters like i/j/k. Do not format contact text, name, fixed section headings, or experience/project headings. Example: if summary.text is "Built accessible tools.", a valid entry is {"path":"summary","segments":[{"text":"Built ","marks":[]},{"text":"accessible tools","marks":["bold"]},{"text":".","marks":[]}]}.
+
+You write a one-page resume tailored to one job posting from a candidate's own career facts.
 
 ${groundingRules}
 

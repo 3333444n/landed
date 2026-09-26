@@ -479,3 +479,73 @@ describe("get_document, edit_unit and render_pdf", () => {
     ).toContain("Nothing generated yet");
   });
 });
+
+describe("formatted document edits", () => {
+  it("round-trips marks, preserves citations, rejects mismatches, and clears marks on plain rewrites", async () => {
+    const brief = await call<{ run_id: string }>("get_document_brief", {
+      job_id: demo.jobId,
+      type: "resume",
+    });
+    const saved = await call<{ revision_id: string }>("submit_document", {
+      run_id: brief.run_id,
+      content: fixture("resume"),
+    });
+    type Detail = {
+      revision_id: string;
+      reviewed: boolean;
+      editable_fields: {
+        path: string;
+        text: string;
+        segments: { text: string; marks: string[] }[];
+      }[];
+      units: { path: string; evidence_ids: string[] }[];
+    };
+    const before = await call<Detail>("get_document", { job_id: demo.jobId, type: "resume" });
+    const field = before.editable_fields.find((f) => f.path === "summary")!;
+    const segments = [{ text: field.text, marks: ["bold", "italic", "underline"] }];
+    const edited = await call<{ revision_id: string }>("edit_unit", {
+      revision_id: saved.revision_id,
+      path: field.path,
+      text: field.text,
+      segments,
+    });
+    const detail = await call<Detail>("get_document", { job_id: demo.jobId, type: "resume" });
+    expect(detail.editable_fields.find((f) => f.path === field.path)?.segments).toEqual(segments);
+    expect(detail.units).toEqual(before.units);
+    expect(detail.reviewed).toBe(false);
+    expect(
+      await callExpectingError("edit_unit", {
+        revision_id: edited.revision_id,
+        path: field.path,
+        text: field.text,
+        segments: [{ text: "different", marks: ["bold"] }],
+      }),
+    ).toContain("validation");
+    expect(
+      await callExpectingError("edit_unit", {
+        revision_id: saved.revision_id,
+        path: field.path,
+        text: field.text,
+        segments,
+      }),
+    ).toContain("stale");
+    const identical = await call<{ revision_id: string }>("edit_unit", {
+      revision_id: edited.revision_id,
+      path: field.path,
+      text: field.text,
+    });
+    const preserved = await call<Detail>("get_document", { job_id: demo.jobId, type: "resume" });
+    expect(preserved.editable_fields.find((f) => f.path === field.path)?.segments).toEqual(
+      segments,
+    );
+    await call("edit_unit", {
+      revision_id: identical.revision_id,
+      path: field.path,
+      text: "Updated summary.",
+    });
+    const rewritten = await call<Detail>("get_document", { job_id: demo.jobId, type: "resume" });
+    expect(rewritten.editable_fields.find((f) => f.path === field.path)?.segments).toEqual([
+      { text: "Updated summary.", marks: [] },
+    ]);
+  });
+});

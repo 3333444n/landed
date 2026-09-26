@@ -27,6 +27,7 @@ import {
   type Snapshot,
 } from "./contracts";
 import { prompts, type PromptDefinition } from "./prompts";
+import { withFieldFormatting } from "./formatting";
 import * as repo from "./repository";
 import {
   documentFacts,
@@ -257,12 +258,21 @@ export async function editUnit(
     return await deps.db.transaction(async (tx) => {
       const current = await repo.findRevision(tx, profileId, input.expectedRevisionId);
       if (!current) return notFound("Revision");
+      if (!(await repo.lockDocument(tx, profileId, current.documentId)))
+        return notFound("Document");
       const latest = await repo.latestRevision(tx, profileId, current.documentId);
       if (!latest || latest.id !== current.id) return stale();
       const type = await documentType(tx, profileId, current.documentId);
       if (!type) return notFound("Document");
-      const edited = withUnitText(type, current.content, input.path, input.text);
+      let edited = withUnitText(type, current.content, input.path, input.text);
       if (!edited) return validation({ text: ["That part of the document no longer exists"] });
+      if (input.segments !== undefined) {
+        if (input.segments.map((segment) => segment.text).join("") !== input.text)
+          return validation({ segments: ["Formatted text must exactly match the field text"] });
+        if (type === "recruiter_message")
+          return validation({ segments: ["This document supports plain text only"] });
+        edited = withFieldFormatting(edited, input.path, input.segments);
+      }
       const checked = contentSchemas[type].safeParse(edited);
       if (!checked.success) {
         const issue = checked.error.issues[0];
@@ -386,6 +396,7 @@ async function saveRevision(
           createdAt: at,
           updatedAt: at,
         }));
+      if (!(await repo.lockDocument(tx, profileId, document.id))) return notFound("Document");
       const revision = await repo.insertRevision(tx, {
         id: newId(deps),
         profileId,

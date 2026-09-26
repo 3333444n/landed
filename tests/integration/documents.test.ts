@@ -725,3 +725,49 @@ describe("cover-letter professional title", () => {
     expect((await getRun(deps(), demo.profileId, run.id))!.snapshot).toEqual(run.snapshot);
   });
 });
+
+describe("serialized document revisions", () => {
+  it("refuses a concurrent text edit against the same revision and preserves ordering with a fixed clock", async () => {
+    const { application } = await pasteJob();
+    await generateDocument(deps(), fake, demo.profileId, demo.jobId, "resume");
+    const initial = (await getDocumentView(deps(), demo.profileId, application.id, "resume"))
+      .revision!;
+    const fixedDeps = { ...deps(), now: () => new Date(initial.createdAt.getTime() - 1000) };
+    const results = await Promise.all([
+      editUnit(fixedDeps, demo.profileId, {
+        expectedRevisionId: initial.id,
+        path: "header.headline",
+        text: "First concurrent edit",
+      }),
+      editUnit(fixedDeps, demo.profileId, {
+        expectedRevisionId: initial.id,
+        path: "header.headline",
+        text: "Second concurrent edit",
+      }),
+    ]);
+    const successes = results.filter((result) => result.ok);
+    const failures = results.filter((result) => !result.ok);
+    expect(successes).toHaveLength(1);
+    expect(failures).toHaveLength(1);
+    expect(failures[0]).toMatchObject({ ok: false, error: { kind: "stale" } });
+    const saved = unwrap(successes[0]!);
+    const view = await getDocumentView(deps(), demo.profileId, application.id, "resume");
+    expect(view.revision?.id).toBe(saved.id);
+    expect(saved.createdAt.getTime()).toBe(initial.createdAt.getTime() + 1);
+    const second = unwrap(
+      await editUnit(fixedDeps, demo.profileId, {
+        expectedRevisionId: saved.id,
+        path: "header.headline",
+        text: "Subsequent edit",
+      }),
+    );
+    expect(second.createdAt.getTime()).toBe(saved.createdAt.getTime() + 1);
+    const run = unwrap(
+      await generateDocument(fixedDeps, fake, demo.profileId, demo.jobId, "resume"),
+    );
+    const regenerated = (await getDocumentView(deps(), demo.profileId, application.id, "resume"))
+      .revision!;
+    expect(regenerated.generationRunId).toBe(run.id);
+    expect(regenerated.createdAt.getTime()).toBe(second.createdAt.getTime() + 1);
+  });
+});

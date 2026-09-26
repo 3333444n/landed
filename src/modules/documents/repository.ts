@@ -161,8 +161,14 @@ export async function insertDocument(
   db: DbHandle,
   values: typeof documents.$inferInsert,
 ): Promise<DocumentRecord> {
-  const rows = await db.insert(documents).values(values).returning();
-  return rows[0]!;
+  const rows = await db
+    .insert(documents)
+    .values(values)
+    .onConflictDoNothing({
+      target: [documents.profileId, documents.applicationId, documents.type],
+    })
+    .returning();
+  return rows[0] ?? (await findDocument(db, values.profileId, values.applicationId, values.type))!;
 }
 
 export async function listDocumentsForApplications(
@@ -184,11 +190,34 @@ export async function listDocumentsForApplications(
 
 // Revisions
 
+/** Lock the stable parent row, not a revision that can cease to be latest while waiting. */
+export async function lockDocument(
+  db: DbHandle,
+  profileId: string,
+  documentId: string,
+): Promise<boolean> {
+  const rows = await db
+    .select({ id: documents.id })
+    .from(documents)
+    .where(and(eq(documents.profileId, profileId), eq(documents.id, documentId)))
+    .for("update");
+  return rows.length > 0;
+}
+
+/** Call only in a transaction holding lockDocument for this document. */
 export async function insertRevision(
   db: DbHandle,
   values: typeof documentRevisions.$inferInsert,
 ): Promise<DocumentRevisionRecord> {
-  const rows = await db.insert(documentRevisions).values(values).returning();
+  const latest = await latestRevision(db, values.profileId, values.documentId);
+  const requested = values.createdAt ?? new Date();
+  const createdAt = new Date(
+    Math.max(requested.getTime(), latest ? latest.createdAt.getTime() + 1 : 0),
+  );
+  const rows = await db
+    .insert(documentRevisions)
+    .values({ ...values, createdAt })
+    .returning();
   return rows[0]!;
 }
 

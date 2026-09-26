@@ -11,13 +11,14 @@ import { Font, StyleSheet } from "@react-pdf/renderer";
 // Never break a word at a line end: a resume line is read in seconds and parsed as text.
 Font.registerHyphenationCallback((word) => [word]);
 
-export const templateVersion = 8;
+export const templateVersion = 9;
 
-/** Black on white only: no greys, so a copier or a strict parser sees one tone. */
+/** Black document text with an explicit blue-link exception. */
 export const colors = {
   text: "#000000",
   secondary: "#000000",
   rule: "#000000",
+  link: "#1557b0",
 } as const;
 
 /** Base gaps in points; the resume multiplies them by its spacing scale. */
@@ -94,7 +95,7 @@ export const styles = StyleSheet.create({
   letterName: { fontSize: 32, fontFamily: "Helvetica-Bold", lineHeight: 1.1 },
   letterTitle: { fontSize: 12, marginTop: 12, fontFamily: "Helvetica" },
   letterLinks: { fontSize: 12, width: 216 },
-  letterLink: { color: colors.text, textDecoration: "none" },
+  letterLink: { color: colors.link, textDecoration: "underline" },
   letterContent: { flexGrow: 1, justifyContent: "center" },
   letterRecipient: {
     flexDirection: "row",
