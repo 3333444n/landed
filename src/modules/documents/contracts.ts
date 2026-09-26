@@ -356,6 +356,6 @@ export const editUnitInput = z.object({
   /** The revision the editor was showing; a newer one means another tab saved first. */
   expectedRevisionId: z.uuid(),
   path: z.string().min(1).max(200),
-  text: z.string().trim().min(1, "Write something or cancel").max(2000),
+  text: z.string().trim().max(2000),
 });
 export type EditUnitInput = z.infer<typeof editUnitInput>;

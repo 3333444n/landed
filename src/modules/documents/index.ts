@@ -40,6 +40,8 @@ export {
 } from "./contracts";
 export {
   contentUnits,
+  editableFields,
+  type EditableField,
   documentFacts,
   groundingCheck,
   layoutCheck,

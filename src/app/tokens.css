@@ -64,6 +64,8 @@
   --space-12: 48px;
   --space-16: 64px;
 
+  --document-focus-width: 2px;
+
   --width-sidebar: 220px;
   --width-detail-max: 720px;
 

@@ -230,6 +230,46 @@ describe("sweepInterruptedRuns", () => {
 });
 
 describe("editUnit and markReviewed", () => {
+  it("saves metadata revisions with approval reset and immutable saved facts", async () => {
+    const { application } = await pasteJob();
+    const run = unwrap(await generateDocument(deps(), fake, demo.profileId, demo.jobId, "resume"));
+    const first = (await getDocumentView(deps(), demo.profileId, application.id, "resume"))
+      .revision!;
+    unwrap(await markReviewed(deps(), demo.profileId, first.id, true));
+    const input = { expectedRevisionId: first.id, path: "header.headline", text: "" };
+    const foreign = await editUnit(deps(), crypto.randomUUID(), input);
+    expect(foreign.ok).toBe(false);
+    if (!foreign.ok) expect(foreign.error.kind).toBe("not_found");
+    const edited = unwrap(await editUnit(deps(), demo.profileId, input));
+    expect(edited.reviewedAt).toBeNull();
+    expect(edited.generationRunId).toBe(run.id);
+    expect((edited.content as ResumeContent).header.headline).toBeNull();
+    expect((await getRun(deps(), demo.profileId, run.id))!.snapshot).toEqual(run.snapshot);
+    const [stored] = await connection.db
+      .select()
+      .from(documentRevisions)
+      .where(eq(documentRevisions.id, first.id));
+    expect(stored!.content).toEqual(first.content);
+    expect(stored!.reviewedAt).not.toBeNull();
+    expect(
+      (
+        await editUnit(deps(), demo.profileId, {
+          expectedRevisionId: edited.id,
+          path: "sections.2.entries.0.heading",
+          text: "",
+        })
+      ).ok,
+    ).toBe(false);
+    const restored = unwrap(
+      await editUnit(deps(), demo.profileId, {
+        expectedRevisionId: edited.id,
+        path: "header.headline",
+        text: "Software developer",
+      }),
+    );
+    expect((restored.content as ResumeContent).header.headline).toBe("Software developer");
+  });
+
   it("creates an edited revision, refuses stale edits and unknown paths", async () => {
     const { application } = await pasteJob();
     unwrap(await generateDocument(deps(), fake, demo.profileId, demo.jobId, "resume"));

@@ -56,6 +56,7 @@ describe("documentSummary and documentDetail", () => {
       revision_id: null,
       reviewed: false,
       units: [],
+      editable_fields: [],
       warnings: [],
       latest_run: null,
     });
