@@ -6,7 +6,7 @@
  * written once over a small descriptor and reused per table.
  */
 import { and, asc, desc, eq, getTableColumns, inArray, sql, type SQL } from "drizzle-orm";
-import type { PgColumn, PgTable } from "drizzle-orm/pg-core";
+import type { SQLiteColumn, SQLiteTable } from "drizzle-orm/sqlite-core";
 import type { DbHandle } from "@/infrastructure/database";
 import {
   skillEmployment,
@@ -27,17 +27,17 @@ export type ProjectRecord = typeof projects.$inferSelect;
 export type AchievementRecord = typeof achievements.$inferSelect;
 export type SkillRecord = typeof skills.$inferSelect;
 
-/** A table as `pgTable` returns it; the bare `PgTable` type no longer carries the inferred row types. */
-type TypedTable = PgTable & {
+/** A table as `sqliteTable` returns it; the bare `SQLiteTable` type does not carry the row types. */
+type TypedTable = SQLiteTable & {
   readonly $inferSelect: Record<string, unknown>;
   readonly $inferInsert: Record<string, unknown>;
 };
 
 export interface Owned<T extends TypedTable = TypedTable> {
   table: T;
-  id: PgColumn;
-  profileId: PgColumn;
-  updatedAt: PgColumn;
+  id: SQLiteColumn;
+  profileId: SQLiteColumn;
+  updatedAt: SQLiteColumn;
   order: SQL[];
 }
 
@@ -102,7 +102,7 @@ export async function listOwned<O extends Owned>(
 ): Promise<RowOf<O>[]> {
   return db
     .select()
-    .from(owned.table as PgTable)
+    .from(owned.table as SQLiteTable)
     .where(eq(owned.profileId, profileId))
     .orderBy(...owned.order) as Promise<RowOf<O>[]>;
 }
@@ -112,14 +112,12 @@ export async function findOwned<O extends Owned>(
   owned: O,
   profileId: string,
   id: string,
-  lock = false,
 ): Promise<RowOf<O> | null> {
-  const query = db
+  const rows = (await db
     .select()
-    .from(owned.table as PgTable)
+    .from(owned.table as SQLiteTable)
     .where(and(eq(owned.profileId, profileId), eq(owned.id, id)))
-    .limit(1);
-  const rows = (await (lock ? query.for("update") : query)) as RowOf<O>[];
+    .limit(1)) as RowOf<O>[];
   return rows[0] ?? null;
 }
 
@@ -129,7 +127,7 @@ export async function insertOwned<O extends Owned>(
   values: InsertOf<O>,
 ): Promise<RowOf<O>> {
   const rows = (await db
-    .insert(owned.table as PgTable)
+    .insert(owned.table as SQLiteTable)
     .values(values as Record<string, unknown>)
     .returning()) as RowOf<O>[];
   return rows[0]!;
@@ -150,7 +148,7 @@ export async function updateOwned<O extends Owned>(
   const conditions = [eq(owned.profileId, profileId), eq(owned.id, id)];
   if (expectedUpdatedAt) conditions.push(eq(owned.updatedAt, expectedUpdatedAt));
   const rows = (await db
-    .update(owned.table as PgTable)
+    .update(owned.table as SQLiteTable)
     .set(values as Record<string, unknown>)
     .where(and(...conditions))
     .returning()) as RowOf<O>[];
@@ -167,7 +165,7 @@ export async function deleteOwned(
   const conditions = [eq(owned.profileId, profileId), eq(owned.id, id)];
   if (expectedUpdatedAt) conditions.push(eq(owned.updatedAt, expectedUpdatedAt));
   const rows = await db
-    .delete(owned.table as PgTable)
+    .delete(owned.table as SQLiteTable)
     .where(and(...conditions))
     .returning({ id: owned.id });
   return rows.length === 1;
@@ -211,6 +209,9 @@ export async function updateProfile(
 
 // Achievement skill links
 
+/** `json_group_array` returns the linked ids as JSON text. */
+const parseIds = (value: string): string[] => JSON.parse(value);
+
 export async function replaceAchievementSkills(
   db: DbHandle,
   profileId: string,
@@ -252,12 +253,12 @@ export async function listAchievementsWithSkills(
   return db
     .select({
       ...getTableColumns(achievements),
-      skillIds: sql<string[]>`array(
-      select ${achievementSkills.skillId} from ${achievementSkills}
+      skillIds: sql`(
+      select json_group_array(${achievementSkills.skillId} order by ${achievementSkills.skillId})
+      from ${achievementSkills}
       where ${achievementSkills.profileId} = ${achievements.profileId}
         and ${achievementSkills.achievementId} = ${achievements.id}
-      order by ${achievementSkills.skillId}
-    )`,
+    )`.mapWith(parseIds),
     })
     .from(achievements)
     .where(
@@ -333,11 +334,6 @@ export async function countProjectDependents(
   return rows.length;
 }
 
-/** Serialize bootstrap checks across processes without introducing a second source of truth. */
-export async function lockProfileCreation(db: DbHandle): Promise<void> {
-  await db.execute(sql`select pg_advisory_xact_lock(174812, 1)`);
-}
-
 /** Skill deletion changes the achievement aggregate even though only joins disappear. */
 export async function touchAchievementsForSkill(
   db: DbHandle,
@@ -352,14 +348,9 @@ export async function touchAchievementsForSkill(
   await db
     .update(achievements)
     .set({
-      updatedAt: sql`greatest(${timestamp.toISOString()}::timestamptz, ${achievements.updatedAt} + interval '1 millisecond')`,
+      updatedAt: sql`max(${timestamp.getTime()}, ${achievements.updatedAt} + 1)`,
     })
     .where(and(eq(achievements.profileId, profileId), inArray(achievements.id, linked)));
-}
-
-/** Keep achievement row/skill-link edits ordered with cascading skill removal. */
-export async function lockAchievementSkills(db: DbHandle, profileId: string): Promise<void> {
-  await db.execute(sql`select pg_advisory_xact_lock(174813, hashtext(${profileId}))`);
 }
 
 export type SkillWithContexts = SkillRecord & { employmentIds: string[]; projectIds: string[] };
@@ -373,12 +364,14 @@ export async function listSkillsWithContexts(
   return db
     .select({
       ...getTableColumns(skills),
-      employmentIds: sql<
-        string[]
-      >`array(select ${skillEmployment.employmentId} from ${skillEmployment} where ${skillEmployment.profileId} = ${skills.profileId} and ${skillEmployment.skillId} = ${skills.id} order by ${skillEmployment.employmentId})`,
-      projectIds: sql<
-        string[]
-      >`array(select ${skillProjects.projectId} from ${skillProjects} where ${skillProjects.profileId} = ${skills.profileId} and ${skillProjects.skillId} = ${skills.id} order by ${skillProjects.projectId})`,
+      employmentIds:
+        sql`(select json_group_array(${skillEmployment.employmentId} order by ${skillEmployment.employmentId}) from ${skillEmployment} where ${skillEmployment.profileId} = ${skills.profileId} and ${skillEmployment.skillId} = ${skills.id})`.mapWith(
+          parseIds,
+        ),
+      projectIds:
+        sql`(select json_group_array(${skillProjects.projectId} order by ${skillProjects.projectId}) from ${skillProjects} where ${skillProjects.profileId} = ${skills.profileId} and ${skillProjects.skillId} = ${skills.id})`.mapWith(
+          parseIds,
+        ),
     })
     .from(skills)
     .where(and(eq(skills.profileId, profileId), id === undefined ? undefined : eq(skills.id, id)))

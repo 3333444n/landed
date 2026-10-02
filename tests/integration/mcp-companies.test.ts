@@ -28,7 +28,7 @@ beforeEach(async () => {
   await client?.close();
   await truncateAll(connection);
   const handler = buildMcpHandler({
-    deps: { db: connection.db },
+    deps: connection,
     artifactDir: "/tmp/unused-company-test",
     origin: "http://127.0.0.1:3417",
     userAgent: "company-test",

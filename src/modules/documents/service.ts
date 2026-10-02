@@ -465,7 +465,7 @@ function usageColumns(usage: GenerateUsage | null) {
   return {
     inputTokens: usage?.inputTokens ?? null,
     outputTokens: usage?.outputTokens ?? null,
-    costUsd: usage?.costUsd === null || usage?.costUsd === undefined ? null : String(usage.costUsd),
+    costUsd: usage?.costUsd ?? null,
     latencyMs: usage?.latencyMs ?? null,
   };
 }

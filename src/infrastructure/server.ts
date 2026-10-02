@@ -1,9 +1,11 @@
 /*
- * Process-wide resources for the Next.js server: the database pool, the model adapter and the
+ * Process-wide resources for the Next.js server: the database, the model adapter and the
  * assistant endpoint's configuration.
  * Created lazily on first use and reused across requests; in development the module is
- * re-evaluated on hot reload, so both are cached on globalThis to avoid leaking pools.
+ * re-evaluated on hot reload, so both are cached on globalThis to avoid leaking connections.
  */
+import { mkdirSync } from "node:fs";
+import { dirname } from "node:path";
 import {
   assistantConfig,
   describeModelConfig,
@@ -23,7 +25,9 @@ const globalRef = globalThis as typeof globalThis & {
 
 export function getDatabase(): DatabaseConnection {
   if (!globalRef.__landedDatabase) {
-    globalRef.__landedDatabase = createDatabase(loadConfig().DATABASE_URL);
+    const path = loadConfig().LANDED_DATABASE_PATH;
+    mkdirSync(dirname(path), { recursive: true });
+    globalRef.__landedDatabase = createDatabase(path);
   }
   return globalRef.__landedDatabase;
 }

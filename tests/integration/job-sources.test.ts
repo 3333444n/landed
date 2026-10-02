@@ -16,7 +16,7 @@ const profileId = "10000000-0000-4000-8000-000000000001";
 const sourceId = "80000000-0000-4000-8000-000000000001";
 let clock = 0;
 const deps = () => ({
-  db: connection.db,
+  ...connection,
   now: () => new Date(Date.UTC(2026, 8, 23, 0, 0, clock++)),
 });
 function unwrap<T>(result: { ok: true; value: T } | { ok: false; error: unknown }): T {

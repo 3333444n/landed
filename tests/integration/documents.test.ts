@@ -35,7 +35,7 @@ import { demo, seedDemoProfile, unwrap } from "../helpers/demo-seed";
 import { openTestDatabase, truncateAll } from "../helpers/test-database";
 
 let connection: DatabaseConnection;
-const deps = () => ({ db: connection.db });
+const deps = () => connection;
 const fake = new FakeModelAdapter();
 const fixture = (name: string) => readFileSync(`examples/generation/fixtures/${name}.json`, "utf8");
 

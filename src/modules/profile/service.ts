@@ -62,8 +62,8 @@ export async function createProfile(
   const id = input.id ?? newId(deps);
 
   try {
-    return await deps.db.transaction(async (tx) => {
-      await repo.lockProfileCreation(tx);
+    // runInTransaction serializes every write, so the check and insert cannot race; no row locks.
+    return await deps.runInTransaction(async (tx) => {
       const existing = await repo.findSingleProfile(tx);
       if (existing) {
         return existing.id === id
@@ -104,7 +104,7 @@ export async function updateProfile(
   if (input.githubUrl) links.push({ label: "GitHub", url: input.githubUrl });
   if (input.websiteUrl) links.push({ label: "Website", url: input.websiteUrl });
   try {
-    return await deps.db.transaction(async (tx) => {
+    return await deps.runInTransaction(async (tx) => {
       const current = await repo.findProfileById(tx, profileId);
       if (!current) return notFound("Profile");
       const updated = await repo.updateProfile(
@@ -355,7 +355,7 @@ export async function saveSkill(
   const employmentIds = [...new Set(input.employmentIds)].sort();
   const projectIds = [...new Set(input.projectIds)].sort();
   try {
-    return await deps.db.transaction(async (tx) => {
+    return await deps.runInTransaction(async (tx) => {
       if (!(await repo.findProfileById(tx, profileId))) return notFound("Profile");
       for (const roleId of employmentIds) {
         if (!(await repo.employmentBelongsToProfile(tx, profileId, roleId)))
@@ -376,7 +376,7 @@ export async function saveSkill(
       };
       let row: repo.SkillRecord;
       if (existingId) {
-        const current = await repo.findOwned(tx, repo.ownedTables.skills, profileId, id, true);
+        const current = await repo.findOwned(tx, repo.ownedTables.skills, profileId, id);
         if (!current) return notFound("Skill");
         const updated = await repo.updateOwned(
           tx,
@@ -478,8 +478,7 @@ async function saveAchievement(
   const skillIds = [...new Set(input.skillIds)];
 
   try {
-    return await deps.db.transaction(async (tx) => {
-      await repo.lockAchievementSkills(tx, profileId);
+    return await deps.runInTransaction(async (tx) => {
       const profile = await repo.findProfileById(tx, profileId);
       if (!profile) return notFound("Profile");
 
@@ -590,7 +589,7 @@ async function saveOwned<T extends OwnedTable>(
 ): Promise<Result<T["table"]["$inferSelect"]>> {
   const id = options.id ?? options.clientId ?? newId(deps);
   try {
-    return await deps.db.transaction(async (tx) => {
+    return await deps.runInTransaction(async (tx) => {
       const profile = await repo.findProfileById(tx, profileId);
       if (!profile) return notFound("Profile");
       if (options.id) {
@@ -640,11 +639,8 @@ async function deleteOwned(
     return validation({ expectedUpdatedAt: ["Supply a valid ISO timestamp"] });
   }
   try {
-    return await deps.db.transaction(async (tx) => {
-      if (owned === repo.ownedTables.skills || owned === repo.ownedTables.achievements) {
-        await repo.lockAchievementSkills(tx, profileId);
-      }
-      const current = await repo.findOwned(tx, owned, profileId, id, true);
+    return await deps.runInTransaction(async (tx) => {
+      const current = await repo.findOwned(tx, owned, profileId, id);
       if (!current) return notFound(label);
       if (
         expectedUpdatedAt &&
@@ -695,7 +691,7 @@ export async function patchProfile(
     ...fields
   } = parsed.data;
   try {
-    return await deps.db.transaction(async (tx) => {
+    return await deps.runInTransaction(async (tx) => {
       const current = await repo.findProfileById(tx, profileId);
       if (!current) return notFound("Profile");
       const preferences = { ...current.preferences };
@@ -748,7 +744,7 @@ async function patchRecord<T extends { updatedAt: Date }>(
   const parsed = schema.safeParse(rawInput);
   if (!parsed.success) return validation(fieldErrorsFromZod(parsed.error));
   try {
-    return await deps.db.transaction(async (tx) => {
+    return await deps.runInTransaction(async (tx) => {
       const transactionDeps = { ...deps, db: tx };
       const current = await read(transactionDeps, profileId, id);
       if (!current) return notFound(label);

@@ -1,0 +1,3185 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "id": "225db8ad-5066-405c-af2a-88fee04e6a2f",
+  "prevIds": [
+    "00000000-0000-0000-0000-000000000000"
+  ],
+  "ddl": [
+    {
+      "name": "applications",
+      "entityType": "tables"
+    },
+    {
+      "name": "companies",
+      "entityType": "tables"
+    },
+    {
+      "name": "company_findings",
+      "entityType": "tables"
+    },
+    {
+      "name": "document_artifacts",
+      "entityType": "tables"
+    },
+    {
+      "name": "document_revisions",
+      "entityType": "tables"
+    },
+    {
+      "name": "documents",
+      "entityType": "tables"
+    },
+    {
+      "name": "generation_runs",
+      "entityType": "tables"
+    },
+    {
+      "name": "job_finding_selections",
+      "entityType": "tables"
+    },
+    {
+      "name": "job_source_options",
+      "entityType": "tables"
+    },
+    {
+      "name": "jobs",
+      "entityType": "tables"
+    },
+    {
+      "name": "achievement_skills",
+      "entityType": "tables"
+    },
+    {
+      "name": "achievements",
+      "entityType": "tables"
+    },
+    {
+      "name": "education",
+      "entityType": "tables"
+    },
+    {
+      "name": "employment",
+      "entityType": "tables"
+    },
+    {
+      "name": "profiles",
+      "entityType": "tables"
+    },
+    {
+      "name": "projects",
+      "entityType": "tables"
+    },
+    {
+      "name": "skill_employment",
+      "entityType": "tables"
+    },
+    {
+      "name": "skill_projects",
+      "entityType": "tables"
+    },
+    {
+      "name": "skills",
+      "entityType": "tables"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "applications"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "profile_id",
+      "entityType": "columns",
+      "table": "applications"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "job_id",
+      "entityType": "columns",
+      "table": "applications"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "'preparing'",
+      "generated": null,
+      "name": "status",
+      "entityType": "columns",
+      "table": "applications"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "notes",
+      "entityType": "columns",
+      "table": "applications"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "interest",
+      "entityType": "columns",
+      "table": "applications"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "submitted_at",
+      "entityType": "columns",
+      "table": "applications"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "table": "applications"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "table": "applications"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "companies"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "profile_id",
+      "entityType": "columns",
+      "table": "companies"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "name",
+      "entityType": "columns",
+      "table": "companies"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "location",
+      "entityType": "columns",
+      "table": "companies"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "website",
+      "entityType": "columns",
+      "table": "companies"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "about",
+      "entityType": "columns",
+      "table": "companies"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "logo_storage_key",
+      "entityType": "columns",
+      "table": "companies"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "logo_content_type",
+      "entityType": "columns",
+      "table": "companies"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "table": "companies"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "table": "companies"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "company_findings"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "profile_id",
+      "entityType": "columns",
+      "table": "company_findings"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "company_id",
+      "entityType": "columns",
+      "table": "company_findings"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "text",
+      "entityType": "columns",
+      "table": "company_findings"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "source_url",
+      "entityType": "columns",
+      "table": "company_findings"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "retrieved_at",
+      "entityType": "columns",
+      "table": "company_findings"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "kind",
+      "entityType": "columns",
+      "table": "company_findings"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "table": "company_findings"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "table": "company_findings"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "document_artifacts"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "profile_id",
+      "entityType": "columns",
+      "table": "document_artifacts"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "document_revision_id",
+      "entityType": "columns",
+      "table": "document_artifacts"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "format",
+      "entityType": "columns",
+      "table": "document_artifacts"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "template_version",
+      "entityType": "columns",
+      "table": "document_artifacts"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "storage_key",
+      "entityType": "columns",
+      "table": "document_artifacts"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "checksum",
+      "entityType": "columns",
+      "table": "document_artifacts"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "byte_size",
+      "entityType": "columns",
+      "table": "document_artifacts"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "table": "document_artifacts"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "document_revisions"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "profile_id",
+      "entityType": "columns",
+      "table": "document_revisions"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "document_id",
+      "entityType": "columns",
+      "table": "document_revisions"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "generation_run_id",
+      "entityType": "columns",
+      "table": "document_revisions"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "content",
+      "entityType": "columns",
+      "table": "document_revisions"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "'[]'",
+      "generated": null,
+      "name": "warnings",
+      "entityType": "columns",
+      "table": "document_revisions"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "source",
+      "entityType": "columns",
+      "table": "document_revisions"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "reviewed_at",
+      "entityType": "columns",
+      "table": "document_revisions"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "table": "document_revisions"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "documents"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "profile_id",
+      "entityType": "columns",
+      "table": "documents"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "application_id",
+      "entityType": "columns",
+      "table": "documents"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "type",
+      "entityType": "columns",
+      "table": "documents"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "table": "documents"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "table": "documents"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "generation_runs"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "profile_id",
+      "entityType": "columns",
+      "table": "generation_runs"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "application_id",
+      "entityType": "columns",
+      "table": "generation_runs"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "document_type",
+      "entityType": "columns",
+      "table": "generation_runs"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "state",
+      "entityType": "columns",
+      "table": "generation_runs"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "failure_kind",
+      "entityType": "columns",
+      "table": "generation_runs"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "mode",
+      "entityType": "columns",
+      "table": "generation_runs"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "provider",
+      "entityType": "columns",
+      "table": "generation_runs"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "model",
+      "entityType": "columns",
+      "table": "generation_runs"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "prompt_name",
+      "entityType": "columns",
+      "table": "generation_runs"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "prompt_version",
+      "entityType": "columns",
+      "table": "generation_runs"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "snapshot",
+      "entityType": "columns",
+      "table": "generation_runs"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "input_tokens",
+      "entityType": "columns",
+      "table": "generation_runs"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "output_tokens",
+      "entityType": "columns",
+      "table": "generation_runs"
+    },
+    {
+      "type": "real",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "cost_usd",
+      "entityType": "columns",
+      "table": "generation_runs"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "latency_ms",
+      "entityType": "columns",
+      "table": "generation_runs"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "error_message",
+      "entityType": "columns",
+      "table": "generation_runs"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "raw_output",
+      "entityType": "columns",
+      "table": "generation_runs"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "started_at",
+      "entityType": "columns",
+      "table": "generation_runs"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "finished_at",
+      "entityType": "columns",
+      "table": "generation_runs"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "table": "generation_runs"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "table": "generation_runs"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "profile_id",
+      "entityType": "columns",
+      "table": "job_finding_selections"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "job_id",
+      "entityType": "columns",
+      "table": "job_finding_selections"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "company_id",
+      "entityType": "columns",
+      "table": "job_finding_selections"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "finding_id",
+      "entityType": "columns",
+      "table": "job_finding_selections"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "job_source_options"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "profile_id",
+      "entityType": "columns",
+      "table": "job_source_options"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "name",
+      "entityType": "columns",
+      "table": "job_source_options"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "false",
+      "generated": null,
+      "name": "archived",
+      "entityType": "columns",
+      "table": "job_source_options"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "table": "job_source_options"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "table": "job_source_options"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "jobs"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "profile_id",
+      "entityType": "columns",
+      "table": "jobs"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "title",
+      "entityType": "columns",
+      "table": "jobs"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "company_id",
+      "entityType": "columns",
+      "table": "jobs"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "location",
+      "entityType": "columns",
+      "table": "jobs"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "salary",
+      "entityType": "columns",
+      "table": "jobs"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "'pasted'",
+      "generated": null,
+      "name": "source",
+      "entityType": "columns",
+      "table": "jobs"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "source_url",
+      "entityType": "columns",
+      "table": "jobs"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "job_source_id",
+      "entityType": "columns",
+      "table": "jobs"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "raw_description",
+      "entityType": "columns",
+      "table": "jobs"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "'active'",
+      "generated": null,
+      "name": "availability",
+      "entityType": "columns",
+      "table": "jobs"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "table": "jobs"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "table": "jobs"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "profile_id",
+      "entityType": "columns",
+      "table": "achievement_skills"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "achievement_id",
+      "entityType": "columns",
+      "table": "achievement_skills"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "skill_id",
+      "entityType": "columns",
+      "table": "achievement_skills"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "achievements"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "profile_id",
+      "entityType": "columns",
+      "table": "achievements"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "employment_id",
+      "entityType": "columns",
+      "table": "achievements"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "project_id",
+      "entityType": "columns",
+      "table": "achievements"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "statement",
+      "entityType": "columns",
+      "table": "achievements"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "problem",
+      "entityType": "columns",
+      "table": "achievements"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "action",
+      "entityType": "columns",
+      "table": "achievements"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "result",
+      "entityType": "columns",
+      "table": "achievements"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "metric",
+      "entityType": "columns",
+      "table": "achievements"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "source_note",
+      "entityType": "columns",
+      "table": "achievements"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "source_url",
+      "entityType": "columns",
+      "table": "achievements"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "false",
+      "generated": null,
+      "name": "reviewed",
+      "entityType": "columns",
+      "table": "achievements"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "table": "achievements"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "table": "achievements"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "education"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "profile_id",
+      "entityType": "columns",
+      "table": "education"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "institution",
+      "entityType": "columns",
+      "table": "education"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "qualification",
+      "entityType": "columns",
+      "table": "education"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "subject",
+      "entityType": "columns",
+      "table": "education"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "start_year",
+      "entityType": "columns",
+      "table": "education"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "start_month",
+      "entityType": "columns",
+      "table": "education"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "end_year",
+      "entityType": "columns",
+      "table": "education"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "end_month",
+      "entityType": "columns",
+      "table": "education"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "'completed'",
+      "generated": null,
+      "name": "status",
+      "entityType": "columns",
+      "table": "education"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "description",
+      "entityType": "columns",
+      "table": "education"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "table": "education"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "table": "education"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "employment"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "profile_id",
+      "entityType": "columns",
+      "table": "employment"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "employer_name",
+      "entityType": "columns",
+      "table": "employment"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "role",
+      "entityType": "columns",
+      "table": "employment"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "location",
+      "entityType": "columns",
+      "table": "employment"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "start_year",
+      "entityType": "columns",
+      "table": "employment"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "start_month",
+      "entityType": "columns",
+      "table": "employment"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "end_year",
+      "entityType": "columns",
+      "table": "employment"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "end_month",
+      "entityType": "columns",
+      "table": "employment"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "false",
+      "generated": null,
+      "name": "is_current",
+      "entityType": "columns",
+      "table": "employment"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "description",
+      "entityType": "columns",
+      "table": "employment"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "table": "employment"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "table": "employment"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "profiles"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "display_name",
+      "entityType": "columns",
+      "table": "profiles"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "headline",
+      "entityType": "columns",
+      "table": "profiles"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "summary",
+      "entityType": "columns",
+      "table": "profiles"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "about_me",
+      "entityType": "columns",
+      "table": "profiles"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "email",
+      "entityType": "columns",
+      "table": "profiles"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "phone",
+      "entityType": "columns",
+      "table": "profiles"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "location",
+      "entityType": "columns",
+      "table": "profiles"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "'{}'",
+      "generated": null,
+      "name": "preferences",
+      "entityType": "columns",
+      "table": "profiles"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "'[]'",
+      "generated": null,
+      "name": "links",
+      "entityType": "columns",
+      "table": "profiles"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "table": "profiles"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "table": "profiles"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "projects"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "profile_id",
+      "entityType": "columns",
+      "table": "projects"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "employment_id",
+      "entityType": "columns",
+      "table": "projects"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "name",
+      "entityType": "columns",
+      "table": "projects"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "description",
+      "entityType": "columns",
+      "table": "projects"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "url",
+      "entityType": "columns",
+      "table": "projects"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "start_year",
+      "entityType": "columns",
+      "table": "projects"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "start_month",
+      "entityType": "columns",
+      "table": "projects"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "end_year",
+      "entityType": "columns",
+      "table": "projects"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "end_month",
+      "entityType": "columns",
+      "table": "projects"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "table": "projects"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "table": "projects"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "profile_id",
+      "entityType": "columns",
+      "table": "skill_employment"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "skill_id",
+      "entityType": "columns",
+      "table": "skill_employment"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "employment_id",
+      "entityType": "columns",
+      "table": "skill_employment"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "profile_id",
+      "entityType": "columns",
+      "table": "skill_projects"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "skill_id",
+      "entityType": "columns",
+      "table": "skill_projects"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "project_id",
+      "entityType": "columns",
+      "table": "skill_projects"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "skills"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "profile_id",
+      "entityType": "columns",
+      "table": "skills"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "display_name",
+      "entityType": "columns",
+      "table": "skills"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "normalized_name",
+      "entityType": "columns",
+      "table": "skills"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "category",
+      "entityType": "columns",
+      "table": "skills"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "table": "skills"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "table": "skills"
+    },
+    {
+      "columns": [
+        "profile_id"
+      ],
+      "tableTo": "profiles",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": false,
+      "name": "fk_applications_profile_id_profiles_id_fk",
+      "entityType": "fks",
+      "table": "applications"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "job_id"
+      ],
+      "tableTo": "jobs",
+      "columnsTo": [
+        "profile_id",
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": true,
+      "name": "applications_job_fk",
+      "entityType": "fks",
+      "table": "applications"
+    },
+    {
+      "columns": [
+        "profile_id"
+      ],
+      "tableTo": "profiles",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": false,
+      "name": "fk_companies_profile_id_profiles_id_fk",
+      "entityType": "fks",
+      "table": "companies"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "company_id"
+      ],
+      "tableTo": "companies",
+      "columnsTo": [
+        "profile_id",
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": false,
+      "name": "fk_company_findings_profile_id_company_id_companies_profile_id_id_fk",
+      "entityType": "fks",
+      "table": "company_findings"
+    },
+    {
+      "columns": [
+        "profile_id"
+      ],
+      "tableTo": "profiles",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": false,
+      "name": "fk_document_artifacts_profile_id_profiles_id_fk",
+      "entityType": "fks",
+      "table": "document_artifacts"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "document_revision_id"
+      ],
+      "tableTo": "document_revisions",
+      "columnsTo": [
+        "profile_id",
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": true,
+      "name": "document_artifacts_revision_fk",
+      "entityType": "fks",
+      "table": "document_artifacts"
+    },
+    {
+      "columns": [
+        "profile_id"
+      ],
+      "tableTo": "profiles",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": false,
+      "name": "fk_document_revisions_profile_id_profiles_id_fk",
+      "entityType": "fks",
+      "table": "document_revisions"
+    },
+    {
+      "columns": [
+        "generation_run_id"
+      ],
+      "tableTo": "generation_runs",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "SET NULL",
+      "nameExplicit": false,
+      "name": "fk_document_revisions_generation_run_id_generation_runs_id_fk",
+      "entityType": "fks",
+      "table": "document_revisions"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "document_id"
+      ],
+      "tableTo": "documents",
+      "columnsTo": [
+        "profile_id",
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": true,
+      "name": "document_revisions_document_fk",
+      "entityType": "fks",
+      "table": "document_revisions"
+    },
+    {
+      "columns": [
+        "profile_id"
+      ],
+      "tableTo": "profiles",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": false,
+      "name": "fk_documents_profile_id_profiles_id_fk",
+      "entityType": "fks",
+      "table": "documents"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "application_id"
+      ],
+      "tableTo": "applications",
+      "columnsTo": [
+        "profile_id",
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": true,
+      "name": "documents_application_fk",
+      "entityType": "fks",
+      "table": "documents"
+    },
+    {
+      "columns": [
+        "profile_id"
+      ],
+      "tableTo": "profiles",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": false,
+      "name": "fk_generation_runs_profile_id_profiles_id_fk",
+      "entityType": "fks",
+      "table": "generation_runs"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "application_id"
+      ],
+      "tableTo": "applications",
+      "columnsTo": [
+        "profile_id",
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": true,
+      "name": "generation_runs_application_fk",
+      "entityType": "fks",
+      "table": "generation_runs"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "job_id",
+        "company_id"
+      ],
+      "tableTo": "jobs",
+      "columnsTo": [
+        "profile_id",
+        "id",
+        "company_id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": false,
+      "name": "fk_job_finding_selections_profile_id_job_id_company_id_jobs_profile_id_id_company_id_fk",
+      "entityType": "fks",
+      "table": "job_finding_selections"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "company_id",
+        "finding_id"
+      ],
+      "tableTo": "company_findings",
+      "columnsTo": [
+        "profile_id",
+        "company_id",
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": false,
+      "name": "fk_job_finding_selections_profile_id_company_id_finding_id_company_findings_profile_id_company_id_id_fk",
+      "entityType": "fks",
+      "table": "job_finding_selections"
+    },
+    {
+      "columns": [
+        "profile_id"
+      ],
+      "tableTo": "profiles",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": false,
+      "name": "fk_job_source_options_profile_id_profiles_id_fk",
+      "entityType": "fks",
+      "table": "job_source_options"
+    },
+    {
+      "columns": [
+        "profile_id"
+      ],
+      "tableTo": "profiles",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": false,
+      "name": "fk_jobs_profile_id_profiles_id_fk",
+      "entityType": "fks",
+      "table": "jobs"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "job_source_id"
+      ],
+      "tableTo": "job_source_options",
+      "columnsTo": [
+        "profile_id",
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "NO ACTION",
+      "nameExplicit": true,
+      "name": "jobs_source_owner_fk",
+      "entityType": "fks",
+      "table": "jobs"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "company_id"
+      ],
+      "tableTo": "companies",
+      "columnsTo": [
+        "profile_id",
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "NO ACTION",
+      "nameExplicit": false,
+      "name": "fk_jobs_profile_id_company_id_companies_profile_id_id_fk",
+      "entityType": "fks",
+      "table": "jobs"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "achievement_id"
+      ],
+      "tableTo": "achievements",
+      "columnsTo": [
+        "profile_id",
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": true,
+      "name": "achievement_skills_achievement_fk",
+      "entityType": "fks",
+      "table": "achievement_skills"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "skill_id"
+      ],
+      "tableTo": "skills",
+      "columnsTo": [
+        "profile_id",
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": true,
+      "name": "achievement_skills_skill_fk",
+      "entityType": "fks",
+      "table": "achievement_skills"
+    },
+    {
+      "columns": [
+        "profile_id"
+      ],
+      "tableTo": "profiles",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": false,
+      "name": "fk_achievements_profile_id_profiles_id_fk",
+      "entityType": "fks",
+      "table": "achievements"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "employment_id"
+      ],
+      "tableTo": "employment",
+      "columnsTo": [
+        "profile_id",
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "RESTRICT",
+      "nameExplicit": true,
+      "name": "achievements_employment_fk",
+      "entityType": "fks",
+      "table": "achievements"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "project_id"
+      ],
+      "tableTo": "projects",
+      "columnsTo": [
+        "profile_id",
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "RESTRICT",
+      "nameExplicit": true,
+      "name": "achievements_project_fk",
+      "entityType": "fks",
+      "table": "achievements"
+    },
+    {
+      "columns": [
+        "profile_id"
+      ],
+      "tableTo": "profiles",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": false,
+      "name": "fk_education_profile_id_profiles_id_fk",
+      "entityType": "fks",
+      "table": "education"
+    },
+    {
+      "columns": [
+        "profile_id"
+      ],
+      "tableTo": "profiles",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": false,
+      "name": "fk_employment_profile_id_profiles_id_fk",
+      "entityType": "fks",
+      "table": "employment"
+    },
+    {
+      "columns": [
+        "profile_id"
+      ],
+      "tableTo": "profiles",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": false,
+      "name": "fk_projects_profile_id_profiles_id_fk",
+      "entityType": "fks",
+      "table": "projects"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "employment_id"
+      ],
+      "tableTo": "employment",
+      "columnsTo": [
+        "profile_id",
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "RESTRICT",
+      "nameExplicit": true,
+      "name": "projects_employment_fk",
+      "entityType": "fks",
+      "table": "projects"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "skill_id"
+      ],
+      "tableTo": "skills",
+      "columnsTo": [
+        "profile_id",
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": true,
+      "name": "skill_employment_skill_fk",
+      "entityType": "fks",
+      "table": "skill_employment"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "employment_id"
+      ],
+      "tableTo": "employment",
+      "columnsTo": [
+        "profile_id",
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "RESTRICT",
+      "nameExplicit": true,
+      "name": "skill_employment_role_fk",
+      "entityType": "fks",
+      "table": "skill_employment"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "skill_id"
+      ],
+      "tableTo": "skills",
+      "columnsTo": [
+        "profile_id",
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": true,
+      "name": "skill_projects_skill_fk",
+      "entityType": "fks",
+      "table": "skill_projects"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "project_id"
+      ],
+      "tableTo": "projects",
+      "columnsTo": [
+        "profile_id",
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "RESTRICT",
+      "nameExplicit": true,
+      "name": "skill_projects_project_fk",
+      "entityType": "fks",
+      "table": "skill_projects"
+    },
+    {
+      "columns": [
+        "profile_id"
+      ],
+      "tableTo": "profiles",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": false,
+      "name": "fk_skills_profile_id_profiles_id_fk",
+      "entityType": "fks",
+      "table": "skills"
+    },
+    {
+      "columns": [
+        "job_id",
+        "finding_id"
+      ],
+      "nameExplicit": false,
+      "name": "job_finding_selections_pk",
+      "entityType": "pks",
+      "table": "job_finding_selections"
+    },
+    {
+      "columns": [
+        "achievement_id",
+        "skill_id"
+      ],
+      "nameExplicit": false,
+      "name": "achievement_skills_pk",
+      "entityType": "pks",
+      "table": "achievement_skills"
+    },
+    {
+      "columns": [
+        "skill_id",
+        "employment_id"
+      ],
+      "nameExplicit": false,
+      "name": "skill_employment_pk",
+      "entityType": "pks",
+      "table": "skill_employment"
+    },
+    {
+      "columns": [
+        "skill_id",
+        "project_id"
+      ],
+      "nameExplicit": false,
+      "name": "skill_projects_pk",
+      "entityType": "pks",
+      "table": "skill_projects"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "applications_pk",
+      "table": "applications",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "companies_pk",
+      "table": "companies",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "company_findings_pk",
+      "table": "company_findings",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "document_artifacts_pk",
+      "table": "document_artifacts",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "document_revisions_pk",
+      "table": "document_revisions",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "documents_pk",
+      "table": "documents",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "generation_runs_pk",
+      "table": "generation_runs",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "job_source_options_pk",
+      "table": "job_source_options",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "jobs_pk",
+      "table": "jobs",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "achievements_pk",
+      "table": "achievements",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "education_pk",
+      "table": "education",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "employment_pk",
+      "table": "employment",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "profiles_pk",
+      "table": "profiles",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "projects_pk",
+      "table": "projects",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "skills_pk",
+      "table": "skills",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        {
+          "value": "profile_id",
+          "isExpression": false
+        },
+        {
+          "value": "document_id",
+          "isExpression": false
+        },
+        {
+          "value": "created_at",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "document_revisions_profile_id_document_id_created_at_idx",
+      "entityType": "indexes",
+      "table": "document_revisions"
+    },
+    {
+      "columns": [
+        {
+          "value": "profile_id",
+          "isExpression": false
+        },
+        {
+          "value": "application_id",
+          "isExpression": false
+        },
+        {
+          "value": "created_at",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "generation_runs_profile_id_application_id_created_at_idx",
+      "entityType": "indexes",
+      "table": "generation_runs"
+    },
+    {
+      "columns": [
+        {
+          "value": "profile_id",
+          "isExpression": false
+        },
+        {
+          "value": "updated_at",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "jobs_profile_id_updated_at_idx",
+      "entityType": "indexes",
+      "table": "jobs"
+    },
+    {
+      "columns": [
+        {
+          "value": "profile_id",
+          "isExpression": false
+        },
+        {
+          "value": "skill_id",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "achievement_skills_profile_id_skill_id_idx",
+      "entityType": "indexes",
+      "table": "achievement_skills"
+    },
+    {
+      "columns": [
+        {
+          "value": "profile_id",
+          "isExpression": false
+        },
+        {
+          "value": "employment_id",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "achievements_profile_id_employment_id_idx",
+      "entityType": "indexes",
+      "table": "achievements"
+    },
+    {
+      "columns": [
+        {
+          "value": "profile_id",
+          "isExpression": false
+        },
+        {
+          "value": "project_id",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "achievements_profile_id_project_id_idx",
+      "entityType": "indexes",
+      "table": "achievements"
+    },
+    {
+      "columns": [
+        {
+          "value": "profile_id",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "education_profile_id_idx",
+      "entityType": "indexes",
+      "table": "education"
+    },
+    {
+      "columns": [
+        {
+          "value": "profile_id",
+          "isExpression": false
+        },
+        {
+          "value": "employment_id",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "projects_profile_id_employment_id_idx",
+      "entityType": "indexes",
+      "table": "projects"
+    },
+    {
+      "columns": [
+        {
+          "value": "profile_id",
+          "isExpression": false
+        },
+        {
+          "value": "employment_id",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "skill_employment_profile_role_idx",
+      "entityType": "indexes",
+      "table": "skill_employment"
+    },
+    {
+      "columns": [
+        {
+          "value": "profile_id",
+          "isExpression": false
+        },
+        {
+          "value": "project_id",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "skill_projects_profile_project_idx",
+      "entityType": "indexes",
+      "table": "skill_projects"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "job_id"
+      ],
+      "nameExplicit": true,
+      "name": "applications_profile_id_job_id_unique",
+      "entityType": "uniques",
+      "table": "applications"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "id"
+      ],
+      "nameExplicit": true,
+      "name": "applications_profile_id_id_unique",
+      "entityType": "uniques",
+      "table": "applications"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "id"
+      ],
+      "nameExplicit": true,
+      "name": "companies_profile_id_id_unique",
+      "entityType": "uniques",
+      "table": "companies"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "company_id",
+        "id"
+      ],
+      "nameExplicit": true,
+      "name": "company_findings_owner_company_id_unique",
+      "entityType": "uniques",
+      "table": "company_findings"
+    },
+    {
+      "columns": [
+        "document_revision_id",
+        "format",
+        "template_version"
+      ],
+      "nameExplicit": true,
+      "name": "document_artifacts_revision_format_template_unique",
+      "entityType": "uniques",
+      "table": "document_artifacts"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "id"
+      ],
+      "nameExplicit": true,
+      "name": "document_revisions_profile_id_id_unique",
+      "entityType": "uniques",
+      "table": "document_revisions"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "application_id",
+        "type"
+      ],
+      "nameExplicit": true,
+      "name": "documents_profile_id_application_id_type_unique",
+      "entityType": "uniques",
+      "table": "documents"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "id"
+      ],
+      "nameExplicit": true,
+      "name": "documents_profile_id_id_unique",
+      "entityType": "uniques",
+      "table": "documents"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "id"
+      ],
+      "nameExplicit": true,
+      "name": "generation_runs_profile_id_id_unique",
+      "entityType": "uniques",
+      "table": "generation_runs"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "id"
+      ],
+      "nameExplicit": true,
+      "name": "job_source_options_profile_id_id_unique",
+      "entityType": "uniques",
+      "table": "job_source_options"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "id",
+        "company_id"
+      ],
+      "nameExplicit": true,
+      "name": "jobs_owner_company_unique",
+      "entityType": "uniques",
+      "table": "jobs"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "id"
+      ],
+      "nameExplicit": true,
+      "name": "jobs_profile_id_id_unique",
+      "entityType": "uniques",
+      "table": "jobs"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "id"
+      ],
+      "nameExplicit": true,
+      "name": "achievements_profile_id_id_unique",
+      "entityType": "uniques",
+      "table": "achievements"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "id"
+      ],
+      "nameExplicit": true,
+      "name": "employment_profile_id_id_unique",
+      "entityType": "uniques",
+      "table": "employment"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "id"
+      ],
+      "nameExplicit": true,
+      "name": "projects_profile_id_id_unique",
+      "entityType": "uniques",
+      "table": "projects"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "normalized_name"
+      ],
+      "nameExplicit": true,
+      "name": "skills_profile_id_normalized_name_unique",
+      "entityType": "uniques",
+      "table": "skills"
+    },
+    {
+      "columns": [
+        "profile_id",
+        "id"
+      ],
+      "nameExplicit": true,
+      "name": "skills_profile_id_id_unique",
+      "entityType": "uniques",
+      "table": "skills"
+    },
+    {
+      "value": "status IN ('preparing', 'ready', 'applied', 'interviewing', 'offer', 'rejected', 'withdrawn', 'accepted')",
+      "name": "applications_status_valid",
+      "entityType": "checks",
+      "table": "applications"
+    },
+    {
+      "value": "(logo_storage_key IS NULL) = (logo_content_type IS NULL)",
+      "name": "companies_logo_pair",
+      "entityType": "checks",
+      "table": "companies"
+    },
+    {
+      "value": "logo_content_type IS NULL OR logo_content_type IN ('image/png', 'image/jpeg', 'image/webp', 'image/svg+xml')",
+      "name": "companies_logo_content_type_valid",
+      "entityType": "checks",
+      "table": "companies"
+    },
+    {
+      "value": "trim(name) <> ''",
+      "name": "companies_name_not_blank",
+      "entityType": "checks",
+      "table": "companies"
+    },
+    {
+      "value": "trim(text) <> ''",
+      "name": "company_findings_text_not_blank",
+      "entityType": "checks",
+      "table": "company_findings"
+    },
+    {
+      "value": "kind IN ('statement','interpretation')",
+      "name": "company_findings_kind_valid",
+      "entityType": "checks",
+      "table": "company_findings"
+    },
+    {
+      "value": "format IN ('pdf')",
+      "name": "document_artifacts_format_valid",
+      "entityType": "checks",
+      "table": "document_artifacts"
+    },
+    {
+      "value": "source IN ('generated', 'pasted', 'assistant', 'edited')",
+      "name": "document_revisions_source_valid",
+      "entityType": "checks",
+      "table": "document_revisions"
+    },
+    {
+      "value": "type IN ('resume', 'cover_letter', 'recruiter_message')",
+      "name": "documents_type_valid",
+      "entityType": "checks",
+      "table": "documents"
+    },
+    {
+      "value": "document_type IN ('resume', 'cover_letter', 'recruiter_message')",
+      "name": "generation_runs_document_type_valid",
+      "entityType": "checks",
+      "table": "generation_runs"
+    },
+    {
+      "value": "state IN ('queued', 'running', 'succeeded', 'failed', 'cancelled')",
+      "name": "generation_runs_state_valid",
+      "entityType": "checks",
+      "table": "generation_runs"
+    },
+    {
+      "value": "failure_kind IS NULL OR failure_kind IN ('provider', 'validation', 'pasted_invalid', 'interrupted')",
+      "name": "generation_runs_failure_kind_valid",
+      "entityType": "checks",
+      "table": "generation_runs"
+    },
+    {
+      "value": "mode IN ('adapter', 'pasted', 'assistant')",
+      "name": "generation_runs_mode_valid",
+      "entityType": "checks",
+      "table": "generation_runs"
+    },
+    {
+      "value": "trim(name) <> ''",
+      "name": "job_source_options_name_not_blank",
+      "entityType": "checks",
+      "table": "job_source_options"
+    },
+    {
+      "value": "trim(title) <> ''",
+      "name": "jobs_title_not_blank",
+      "entityType": "checks",
+      "table": "jobs"
+    },
+    {
+      "value": "trim(raw_description) <> ''",
+      "name": "jobs_raw_description_not_blank",
+      "entityType": "checks",
+      "table": "jobs"
+    },
+    {
+      "value": "source IN ('pasted')",
+      "name": "jobs_source_valid",
+      "entityType": "checks",
+      "table": "jobs"
+    },
+    {
+      "value": "availability IN ('active', 'expired', 'unknown')",
+      "name": "jobs_availability_valid",
+      "entityType": "checks",
+      "table": "jobs"
+    },
+    {
+      "value": "trim(statement) <> ''",
+      "name": "achievements_statement_not_blank",
+      "entityType": "checks",
+      "table": "achievements"
+    },
+    {
+      "value": "employment_id IS NULL OR project_id IS NULL",
+      "name": "achievements_single_context",
+      "entityType": "checks",
+      "table": "achievements"
+    },
+    {
+      "value": "trim(institution) <> ''",
+      "name": "education_institution_not_blank",
+      "entityType": "checks",
+      "table": "education"
+    },
+    {
+      "value": "status IN ('in_progress', 'completed', 'incomplete')",
+      "name": "education_status_valid",
+      "entityType": "checks",
+      "table": "education"
+    },
+    {
+      "value": "(start_year IS NULL) = (start_month IS NULL)",
+      "name": "education_start_month_pair",
+      "entityType": "checks",
+      "table": "education"
+    },
+    {
+      "value": "(end_year IS NULL) = (end_month IS NULL)",
+      "name": "education_end_month_pair",
+      "entityType": "checks",
+      "table": "education"
+    },
+    {
+      "value": "start_month IS NULL OR (start_month BETWEEN 1 AND 12 AND start_year BETWEEN 1900 AND 2100)",
+      "name": "education_start_month_range",
+      "entityType": "checks",
+      "table": "education"
+    },
+    {
+      "value": "end_month IS NULL OR (end_month BETWEEN 1 AND 12 AND end_year BETWEEN 1900 AND 2100)",
+      "name": "education_end_month_range",
+      "entityType": "checks",
+      "table": "education"
+    },
+    {
+      "value": "start_year IS NULL OR end_year IS NULL OR (end_year * 12 + end_month) >= (start_year * 12 + start_month)",
+      "name": "education_end_not_before_start",
+      "entityType": "checks",
+      "table": "education"
+    },
+    {
+      "value": "trim(employer_name) <> ''",
+      "name": "employment_employer_name_not_blank",
+      "entityType": "checks",
+      "table": "employment"
+    },
+    {
+      "value": "trim(role) <> ''",
+      "name": "employment_role_not_blank",
+      "entityType": "checks",
+      "table": "employment"
+    },
+    {
+      "value": "(start_year IS NULL) = (start_month IS NULL)",
+      "name": "employment_start_month_pair",
+      "entityType": "checks",
+      "table": "employment"
+    },
+    {
+      "value": "(end_year IS NULL) = (end_month IS NULL)",
+      "name": "employment_end_month_pair",
+      "entityType": "checks",
+      "table": "employment"
+    },
+    {
+      "value": "start_month IS NULL OR (start_month BETWEEN 1 AND 12 AND start_year BETWEEN 1900 AND 2100)",
+      "name": "employment_start_month_range",
+      "entityType": "checks",
+      "table": "employment"
+    },
+    {
+      "value": "end_month IS NULL OR (end_month BETWEEN 1 AND 12 AND end_year BETWEEN 1900 AND 2100)",
+      "name": "employment_end_month_range",
+      "entityType": "checks",
+      "table": "employment"
+    },
+    {
+      "value": "start_year IS NULL OR end_year IS NULL OR (end_year * 12 + end_month) >= (start_year * 12 + start_month)",
+      "name": "employment_end_not_before_start",
+      "entityType": "checks",
+      "table": "employment"
+    },
+    {
+      "value": "trim(display_name) <> ''",
+      "name": "profiles_display_name_not_blank",
+      "entityType": "checks",
+      "table": "profiles"
+    },
+    {
+      "value": "trim(name) <> ''",
+      "name": "projects_name_not_blank",
+      "entityType": "checks",
+      "table": "projects"
+    },
+    {
+      "value": "(start_year IS NULL) = (start_month IS NULL)",
+      "name": "projects_start_month_pair",
+      "entityType": "checks",
+      "table": "projects"
+    },
+    {
+      "value": "(end_year IS NULL) = (end_month IS NULL)",
+      "name": "projects_end_month_pair",
+      "entityType": "checks",
+      "table": "projects"
+    },
+    {
+      "value": "start_month IS NULL OR (start_month BETWEEN 1 AND 12 AND start_year BETWEEN 1900 AND 2100)",
+      "name": "projects_start_month_range",
+      "entityType": "checks",
+      "table": "projects"
+    },
+    {
+      "value": "end_month IS NULL OR (end_month BETWEEN 1 AND 12 AND end_year BETWEEN 1900 AND 2100)",
+      "name": "projects_end_month_range",
+      "entityType": "checks",
+      "table": "projects"
+    },
+    {
+      "value": "start_year IS NULL OR end_year IS NULL OR (end_year * 12 + end_month) >= (start_year * 12 + start_month)",
+      "name": "projects_end_not_before_start",
+      "entityType": "checks",
+      "table": "projects"
+    },
+    {
+      "value": "trim(display_name) <> ''",
+      "name": "skills_display_name_not_blank",
+      "entityType": "checks",
+      "table": "skills"
+    },
+    {
+      "value": "trim(normalized_name) <> ''",
+      "name": "skills_normalized_name_not_blank",
+      "entityType": "checks",
+      "table": "skills"
+    }
+  ],
+  "renames": []
+}

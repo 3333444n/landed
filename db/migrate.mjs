@@ -1,40 +1,23 @@
-// Applies db/migrations to DATABASE_URL using only production dependencies (drizzle-orm, pg),
-// so the release image needs no drizzle-kit. Contributors keep using `pnpm db:migrate`.
-// Usage: DATABASE_URL=postgres://... node db/migrate.mjs
-import { drizzle } from "drizzle-orm/node-postgres";
-import { migrate } from "drizzle-orm/node-postgres/migrator";
-import { Pool } from "pg";
+// Applies db/migrations to the SQLite file at LANDED_DATABASE_PATH (default ./data/landed.db),
+// creating the file and its folder if missing. Usage: pnpm db:migrate
+import { mkdirSync } from "node:fs";
+import { dirname } from "node:path";
+import { DatabaseSync } from "node:sqlite";
+import { drizzle } from "drizzle-orm/node-sqlite";
+import { migrate } from "drizzle-orm/node-sqlite/migrator";
 
-const url = process.env.DATABASE_URL;
-if (!url) {
-  console.error("DATABASE_URL is required");
-  process.exit(1);
-}
-
-const pool = new Pool({ connectionString: url });
-const db = drizzle({ client: pool });
-
-async function appliedCount() {
-  // Drizzle records applied migrations here; the table does not exist before the first run.
-  const result = await pool.query(
-    "SELECT count(*)::int AS count FROM drizzle.__drizzle_migrations",
-  );
-  return result.rows[0].count;
-}
+const path = process.env.LANDED_DATABASE_PATH || "./data/landed.db";
+mkdirSync(dirname(path), { recursive: true });
+const client = new DatabaseSync(path);
+client.exec("PRAGMA journal_mode = WAL");
+client.exec("PRAGMA foreign_keys = ON");
 
 try {
-  const before = await appliedCount().catch(() => 0);
-  await migrate(db, { migrationsFolder: "./db/migrations" });
-  const after = await appliedCount();
-  console.log(`Migrations: ${after - before} applied, ${after} total`);
+  migrate(drizzle({ client }), { migrationsFolder: "./db/migrations" });
+  console.log(`Migrations applied to ${path}`);
 } catch (error) {
-  // drizzle wraps the driver error; the cause carries the useful part ("password authentication
-  // failed", "ECONNREFUSED"), so print both.
-  const message = error instanceof Error ? error.message : String(error);
-  const cause =
-    error instanceof Error && error.cause instanceof Error ? ` (${error.cause.message})` : "";
-  console.error(`Migration failed: ${message}${cause}`);
+  console.error(`Migration failed: ${error instanceof Error ? error.message : String(error)}`);
   process.exitCode = 1;
 } finally {
-  await pool.end();
+  client.close();
 }

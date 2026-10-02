@@ -23,7 +23,7 @@ let connection: DatabaseConnection;
 let artifactDir: string;
 let profileId: string;
 let companyId: string;
-const deps = () => ({ db: connection.db, artifactDir });
+const deps = () => ({ ...connection, artifactDir });
 const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 73, 72]);
 const svg = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"/>');
 const unwrap = <T>(r: { ok: true; value: T } | { ok: false; error: unknown }): T => {
@@ -164,12 +164,12 @@ it("accepts migrated legacy file keys and rejects invalid image bytes and databa
     false,
   );
   await expect(
-    connection.db.execute(
+    connection.writer.run(
       sql`UPDATE companies SET logo_content_type = NULL WHERE id = ${companyId}`,
     ),
   ).rejects.toThrow();
   await expect(
-    connection.db.execute(
+    connection.writer.run(
       sql`UPDATE companies SET logo_content_type = 'image/gif' WHERE id = ${companyId}`,
     ),
   ).rejects.toThrow();

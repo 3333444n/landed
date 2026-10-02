@@ -6,7 +6,8 @@ import { createProfile } from "@/modules/profile";
 import { errorState, formDataToObject, type ActionState } from "./form-state";
 
 function deps() {
-  return { db: getDatabase().db };
+  const { db, runInTransaction } = getDatabase();
+  return { db, runInTransaction };
 }
 
 export async function createProfileAction(

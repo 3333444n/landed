@@ -20,12 +20,7 @@ export type ModelProvider = (typeof modelProviders)[number];
 export const openRouterBaseUrl = "https://openrouter.ai/api/v1";
 
 const envSchema = z.object({
-  DATABASE_URL: z
-    .string()
-    .min(1, "DATABASE_URL is required; copy .env.example to .env")
-    .refine((url) => url.startsWith("postgres://") || url.startsWith("postgresql://"), {
-      message: "DATABASE_URL must be a PostgreSQL connection string",
-    }),
+  LANDED_DATABASE_PATH: z.preprocess(blank, z.string().trim().default("./data/landed.db")),
   LANDED_MODEL_PROVIDER: z.preprocess(
     blank,
     z

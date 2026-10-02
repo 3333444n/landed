@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-sqlite";
 import { openSqlite } from "@/infrastructure/sqlite";
-import { mapSqliteError, sqliteError } from "./service";
+import { mapDatabaseError, sqliteError } from "./service";
 
 // Real constraint violations against an in-memory database, through Drizzle as services will
 // run them after the move to SQLite. Drizzle wraps errors from raw `sql` statements in a
@@ -44,17 +44,17 @@ async function violation(statement: ReturnType<typeof sql>): Promise<unknown> {
 
 const noReplay = async () => null;
 
-describe("mapSqliteError", () => {
+describe("mapDatabaseError", () => {
   it("answers a duplicate primary key (1555) with the replay", async () => {
     const error = await violation(sql`INSERT INTO skills VALUES ('s1', 'p1', 'Go')`);
     expect(sqliteError(error)?.errcode).toBe(1555);
     const replay = { ok: true as const, value: "existing" };
-    expect(await mapSqliteError(error, async () => replay)).toBe(replay);
+    expect(await mapDatabaseError(error, async () => replay)).toBe(replay);
   });
 
   it("reports a conflict when a duplicate id is not a replay", async () => {
     const error = await violation(sql`INSERT INTO skills VALUES ('s1', 'p1', 'Go')`);
-    expect(await mapSqliteError(error, noReplay)).toEqual({
+    expect(await mapDatabaseError(error, noReplay)).toEqual({
       ok: false,
       error: { kind: "conflict", message: "This record id is already used by another record" },
     });
@@ -65,23 +65,23 @@ describe("mapSqliteError", () => {
     expect(sqliteError(error)?.errcode).toBe(2067);
     expect(sqliteError(error)?.message).toContain("jobs.profile_id, jobs.id");
     const replay = { ok: true as const, value: "existing job" };
-    expect(await mapSqliteError(error, async () => replay)).toBe(replay);
+    expect(await mapDatabaseError(error, async () => replay)).toBe(replay);
   });
 
   it("maps another unique conflict (2067) to a conflict or the given field errors", async () => {
     const error = await violation(sql`INSERT INTO skills VALUES ('s2', 'p1', 'SQL')`);
     expect(sqliteError(error)?.errcode).toBe(2067);
-    expect(await mapSqliteError(error, noReplay)).toEqual({
+    expect(await mapDatabaseError(error, noReplay)).toEqual({
       ok: false,
       error: { kind: "conflict", message: "A record with the same value already exists" },
     });
     const fieldErrors = { name: ["This skill already exists"] };
-    expect(await mapSqliteError(error, noReplay, fieldErrors)).toEqual({
+    expect(await mapDatabaseError(error, noReplay, fieldErrors)).toEqual({
       ok: false,
       error: { kind: "validation", fieldErrors },
     });
     const seen: (string | undefined)[] = [];
-    await mapSqliteError(error, noReplay, (columns) => {
+    await mapDatabaseError(error, noReplay, (columns) => {
       seen.push(columns);
       return fieldErrors;
     });
@@ -91,7 +91,7 @@ describe("mapSqliteError", () => {
   it("maps a foreign-key violation (787) to a conflict", async () => {
     const error = await violation(sql`INSERT INTO jobs VALUES ('j2', 'missing', 'Engineer')`);
     expect(sqliteError(error)?.errcode).toBe(787);
-    expect(await mapSqliteError(error, noReplay)).toEqual({
+    expect(await mapDatabaseError(error, noReplay)).toEqual({
       ok: false,
       error: {
         kind: "conflict",
@@ -100,7 +100,7 @@ describe("mapSqliteError", () => {
     });
     const deleting = await violation(sql`DELETE FROM profiles WHERE id = 'p1'`);
     expect(sqliteError(deleting)?.errcode).toBe(787);
-    expect(await mapSqliteError(deleting, noReplay)).toMatchObject({
+    expect(await mapDatabaseError(deleting, noReplay)).toMatchObject({
       ok: false,
       error: { kind: "conflict" },
     });
@@ -109,7 +109,7 @@ describe("mapSqliteError", () => {
   it("maps a check violation (275) to a form validation error", async () => {
     const error = await violation(sql`INSERT INTO jobs VALUES ('j2', 'p1', '  ')`);
     expect(sqliteError(error)?.errcode).toBe(275);
-    expect(await mapSqliteError(error, noReplay)).toEqual({
+    expect(await mapDatabaseError(error, noReplay)).toEqual({
       ok: false,
       error: {
         kind: "validation",
@@ -121,7 +121,7 @@ describe("mapSqliteError", () => {
   it("rethrows a NOT NULL violation (1299), as the PostgreSQL mapping does", async () => {
     const error = await violation(sql`INSERT INTO jobs VALUES ('j2', 'p1', NULL)`);
     expect(sqliteError(error)?.errcode).toBe(1299);
-    await expect(mapSqliteError(error, noReplay)).rejects.toBe(error);
+    await expect(mapDatabaseError(error, noReplay)).rejects.toBe(error);
   });
 
   it("reads the SQLite error whether or not Drizzle wraps it", async () => {
@@ -136,11 +136,11 @@ describe("mapSqliteError", () => {
     })();
     expect(bare).toMatchObject({ code: "ERR_SQLITE_ERROR", errcode: 1555 });
     expect(sqliteError(bare)).toBe(bare);
-    expect(await mapSqliteError(bare, noReplay)).toMatchObject({ error: { kind: "conflict" } });
+    expect(await mapDatabaseError(bare, noReplay)).toMatchObject({ error: { kind: "conflict" } });
   });
 
   it("rethrows anything that is not a SQLite error", async () => {
     const error = new Error("network down");
-    await expect(mapSqliteError(error, noReplay)).rejects.toBe(error);
+    await expect(mapDatabaseError(error, noReplay)).rejects.toBe(error);
   });
 });

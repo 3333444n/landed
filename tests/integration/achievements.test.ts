@@ -1,10 +1,9 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { sql } from "drizzle-orm";
 import type { DatabaseConnection } from "@/infrastructure/database";
 import { createAchievement, createProfile, listAchievements } from "@/modules/profile";
 import * as repo from "@/modules/profile/repository";
-import { skills } from "@/modules/profile/schema";
-import { openTestDatabase, testDatabaseUrl, truncateAll } from "../helpers/test-database";
+import { achievements, skills } from "@/modules/profile/schema";
+import { openTestDatabase, truncateAll } from "../helpers/test-database";
 import { createDatabase } from "@/infrastructure/database";
 
 vi.mock("@/modules/profile/repository", async (importOriginal) => {
@@ -38,16 +37,18 @@ beforeEach(async () => {
 });
 
 async function seedProfileAndSkill() {
-  const profile = await createProfile(
-    { db: connection.db },
-    { id: demo.profileId, displayName: demo.displayName },
-  );
+  const profile = await createProfile(connection, {
+    id: demo.profileId,
+    displayName: demo.displayName,
+  });
   if (!profile.ok) throw new Error("profile seed failed");
-  await connection.db.insert(skills).values({
+  await connection.writer.insert(skills).values({
     id: demo.skillId,
     profileId: demo.profileId,
     displayName: "PostgreSQL",
     normalizedName: "postgresql",
+    createdAt: new Date(),
+    updatedAt: new Date(),
   });
 }
 
@@ -55,7 +56,7 @@ describe("createAchievement", () => {
   it("saves the achievement with its skill link and reads it back on a fresh connection", async () => {
     await seedProfileAndSkill();
 
-    const result = await createAchievement({ db: connection.db }, demo.profileId, {
+    const result = await createAchievement(connection, demo.profileId, {
       id: demo.achievementId,
       statement: demo.statement,
       sourceNote: demo.sourceNote,
@@ -68,9 +69,9 @@ describe("createAchievement", () => {
     expect(result.value.skillIds).toEqual([demo.skillId]);
 
     // A new pool stands in for a restarted process: only committed rows are visible.
-    const fresh = createDatabase(testDatabaseUrl());
+    const fresh = createDatabase(connection.writer.$client.location()!);
     try {
-      const list = await listAchievements({ db: fresh.db }, demo.profileId);
+      const list = await listAchievements(fresh, demo.profileId);
       expect(list).toHaveLength(1);
       expect(list[0]?.id).toBe(demo.achievementId);
       expect(list[0]?.skillIds).toEqual([demo.skillId]);
@@ -81,19 +82,19 @@ describe("createAchievement", () => {
 
   it("rejects a blank statement with a field error and writes nothing", async () => {
     await seedProfileAndSkill();
-    const result = await createAchievement({ db: connection.db }, demo.profileId, {
+    const result = await createAchievement(connection, demo.profileId, {
       statement: "   ",
     });
     expect(result).toEqual({
       ok: false,
       error: { kind: "validation", fieldErrors: { statement: ["Write the factual statement"] } },
     });
-    expect(await listAchievements({ db: connection.db }, demo.profileId)).toHaveLength(0);
+    expect(await listAchievements(connection, demo.profileId)).toHaveLength(0);
   });
 
   it("rejects two context links before touching the database", async () => {
     await seedProfileAndSkill();
-    const result = await createAchievement({ db: connection.db }, demo.profileId, {
+    const result = await createAchievement(connection, demo.profileId, {
       statement: demo.statement,
       employmentId: "20000000-0000-4000-8000-000000000001",
       projectId: "40000000-0000-4000-8000-000000000001",
@@ -109,7 +110,7 @@ describe("createAchievement", () => {
 
   it("rejects a context link that belongs to no record in the profile", async () => {
     await seedProfileAndSkill();
-    const result = await createAchievement({ db: connection.db }, demo.profileId, {
+    const result = await createAchievement(connection, demo.profileId, {
       statement: demo.statement,
       employmentId: "20000000-0000-4000-8000-000000000009",
     });
@@ -128,33 +129,32 @@ describe("createAchievement", () => {
       throw new Error("simulated failure while writing skill links");
     });
     await expect(
-      createAchievement({ db: connection.db }, demo.profileId, {
+      createAchievement(connection, demo.profileId, {
         statement: demo.statement,
         skillIds: [demo.skillId],
       }),
     ).rejects.toThrow("simulated failure");
-    const count = await connection.db.execute(sql`SELECT count(*)::int AS n FROM achievements`);
-    expect(count.rows[0]?.n).toBe(0);
+    expect(await connection.db.$count(achievements)).toBe(0);
   });
 
   it("returns the same record and keeps one row when a create is retried with the same id", async () => {
     await seedProfileAndSkill();
     const input = { id: demo.achievementId, statement: demo.statement, skillIds: [demo.skillId] };
-    const first = await createAchievement({ db: connection.db }, demo.profileId, input);
-    const second = await createAchievement({ db: connection.db }, demo.profileId, input);
+    const first = await createAchievement(connection, demo.profileId, input);
+    const second = await createAchievement(connection, demo.profileId, input);
     expect(first.ok && second.ok).toBe(true);
     if (!first.ok || !second.ok) return;
     expect(second.value.id).toBe(first.value.id);
     expect(second.value.skillIds).toEqual([demo.skillId]);
-    expect(await listAchievements({ db: connection.db }, demo.profileId)).toHaveLength(1);
+    expect(await listAchievements(connection, demo.profileId)).toHaveLength(1);
   });
 });
 
 describe("createProfile", () => {
   it("creates the single profile and refuses a second one", async () => {
-    const first = await createProfile({ db: connection.db }, { displayName: "Alex Rivera" });
+    const first = await createProfile(connection, { displayName: "Alex Rivera" });
     expect(first.ok).toBe(true);
-    const second = await createProfile({ db: connection.db }, { displayName: "Someone Else" });
+    const second = await createProfile(connection, { displayName: "Someone Else" });
     expect(second).toEqual({
       ok: false,
       error: { kind: "conflict", message: "A profile already exists in this installation" },
@@ -162,7 +162,7 @@ describe("createProfile", () => {
   });
 
   it("rejects a blank name", async () => {
-    const result = await createProfile({ db: connection.db }, { displayName: "  " });
+    const result = await createProfile(connection, { displayName: "  " });
     expect(result).toEqual({
       ok: false,
       error: { kind: "validation", fieldErrors: { displayName: ["Enter your name"] } },

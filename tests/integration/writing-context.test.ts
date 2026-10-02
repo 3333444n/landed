@@ -7,7 +7,7 @@ import { getApplicationForJob, updateApplication, updateInterest } from "@/modul
 import { pursueJob } from "@/app/jobs/pursue-job";
 import { openTestDatabase, truncateAll } from "../helpers/test-database";
 let connection: DatabaseConnection;
-const deps = () => ({ db: connection.db });
+const deps = () => connection;
 function unwrap<T>(r: { ok: true; value: T } | { ok: false; error: unknown }): T {
   if (!r.ok) throw new Error(JSON.stringify(r.error));
   return r.value;
