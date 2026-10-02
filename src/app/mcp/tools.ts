@@ -21,7 +21,6 @@ import { getApplicationForJob, matchesFilter, updateInterest } from "@/modules/a
 import {
   contentSchemas,
   contentUnits,
-  documentSlugs,
   documentTypes,
   editUnit,
   textSegment,
@@ -49,10 +48,8 @@ import { registerProfileTools } from "./profile-tools";
 export interface ToolContext {
   deps: BaseDeps;
   artifactDir: string;
-  /** Scheme and host the request arrived on, for download links the harness can open. */
-  origin: string;
-  /** The client's User-Agent, recorded as the run's provider (self-reported, best effort). */
-  userAgent: string | null;
+  /** Recorded as the run's provider. */
+  userAgent: string;
 }
 
 /**
@@ -190,7 +187,7 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
     },
     tool(async ({ job_id, type, assistant }, profileId) => {
       const brief = await prepareAssistantBrief(ctx.deps, profileId, job_id, type, {
-        provider: ctx.userAgent ?? "assistant",
+        provider: ctx.userAgent,
         model: assistant ?? "unreported",
       });
       if (!brief.ok) return refused(brief.error);
@@ -328,7 +325,7 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
     {
       title: "Render PDF",
       description:
-        "Renders the latest revision of the resume or the cover letter to PDF (once per revision; later calls reuse the file) and returns the page count and a download address on this Landed installation.",
+        "Renders the latest revision of the resume or the cover letter to PDF (once per revision; later calls reuse the file) and returns the page count and the absolute path of the PDF file on this computer.",
       inputSchema: z.object({ job_id: jobId, type: z.enum(["resume", "cover_letter"]) }),
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
     },
@@ -348,7 +345,7 @@ export function registerTools(server: McpServer, ctx: ToolContext): void {
         filename: rendered.value.filename,
         pages: pdfPageCount(rendered.value.bytes),
         size_bytes: rendered.value.bytes.byteLength,
-        download_url: `${ctx.origin}/jobs/${job_id}/${documentSlugs[type]}/pdf`,
+        path: rendered.value.path,
         reused: rendered.value.reused,
       });
     }),

@@ -1,5 +1,5 @@
-import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
-import { buildMcpHandler } from "@/app/mcp/handler";
+import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
+import { createMcpServer } from "@/app/mcp/server";
 import { beforeAll, afterAll, beforeEach, describe, expect, it } from "vitest";
 import type { DatabaseConnection } from "@/infrastructure/database";
 import { createProfile } from "@/modules/profile";
@@ -118,18 +118,15 @@ describe("Job Sources", () => {
 });
 
 it("exposes source management and assignment through MCP", async () => {
-  const handler = buildMcpHandler({
+  const server = createMcpServer({
     deps: deps(),
     artifactDir: "/tmp/unused-source-test",
-    origin: "http://127.0.0.1:3417",
     userAgent: "source-test",
   });
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  await server.connect(serverTransport);
   const client = new Client({ name: "source-test", version: "1" });
-  await client.connect(
-    new StreamableHTTPClientTransport(new URL("http://127.0.0.1:3417/mcp"), {
-      fetch: (input, init) => handler.fetch(new Request(input, init)),
-    }),
-  );
+  await client.connect(clientTransport);
   async function call(name: string, args: Record<string, unknown>) {
     const result = await client.callTool({ name, arguments: args });
     expect(result.isError).not.toBe(true);

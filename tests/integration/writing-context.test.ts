@@ -1,5 +1,5 @@
-import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
-import { buildMcpHandler } from "@/app/mcp/handler";
+import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
+import { createMcpServer } from "@/app/mcp/server";
 import { afterAll, beforeAll, beforeEach, expect, it } from "vitest";
 import type { DatabaseConnection } from "@/infrastructure/database";
 import { createProfile, patchProfile, updateProfile } from "@/modules/profile";
@@ -115,18 +115,15 @@ it("round-trips narratives through MCP and rejects stale application versions", 
       rawDescription: "Build useful tools.",
     }),
   );
-  const handler = buildMcpHandler({
+  const server = createMcpServer({
     deps: deps(),
     artifactDir: "/tmp/unused-context-test",
-    origin: "http://127.0.0.1:3417",
     userAgent: "context-test",
   });
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  await server.connect(serverTransport);
   const client = new Client({ name: "context-test", version: "1" });
-  await client.connect(
-    new StreamableHTTPClientTransport(new URL("http://127.0.0.1:3417/mcp"), {
-      fetch: (input, init) => handler.fetch(new Request(input, init)),
-    }),
-  );
+  await client.connect(clientTransport);
   async function call<T>(name: string, args: Record<string, unknown>): Promise<T> {
     const response = await client.callTool({ name, arguments: args });
     expect(response.isError).not.toBe(true);

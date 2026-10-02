@@ -1,9 +1,8 @@
 /*
  * Host and Origin validation for the whole app (docs/03). Landed listens on the user's computer,
  * so a page on any website could make the browser resolve an attacker's hostname to 127.0.0.1
- * (DNS rebinding) and read whatever the app shows, including the assistant token on the Settings
- * column. Answering only requests whose Host names this computer closes that door; the MCP
- * transport specification requires the same check on Origin. Pure and dependency-free, because
+ * (DNS rebinding) and read whatever the app shows. Answering only requests whose Host names this
+ * computer, and whose Origin does too, closes that door. Pure and dependency-free, because
  * the proxy that calls it must not rely on shared modules.
  */
 

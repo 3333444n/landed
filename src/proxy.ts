@@ -1,10 +1,9 @@
 /*
- * Runs before every request, including Server Function POSTs, route handlers and /mcp: refuses
+ * Runs before every request, including Server Function POSTs and route handlers: refuses
  * requests whose Host or Origin does not name this computer (see src/infrastructure/host-guard.ts
  * for why) and, when LANDED_SESSION_SECRET is set, requests without the per-launch session cookie
  * (src/infrastructure/session-guard.ts). It reads the environment directly and imports only the
- * guards, as Next asks of a proxy, and never touches the response body, because the MCP route
- * streams its answer.
+ * guards, as Next asks of a proxy, and never touches the response body.
  */
 import { NextResponse, type NextRequest } from "next/server";
 import { isAllowedHost } from "@/infrastructure/host-guard";

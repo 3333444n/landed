@@ -8,6 +8,8 @@ directories:
 # The app itself is the bundled main process; the Next.js server and the migrations ship beside it.
 files:
   - dist-desktop/**
+  # The contributors' stdio bundle (pnpm mcp); the app serves stdio from main.cjs with --mcp.
+  - "!dist-desktop/mcp.cjs"
   - package.json
   - "!node_modules/**"
 extraResources:

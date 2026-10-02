@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
-import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
+import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { buildMcpHandler } from "@/app/mcp/handler";
+import { createMcpServer } from "@/app/mcp/server";
 import type { DatabaseConnection } from "@/infrastructure/database";
 import { getAchievement, getCurrentProfile, updateAchievement } from "@/modules/profile";
 import { getRun } from "@/modules/documents";
@@ -40,18 +40,15 @@ afterAll(async () => {
 beforeEach(async () => {
   await client?.close();
   await truncateAll(db);
-  const handler = buildMcpHandler({
+  const server = createMcpServer({
     deps: deps(),
     artifactDir: "/tmp/unused-profile-test",
-    origin: "http://127.0.0.1:3417",
     userAgent: "profile-test",
   });
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  await server.connect(serverTransport);
   client = new Client({ name: "profile-test", version: "1" });
-  await client.connect(
-    new StreamableHTTPClientTransport(new URL("http://127.0.0.1:3417/mcp"), {
-      fetch: (input, init) => handler.fetch(new Request(input, init)),
-    }),
-  );
+  await client.connect(clientTransport);
 });
 async function bootstrap() {
   return (await call("create_profile", { profile_id: randomUUID(), display_name: "Alex Example" }))

@@ -1,7 +1,8 @@
 /*
  * The Electron main process (ADR 013): a thin supervisor that migrates the database, starts the
  * Next.js standalone server in a utilityProcess on a free 127.0.0.1 port, and opens one sandboxed
- * window that alone holds the per-launch session cookie the server requires.
+ * window that alone holds the per-launch session cookie the server requires. Started with `--mcp`
+ * by an assistant, it opens no window and serves the tools over stdio on the same data.
  */
 import { randomBytes } from "node:crypto";
 import { mkdirSync } from "node:fs";
@@ -17,15 +18,33 @@ import {
   utilityProcess,
   type UtilityProcess,
 } from "electron";
+import { serveLandedStdio } from "../src/app/mcp/stdio";
 import { sessionCookieName } from "../src/infrastructure/session-guard";
-import { migrateWithBackup, NewerDatabaseError } from "./migrate";
+import { migrateWithBackup, NewerDatabaseError } from "../src/infrastructure/migrate";
 import { clearModelSettings, loadModelEnv, saveModelSettings } from "./model-settings";
 
 let window: BrowserWindow | null = null;
 let server: UtilityProcess | null = null;
 let quitting = false;
 
-if (!app.requestSingleInstanceLock()) {
+// Development runs keep their own data, apart from an installed Landed's.
+if (!app.isPackaged) app.setPath("userData", join(__dirname, "../data/desktop-dev"));
+const userData = app.getPath("userData");
+const dataDir = join(userData, "data");
+const artifactDir = join(userData, "artifacts");
+const dbPath = join(dataDir, "landed.db");
+const backupDir = join(userData, "backups");
+// Packaged, electron-builder puts these in Resources; in development they are in the repository.
+const root = join(__dirname, "..");
+const migrationsDir = app.isPackaged
+  ? join(process.resourcesPath, "migrations")
+  : join(root, "db/migrations");
+
+if (process.argv.includes("--mcp")) {
+  app.dock?.hide();
+  serveLandedStdio({ dbPath, artifactDir, migrationsDir, backupDir, appVersion: app.getVersion() });
+  process.stdin.on("end", () => app.quit());
+} else if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
   app.on("second-instance", () => {
@@ -41,31 +60,14 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 async function startApp() {
-  // Development runs keep their own data, apart from an installed Landed's.
-  if (!app.isPackaged) app.setPath("userData", join(__dirname, "../data/desktop-dev"));
-  const userData = app.getPath("userData");
-  const dataDir = join(userData, "data");
-  const artifactDir = join(userData, "artifacts");
   mkdirSync(dataDir, { recursive: true });
   mkdirSync(artifactDir, { recursive: true });
-  const dbPath = join(dataDir, "landed.db");
-
-  // Packaged, electron-builder puts these in Resources; in development they are in the repository.
-  const root = join(__dirname, "..");
   const serverDir = app.isPackaged
     ? join(process.resourcesPath, "server")
     : join(root, ".next/standalone");
-  const migrationsDir = app.isPackaged
-    ? join(process.resourcesPath, "migrations")
-    : join(root, "db/migrations");
 
   try {
-    migrateWithBackup({
-      dbPath,
-      migrationsDir,
-      backupDir: join(userData, "backups"),
-      appVersion: app.getVersion(),
-    });
+    migrateWithBackup({ dbPath, migrationsDir, backupDir, appVersion: app.getVersion() });
   } catch (error) {
     if (!(error instanceof NewerDatabaseError)) throw error;
     dialog.showErrorBox(
@@ -95,6 +97,7 @@ async function startApp() {
     LANDED_DATABASE_PATH: dbPath,
     LANDED_ARTIFACT_DIR: artifactDir,
     LANDED_SESSION_SECRET: secret,
+    LANDED_EXECUTABLE_PATH: process.execPath,
     LANDED_DESKTOP: "1",
     NODE_ENV: "production" as const,
   };

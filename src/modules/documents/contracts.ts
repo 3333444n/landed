@@ -47,7 +47,7 @@ export const failureLabels: Record<FailureKind, string> = {
 
 /**
  * Who wrote the answer: the configured adapter, a person pasting it back, or the user's own
- * assistant through the /mcp endpoint. The two non-adapter modes open a queued run and finish it
+ * assistant over MCP. The two non-adapter modes open a queued run and finish it
  * when the answer arrives.
  */
 export const runModes = ["adapter", "pasted", "assistant"] as const;
