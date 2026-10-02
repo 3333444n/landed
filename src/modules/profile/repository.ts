@@ -27,7 +27,13 @@ export type ProjectRecord = typeof projects.$inferSelect;
 export type AchievementRecord = typeof achievements.$inferSelect;
 export type SkillRecord = typeof skills.$inferSelect;
 
-export interface Owned<T extends PgTable = PgTable> {
+/** A table as `pgTable` returns it; the bare `PgTable` type no longer carries the inferred row types. */
+type TypedTable = PgTable & {
+  readonly $inferSelect: Record<string, unknown>;
+  readonly $inferInsert: Record<string, unknown>;
+};
+
+export interface Owned<T extends TypedTable = TypedTable> {
   table: T;
   id: PgColumn;
   profileId: PgColumn;

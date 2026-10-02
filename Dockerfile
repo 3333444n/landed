@@ -2,7 +2,7 @@
 # Contributors keep running Next.js locally with `pnpm dev`; this file is not used by them.
 
 # Stage 1: install dependencies and build the standalone server.
-FROM node:22.23-bookworm-slim AS build
+FROM node:24.21-bookworm-slim AS build
 WORKDIR /app
 # corepack installs the pnpm version pinned in package.json, so the image and the repository
 # resolve the lockfile with the same tool.
@@ -19,7 +19,7 @@ RUN pnpm build
 RUN cp -RL node_modules/drizzle-orm .next/standalone/node_modules/drizzle-orm
 
 # Stage 2: runtime. Only the traced server, static assets and the migration files are kept.
-FROM node:22.23-bookworm-slim AS runtime
+FROM node:24.21-bookworm-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000
 # server.js from `output: "standalone"` listens on HOSTNAME:PORT. 0.0.0.0 here means "all

@@ -4,7 +4,7 @@ Start at the [documentation index](docs/00-index.md) and the [decision register]
 
 ## Set up
 
-The [contributor quickstart](docs/07-quickstart-contract.md#contributor-path-tested) has the tested commands. In short: Node 22, pnpm, Docker; `pnpm install`, `pnpm db:up`, `pnpm db:migrate`, `pnpm dev`.
+The [contributor quickstart](docs/07-quickstart-contract.md#contributor-path-tested) has the tested commands. In short: Node 24, pnpm, Docker; `pnpm install`, `pnpm db:up`, `pnpm db:migrate`, `pnpm dev`.
 
 ## Checks
 

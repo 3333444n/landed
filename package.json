@@ -6,7 +6,7 @@
   "license": "MIT",
   "packageManager": "pnpm@10.34.4",
   "engines": {
-    "node": ">=22 <23"
+    "node": ">=24 <25"
   },
   "scripts": {
     "dev": "next dev",
@@ -41,7 +41,7 @@
     "@tiptap/react": "3.31.3",
     "@tiptap/starter-kit": "3.31.3",
     "ai": "7.0.100",
-    "drizzle-orm": "0.45.2",
+    "drizzle-orm": "1.0.0-beta.22",
     "lucide-react": "1.46.0",
     "next": "16.3.5",
     "pg": "8.23.0",
@@ -52,11 +52,11 @@
   "devDependencies": {
     "@modelcontextprotocol/client": "2.0.0",
     "@playwright/test": "1.63.0",
-    "@types/node": "^22.20.2",
+    "@types/node": "^24.19.1",
     "@types/pg": "^8.23.1",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "drizzle-kit": "0.31.10",
+    "drizzle-kit": "1.0.0-beta.22",
     "eslint": "^9.39.5",
     "eslint-config-next": "16.3.5",
     "prettier": "3.9.6",

@@ -11,16 +11,21 @@ it("upgrades legacy jobs without name matching and preserves shared logo provena
     await connection.db.transaction(async (tx) => {
       await tx.execute(sql.raw(`CREATE SCHEMA "${schema}"`));
       await tx.execute(sql.raw(`SET LOCAL search_path TO "${schema}"`));
-      const files = (await readdir("db/migrations")).filter((f) => f.endsWith(".sql")).sort();
-      const apply = async (file: string) => {
-        const source = (await readFile(`db/migrations/${file}`, "utf8")).replaceAll(
+      // Each migration is a folder holding migration.sql; the canonical-identity one is the target.
+      const folders = (await readdir("db/migrations", { withFileTypes: true }))
+        .filter((entry) => entry.isDirectory())
+        .map((entry) => entry.name)
+        .sort();
+      const target = folders.find((f) => f.endsWith("_secret_domino"))!;
+      const apply = async (folder: string) => {
+        const source = (await readFile(`db/migrations/${folder}/migration.sql`, "utf8")).replaceAll(
           '"public".',
           `"${schema}".`,
         );
         for (const statement of source.split("--> statement-breakpoint"))
           if (statement.trim()) await tx.execute(sql.raw(statement));
       };
-      for (const file of files.filter((f) => f < "0011")) await apply(file);
+      for (const folder of folders.filter((f) => f < target)) await apply(folder);
       const profile = randomUUID(),
         company = randomUUID();
       const a = randomUUID(),
@@ -38,7 +43,7 @@ it("upgrades legacy jobs without name matching and preserves shared logo provena
     (${b},${profile},'Second','Another old name',${company},'Work','logos/newest-12345678.png','image/png','2026-02-01'),
     (${c},${profile},'Third','Same name',NULL,'Work','logos/unlinked-12345678.png','image/png','2026-01-01'),
     (${d},${profile},'Fourth','Same name',NULL,'Work',NULL,NULL,'2026-01-01')`);
-      await apply(files.find((f) => f.startsWith("0011"))!);
+      await apply(target);
       const rows = (
         await tx.execute(
           sql`SELECT j.id, j.company_id, c.name, c.logo_storage_key FROM jobs j JOIN companies c ON j.company_id=c.id ORDER BY j.title`,
