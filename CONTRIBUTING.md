@@ -25,12 +25,12 @@ CI runs the same steps on every pull request (`.github/workflows/ci.yml` calls t
 - `pnpm eval` calls the real provider configured in `.env` with the synthetic cases in `examples/generation/cases` and prints grounding warnings, tokens, latency and cost. It spends money, is never part of CI, and is required only when you change a prompt, a document schema or a provider; paste its table into the pull request. Every other check runs with the fake model adapter (`LANDED_MODEL_PROVIDER=fake` in `.env.test`), which answers from `examples/generation/fixtures`, so no key is ever needed.
 - `scripts/import-postgres.mjs` (`pnpm import:postgres`) is the one-time import from a Docker/PostgreSQL install and has no automated test; a change to it must be re-run against a fictional PostgreSQL database and the row-count table pasted into the pull request.
 
-## Desktop app (in progress)
+## Desktop app
 
-The Electron shell ([ADR 013](docs/adr/013-desktop-distribution.md)) lives in `desktop/` and `electron-builder.yml`. It expects the SQLite database, so it does not run against the current PostgreSQL schema yet.
+The Electron shell ([ADR 013](docs/adr/013-desktop-distribution.md)) lives in `desktop/` and `electron-builder.yml`.
 
 - `pnpm desktop:build`: `next build`, then `desktop/build.mjs` completes the standalone server and bundles the main process into `dist-desktop/`.
-- `pnpm desktop:dev`: builds, then opens the app with `electron .` (data in the OS user-data folder).
+- `pnpm desktop:dev`: builds, then opens the app with `electron .` (data in `data/desktop-dev`, apart from an installed app's).
 - `pnpm desktop:dist`: builds, then writes installers to `release/` (macOS dmg for arm64 and x64, unsigned and ad-hoc sealed; Windows NSIS; Linux AppImage).
 
 ## Commits and pull requests
