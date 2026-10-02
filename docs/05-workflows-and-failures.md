@@ -125,7 +125,7 @@ The optional cover-letter professional title appears beneath the name and is edi
 Cover-letter phone links open WhatsApp click-to-chat using the saved international phone number, with punctuation removed only from the destination.
 
 
-## Document formatting and resume contacts (2026-09-26, implemented, pending merge)
+## Document formatting and resume contacts (2026-09-26, implemented, merged in PRs #54–56)
 
 Document formatting saves retain citations, validate text/marks together, rerun layout checks and create an unapproved revision. Plain rewrites clear old marks; regeneration chooses fresh emphasis. Contact saves select/order frozen facts. Profile defaults initialize new resumes; regeneration preserves that resume’s selection. Apply profile default explicitly copies the current default into the pending selection before Save. Text/formatting and contact edits lock the document before checking the expected revision and inserting the replacement. Concurrent saves cannot both succeed from the same revision. Stale or invalid edits retain user input. Missing contacts are omitted without discarding selection. Existing warning-only overflow behavior remains.
 

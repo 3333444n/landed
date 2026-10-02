@@ -168,9 +168,9 @@ The revised `add_job` explicitly rejects the removed `company` argument rather t
 Indices refer to the latest saved content, not a fixed section order. Only nullable headline, professional title, subheading, dates and location can clear. Cover-letter `title` is optional nullable text (120 characters): omission uses the frozen profile headline, null hides it. The read projection exposes that frozen default without rewriting historical rows. Existing summary/bullet/paragraph and message subject/body paths remain supported. Arbitrary properties and invalid indices are rejected. Metadata discovery is separate from prose grounding, so a greeting or subtitle does not become an uncited prose unit. An institution name still receives the existing heading check.
 
 
-## Document formatting and resume contacts (2026-09-26, implemented, pending merge)
+## Document formatting and resume contacts (2026-09-26, implemented, merged in PRs #54–56)
 
-ADR 012 extends this branch’s endpoint to 43 tools; the implementation is verified and pending merge.
+ADR 012 extends the endpoint to 43 tools; merged in PRs #54–56.
 
 | Surface | Contract |
 | --- | --- |
