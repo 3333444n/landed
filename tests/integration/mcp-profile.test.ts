@@ -11,7 +11,7 @@ import { openTestDatabase, truncateAll } from "../helpers/test-database";
 
 let db: DatabaseConnection;
 let client: Client;
-const deps = () => ({ db: db.db });
+const deps = () => db;
 type Row = { id: string; updated_at: string; [key: string]: unknown };
 async function result(name: string, args: Record<string, unknown> = {}) {
   return client.callTool({ name, arguments: args });

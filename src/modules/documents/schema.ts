@@ -4,14 +4,11 @@ import {
   foreignKey,
   index,
   integer,
-  jsonb,
-  numeric,
-  pgTable,
+  real,
+  sqliteTable,
   text,
-  timestamp,
   unique,
-  uuid,
-} from "drizzle-orm/pg-core";
+} from "drizzle-orm/sqlite-core";
 import { applications } from "@/modules/applications/schema";
 import { profiles } from "@/modules/profile/schema";
 import {
@@ -33,19 +30,19 @@ import {
  */
 
 const owner = {
-  profileId: uuid("profile_id")
+  profileId: text("profile_id")
     .notNull()
     .references(() => profiles.id, { onDelete: "cascade" }),
 };
 
 const inList = (values: readonly string[]) => sql.raw(values.map((v) => `'${v}'`).join(", "));
 
-export const generationRuns = pgTable(
+export const generationRuns = sqliteTable(
   "generation_runs",
   {
-    id: uuid("id").primaryKey(),
+    id: text("id").primaryKey(),
     ...owner,
-    applicationId: uuid("application_id").notNull(),
+    applicationId: text("application_id").notNull(),
     documentType: text("document_type", { enum: documentTypes }).notNull(),
     state: text("state", { enum: runStates }).notNull(),
     failureKind: text("failure_kind", { enum: failureKinds }),
@@ -54,17 +51,17 @@ export const generationRuns = pgTable(
     model: text("model").notNull(),
     promptName: text("prompt_name").notNull(),
     promptVersion: integer("prompt_version").notNull(),
-    snapshot: jsonb("snapshot").$type<Snapshot>().notNull(),
+    snapshot: text("snapshot", { mode: "json" }).$type<Snapshot>().notNull(),
     inputTokens: integer("input_tokens"),
     outputTokens: integer("output_tokens"),
-    costUsd: numeric("cost_usd", { precision: 12, scale: 6 }),
+    costUsd: real("cost_usd"),
     latencyMs: integer("latency_ms"),
     errorMessage: text("error_message"),
     rawOutput: text("raw_output"),
-    startedAt: timestamp("started_at", { withTimezone: true }),
-    finishedAt: timestamp("finished_at", { withTimezone: true }),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    startedAt: integer("started_at", { mode: "timestamp_ms" }),
+    finishedAt: integer("finished_at", { mode: "timestamp_ms" }),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
   },
   (t) => [
     unique("generation_runs_profile_id_id_unique").on(t.profileId, t.id),
@@ -88,23 +85,24 @@ export const generationRuns = pgTable(
   ],
 );
 
-export const documents = pgTable(
+export const documents = sqliteTable(
   "documents",
   {
-    id: uuid("id").primaryKey(),
+    id: text("id").primaryKey(),
     ...owner,
-    applicationId: uuid("application_id").notNull(),
+    applicationId: text("application_id").notNull(),
     type: text("type", { enum: documentTypes }).notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
   },
   (t) => [
-    unique("documents_profile_id_id_unique").on(t.profileId, t.id),
     unique("documents_profile_id_application_id_type_unique").on(
       t.profileId,
       t.applicationId,
       t.type,
     ),
+    // Declared last so SQLite checks it first and a retried id reports it (mapDatabaseError).
+    unique("documents_profile_id_id_unique").on(t.profileId, t.id),
     foreignKey({
       name: "documents_application_fk",
       columns: [t.profileId, t.applicationId],
@@ -114,18 +112,21 @@ export const documents = pgTable(
   ],
 );
 
-export const documentRevisions = pgTable(
+export const documentRevisions = sqliteTable(
   "document_revisions",
   {
-    id: uuid("id").primaryKey(),
+    id: text("id").primaryKey(),
     ...owner,
-    documentId: uuid("document_id").notNull(),
-    generationRunId: uuid("generation_run_id"),
-    content: jsonb("content").$type<DocumentContent>().notNull(),
-    warnings: jsonb("warnings").$type<GroundingWarning[]>().notNull().default([]),
+    documentId: text("document_id").notNull(),
+    // Keyed on the run id alone: SET NULL on a composite key would also null profile_id.
+    generationRunId: text("generation_run_id").references(() => generationRuns.id, {
+      onDelete: "set null",
+    }),
+    content: text("content", { mode: "json" }).$type<DocumentContent>().notNull(),
+    warnings: text("warnings", { mode: "json" }).$type<GroundingWarning[]>().notNull().default([]),
     source: text("source", { enum: revisionSources }).notNull(),
-    reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    reviewedAt: integer("reviewed_at", { mode: "timestamp_ms" }),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
   },
   (t) => [
     unique("document_revisions_profile_id_id_unique").on(t.profileId, t.id),
@@ -134,11 +135,6 @@ export const documentRevisions = pgTable(
       columns: [t.profileId, t.documentId],
       foreignColumns: [documents.profileId, documents.id],
     }).onDelete("cascade"),
-    foreignKey({
-      name: "document_revisions_run_fk",
-      columns: [t.profileId, t.generationRunId],
-      foreignColumns: [generationRuns.profileId, generationRuns.id],
-    }).onDelete("set null"),
     index("document_revisions_profile_id_document_id_created_at_idx").on(
       t.profileId,
       t.documentId,
@@ -148,18 +144,18 @@ export const documentRevisions = pgTable(
   ],
 );
 
-export const documentArtifacts = pgTable(
+export const documentArtifacts = sqliteTable(
   "document_artifacts",
   {
-    id: uuid("id").primaryKey(),
+    id: text("id").primaryKey(),
     ...owner,
-    documentRevisionId: uuid("document_revision_id").notNull(),
+    documentRevisionId: text("document_revision_id").notNull(),
     format: text("format", { enum: ["pdf"] }).notNull(),
     templateVersion: integer("template_version").notNull(),
     storageKey: text("storage_key").notNull(),
     checksum: text("checksum").notNull(),
     byteSize: integer("byte_size").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
   },
   (t) => [
     foreignKey({

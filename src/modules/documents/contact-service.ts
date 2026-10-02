@@ -26,11 +26,9 @@ export async function setResumeContacts(
   if (!parsed.success) return validation(fieldErrorsFromZod(parsed.error));
   const input = parsed.data;
   try {
-    return await deps.db.transaction(async (tx) => {
+    return await deps.runInTransaction(async (tx) => {
       const current = await repo.findRevision(tx, profileId, input.expectedRevisionId);
       if (!current) return notFound("Revision");
-      if (!(await repo.lockDocument(tx, profileId, current.documentId)))
-        return notFound("Document");
       const latest = await repo.latestRevision(tx, profileId, current.documentId);
       if (!latest || latest.id !== current.id) return stale();
       const [document] = await repo.listDocumentsForApplicationsById(tx, profileId, [

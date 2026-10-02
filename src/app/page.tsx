@@ -23,7 +23,8 @@ function count(n: number, singular: string, plural = `${singular}s`): string {
 }
 
 export default async function HomePage() {
-  const deps = { db: getDatabase().db };
+  const { db, runInTransaction } = getDatabase();
+  const deps = { db, runInTransaction };
   const profile = await getCurrentProfile(deps);
 
   if (!profile) {

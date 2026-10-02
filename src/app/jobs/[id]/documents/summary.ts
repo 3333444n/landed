@@ -16,9 +16,9 @@ export function formatTokens(run: GenerationRunRecord): string | null {
   return total >= 1000 ? `${(total / 1000).toFixed(1)}k tokens` : `${total} tokens`;
 }
 
-export function formatCost(costUsd: string | null): string | null {
+export function formatCost(costUsd: number | null): string | null {
   if (costUsd === null) return null;
-  return `$${Number(costUsd).toFixed(4)}`;
+  return `$${costUsd.toFixed(4)}`;
 }
 
 /** One short line under the card title. */

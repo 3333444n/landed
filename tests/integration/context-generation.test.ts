@@ -18,7 +18,7 @@ type JobDetail = Row & {
     notes: string | null;
   };
 };
-const deps = () => ({ db: connection.db });
+const deps = () => connection;
 function unwrap<T>(r: { ok: true; value: T } | { ok: false; error: unknown }): T {
   if (!r.ok) throw new Error(JSON.stringify(r.error));
   return r.value;

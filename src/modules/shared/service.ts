@@ -1,14 +1,19 @@
 /*
  * Server-side helpers every module's service.ts uses: dependency shape, result constructors,
- * timestamps, ids and the mapping from PostgreSQL (and, for the move, SQLite) errors to typed results.
+ * timestamps, ids and the mapping from SQLite errors to typed results.
  */
-import { DatabaseError } from "pg";
-import type { Database } from "@/infrastructure/database";
+import type { Database, DatabaseConnection } from "@/infrastructure/database";
 import type { FieldErrors, ModuleError, Result } from "./contracts";
 
-/** Dependencies arrive as a parameter; nothing here is a singleton. `now` and `newId` are for tests. */
+/**
+ * Dependencies arrive as a parameter; nothing here is a singleton. `now` and `newId` are for tests.
+ * `db` is the read-only reader; every write goes through `runInTransaction(async (tx) => ...)`,
+ * and reads inside it use `tx`. A nested call becomes a savepoint, so a composition can pass
+ * `{ ...deps, db: tx }` to another module's operation.
+ */
 export interface BaseDeps {
   db: Database;
+  runInTransaction: DatabaseConnection["runInTransaction"];
   now?: () => Date;
   newId?: () => string;
 }
@@ -45,51 +50,6 @@ export function plural(count: number, noun: string): string {
   return `${count} ${noun}${count === 1 ? "" : "s"}`;
 }
 
-/** Drizzle wraps driver errors; the PostgreSQL error sits in `cause`. */
-export function postgresError(error: unknown): DatabaseError | null {
-  if (error instanceof DatabaseError) return error;
-  if (error instanceof Error && error.cause instanceof DatabaseError) return error.cause;
-  return null;
-}
-
-/**
- * PostgreSQL error codes: 23505 unique, 23503 foreign key, 23514 check. A primary-key conflict is
- * treated as a replay of a client-minted id (docs/05) and answered by `onDuplicatePrimaryKey`.
- */
-export async function mapDatabaseError<T>(
-  thrown: unknown,
-  onDuplicatePrimaryKey: () => Promise<Result<T> | null>,
-  uniqueMessage?: FieldErrors | ((constraint: string | undefined) => FieldErrors | undefined),
-): Promise<Result<T>> {
-  const error = postgresError(thrown);
-  if (error) {
-    if (error.code === "23505" && error.constraint?.endsWith("_pkey")) {
-      const replay = await onDuplicatePrimaryKey();
-      if (replay) return replay;
-      return fail({
-        kind: "conflict",
-        message: "This record id is already used by another record",
-      });
-    }
-    if (error.code === "23505") {
-      const message =
-        typeof uniqueMessage === "function" ? uniqueMessage(error.constraint) : uniqueMessage;
-      if (message) return validation(message);
-      return fail({ kind: "conflict", message: "A record with the same value already exists" });
-    }
-    if (error.code === "23503") {
-      return fail({
-        kind: "conflict",
-        message: "Other records still reference this one; detach them first",
-      });
-    }
-    if (error.code === "23514") {
-      return validation({ form: ["The record violates a data rule and was not saved"] });
-    }
-  }
-  throw thrown;
-}
-
 /** A `node:sqlite` error; Drizzle passes it through unwrapped, but a `cause` is honoured too. */
 export function sqliteError(error: unknown): (Error & { errcode: number }) | null {
   const isSqlite = (e: unknown): e is Error & { errcode: number } =>
@@ -107,14 +67,16 @@ function uniqueColumns(message: string): string | undefined {
 }
 
 /**
- * The SQLite counterpart of `mapDatabaseError`, with the same contract, for the move to SQLite
- * (ADR 013). Extended result codes: 1555 primary key, 2067 unique, 787 foreign key, 275 check.
- * SQLite reports a duplicate id as 2067 when the id also sits in a composite unique index
- * (`jobs.profile_id, jobs.id`), so a unique conflict naming an `id` column takes the replay path
- * too. SQLite names no unique constraint, so a `uniqueMessage` function receives the column list.
- * NOT NULL (1299) is rethrown, as `mapDatabaseError` rethrows PostgreSQL's 23502.
+ * Maps a constraint error to a typed result. A primary-key conflict is treated as a replay of a
+ * client-minted id (docs/05) and answered by `onDuplicatePrimaryKey`.
+ * Extended result codes: 1555 primary key, 2067 unique, 787 foreign key, 275 check.
+ * SQLite checks the unique indexes in reverse declaration order and reports the first failure, so
+ * schemas declare the `(profile_id, id)` unique last: a retried id then surfaces as 2067 on it,
+ * and a unique conflict naming an `id` column takes the replay path too. SQLite names no unique
+ * constraint, so a `uniqueMessage` function receives the column list.
+ * NOT NULL (1299) and anything else is rethrown.
  */
-export async function mapSqliteError<T>(
+export async function mapDatabaseError<T>(
   thrown: unknown,
   onDuplicatePrimaryKey: () => Promise<Result<T> | null>,
   uniqueMessage?: FieldErrors | ((columns: string | undefined) => FieldErrors | undefined),

@@ -23,7 +23,7 @@ import { openTestDatabase, truncateAll } from "../helpers/test-database";
 let connection: DatabaseConnection;
 let artifactDir: string;
 let client: Client;
-const deps = () => ({ db: connection.db });
+const deps = () => connection;
 const fixture = (name: string) =>
   JSON.parse(readFileSync(`examples/generation/fixtures/${name}.json`, "utf8")) as Record<
     string,

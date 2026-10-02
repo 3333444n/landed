@@ -16,7 +16,7 @@ import { unwrap } from "../helpers/demo-seed";
 import { openTestDatabase, truncateAll } from "../helpers/test-database";
 let connection: DatabaseConnection;
 let profileId: string;
-const deps = () => ({ db: connection.db });
+const deps = () => connection;
 const failure = (kind: string) => ({ ok: false, error: expect.objectContaining({ kind }) });
 beforeAll(async () => {
   connection = await openTestDatabase();
@@ -85,15 +85,17 @@ it("refuses invalid owners without changing the row or its existing links", asyn
   const foreignOwner = crypto.randomUUID();
   // Separate profile inserted solely to exercise the database's owner-aware foreign keys.
   const { profiles, employment, skillEmployment } = await import("@/modules/profile/schema");
-  await connection.db
+  const at = { createdAt: new Date(), updatedAt: new Date() };
+  await connection.writer
     .insert(profiles)
-    .values({ id: foreignOwner, displayName: "Other fictional profile" });
+    .values({ id: foreignOwner, displayName: "Other fictional profile", ...at });
   const foreignRole = crypto.randomUUID();
-  await connection.db.insert(employment).values({
+  await connection.writer.insert(employment).values({
     id: foreignRole,
     profileId: foreignOwner,
     employerName: "Other Workshop",
     role: "Engineer",
+    ...at,
   });
   expect(
     await patchSkill(deps(), profileId, skill.id, {

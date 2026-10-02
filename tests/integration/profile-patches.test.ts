@@ -1,6 +1,5 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { drizzle } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
+import { drizzle } from "drizzle-orm/node-sqlite";
 import { schema, type DatabaseConnection } from "@/infrastructure/database";
 import {
   createAchievement,
@@ -28,11 +27,11 @@ import {
   updateProfile,
   type Result,
 } from "@/modules/profile";
-import { openTestDatabase, testDatabaseUrl, truncateAll } from "../helpers/test-database";
+import { openTestDatabase, truncateAll } from "../helpers/test-database";
 
 let connection: DatabaseConnection;
 let profileId: string;
-const deps = () => ({ db: connection.db });
+const deps = () => connection;
 function unwrap<T>(result: Result<T>): T {
   if (!result.ok) throw new Error(JSON.stringify(result.error));
   return result.value;
@@ -407,9 +406,8 @@ it("reads achievement versions and skill links in one statement snapshot", async
     }),
   );
   const statements: string[] = [];
-  const pool = new Pool({ connectionString: testDatabaseUrl() });
   const db = drizzle({
-    client: pool,
+    client: connection.db.$client,
     schema,
     logger: {
       logQuery(query) {
@@ -417,26 +415,23 @@ it("reads achievement versions and skill links in one statement snapshot", async
       },
     },
   });
-  try {
-    const listed = await listAchievements({ db }, profileId);
-    // A single PostgreSQL statement guarantees one MVCC snapshot for rows and linked ids.
-    // Splitting this into parallel queries can combine fresh versions with obsolete links.
-    expect(statements).toHaveLength(1);
-    expect(listed.find((row) => row.id === linked.id)).toEqual({
-      ...linked,
-      skillIds: skills.map((skill) => skill.id).sort(),
-    });
-    expect(listed.find((row) => row.id === unlinked.id)?.skillIds).toEqual([]);
-    statements.length = 0;
-    expect(await getAchievement({ db }, profileId, linked.id)).toEqual({
-      ...linked,
-      skillIds: skills.map((skill) => skill.id).sort(),
-    });
-    expect(statements).toHaveLength(1);
-    statements.length = 0;
-    expect(await getAchievement({ db }, crypto.randomUUID(), linked.id)).toBeNull();
-    expect(statements).toHaveLength(1);
-  } finally {
-    await pool.end();
-  }
+  const logged = { db, runInTransaction: connection.runInTransaction };
+  const listed = await listAchievements(logged, profileId);
+  // A single statement guarantees one snapshot for rows and linked ids.
+  // Splitting this into parallel queries can combine fresh versions with obsolete links.
+  expect(statements).toHaveLength(1);
+  expect(listed.find((row) => row.id === linked.id)).toEqual({
+    ...linked,
+    skillIds: skills.map((skill) => skill.id).sort(),
+  });
+  expect(listed.find((row) => row.id === unlinked.id)?.skillIds).toEqual([]);
+  statements.length = 0;
+  expect(await getAchievement(logged, profileId, linked.id)).toEqual({
+    ...linked,
+    skillIds: skills.map((skill) => skill.id).sort(),
+  });
+  expect(statements).toHaveLength(1);
+  statements.length = 0;
+  expect(await getAchievement(logged, crypto.randomUUID(), linked.id)).toBeNull();
+  expect(statements).toHaveLength(1);
 });

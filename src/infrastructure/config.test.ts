@@ -8,11 +8,16 @@ import {
 } from "./config";
 
 // Cast: Next's ambient types make NODE_ENV a required property of ProcessEnv.
-const env = (extra: Record<string, string> = {}) =>
-  ({
-    DATABASE_URL: "postgres://landed:landed@localhost:5432/landed_test",
-    ...extra,
-  }) as unknown as NodeJS.ProcessEnv;
+const env = (extra: Record<string, string> = {}) => ({ ...extra }) as unknown as NodeJS.ProcessEnv;
+
+describe("loadConfig", () => {
+  it("defaults the database path", () => {
+    expect(loadConfig(env()).LANDED_DATABASE_PATH).toBe("./data/landed.db");
+    expect(loadConfig(env({ LANDED_DATABASE_PATH: "/tmp/x.db" })).LANDED_DATABASE_PATH).toBe(
+      "/tmp/x.db",
+    );
+  });
+});
 
 describe("modelConfig", () => {
   it("is unconfigured when the provider is empty", () => {

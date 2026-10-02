@@ -5,6 +5,9 @@
 !.env.test.example
 !.env.release.example
 /data/
+*.db
+*.db-wal
+*.db-shm
 /private/
 /resumes/
 /uploads/

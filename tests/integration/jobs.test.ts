@@ -18,7 +18,7 @@ const demo = {
 };
 
 let connection: DatabaseConnection;
-const deps = () => ({ db: connection.db });
+const deps = () => connection;
 
 beforeAll(async () => {
   connection = await openTestDatabase();

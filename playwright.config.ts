@@ -1,16 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
-import { readFileSync } from "node:fs";
 
-// Browser journeys run against the isolated test database so personal data is never touched.
-function testDatabaseUrl(): string {
-  if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
-  const line = readFileSync(".env.test", "utf8")
-    .split("\n")
-    .find((l) => l.startsWith("DATABASE_URL="));
-  if (!line)
-    throw new Error("DATABASE_URL missing: set it or create .env.test from .env.test.example");
-  return line.slice("DATABASE_URL=".length).trim();
-}
+// Browser journeys run against their own database file so personal data is never touched.
+export const e2eDatabasePath = "./data/landed_e2e_test.db";
 
 const port = 3417;
 
@@ -28,12 +19,13 @@ export default defineConfig({
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
-    command: process.env.CI ? `pnpm start -p ${port}` : `pnpm dev -p ${port}`,
+    // Migrate first: the readiness check loads a page that reads the database.
+    command: `node db/migrate.mjs && pnpm ${process.env.CI ? "start" : "dev"} -p ${port}`,
     url: `http://localhost:${port}`,
     reuseExistingServer: false,
     // The fake adapter answers from examples/generation; no key is ever needed (ADR 006).
     env: {
-      DATABASE_URL: testDatabaseUrl(),
+      LANDED_DATABASE_PATH: e2eDatabasePath,
       LANDED_MODEL_PROVIDER: "fake",
       LANDED_ARTIFACT_DIR: "./artifacts-test",
       // Any string of at least 24 characters; assistant.spec.ts presents it on /mcp.

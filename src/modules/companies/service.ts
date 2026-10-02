@@ -50,7 +50,7 @@ export async function saveCompany(
   };
   let replaced: string | null = null;
   try {
-    const result = await deps.db.transaction(async (tx) => {
+    const result = await deps.runInTransaction(async (tx) => {
       if (existingId) {
         const current = await repo.findCompany(tx, profileId, id);
         if (!current) return notFound("Company");
@@ -95,7 +95,7 @@ export async function deleteCompany(
   if (!parsed.success) return validation(fieldErrorsFromZod(parsed.error));
   let removed: string | null = null;
   try {
-    const result = await deps.db.transaction(async (tx) => {
+    const result = await deps.runInTransaction(async (tx) => {
       const current = await repo.findCompany(tx, profileId, id);
       if (!current) return notFound("Company");
       if (!(await repo.deleteCompany(tx, profileId, id, new Date(parsed.data.expectedUpdatedAt))))
@@ -129,7 +129,7 @@ export async function saveCompanyFinding(
     kind: input.kind,
   };
   try {
-    return await deps.db.transaction(async (tx) => {
+    return await deps.runInTransaction(async (tx) => {
       if (!(await repo.findCompany(tx, profileId, companyId))) return notFound("Company");
       if (existingId) {
         if (!(await repo.findFinding(tx, profileId, companyId, id))) return notFound("Finding");
@@ -176,7 +176,7 @@ export async function deleteCompanyFinding(
   const parsed = versionInput.safeParse(raw);
   if (!parsed.success) return validation(fieldErrorsFromZod(parsed.error));
   try {
-    return await deps.db.transaction(async (tx) => {
+    return await deps.runInTransaction(async (tx) => {
       if (!(await repo.findFinding(tx, profileId, companyId, id))) return notFound("Finding");
       return (await repo.deleteFinding(
         tx,

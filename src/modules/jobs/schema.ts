@@ -1,16 +1,14 @@
 import { sql } from "drizzle-orm";
 import {
-  boolean,
   check,
   foreignKey,
-  primaryKey,
   index,
-  pgTable,
+  integer,
+  primaryKey,
+  sqliteTable,
   text,
-  timestamp,
   unique,
-  uuid,
-} from "drizzle-orm/pg-core";
+} from "drizzle-orm/sqlite-core";
 import { companies, companyFindings } from "@/modules/companies/schema";
 import { profiles } from "@/modules/profile/schema";
 import { jobAvailabilities, jobSources } from "./contracts";
@@ -22,45 +20,45 @@ import { jobAvailabilities, jobSources } from "./contracts";
  */
 
 const notBlank = (column: string) =>
-  check(`jobs_${column}_not_blank`, sql.raw(`btrim(${column}) <> ''`));
+  check(`jobs_${column}_not_blank`, sql.raw(`trim(${column}) <> ''`));
 
-export const jobSourceOptions = pgTable(
+export const jobSourceOptions = sqliteTable(
   "job_source_options",
   {
-    id: uuid("id").primaryKey(),
-    profileId: uuid("profile_id")
+    id: text("id").primaryKey(),
+    profileId: text("profile_id")
       .notNull()
       .references(() => profiles.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
-    archived: boolean("archived").notNull().default(false),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    archived: integer("archived", { mode: "boolean" }).notNull().default(false),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
   },
   (t) => [
     unique("job_source_options_profile_id_id_unique").on(t.profileId, t.id),
-    check("job_source_options_name_not_blank", sql`btrim(name) <> ''`),
+    check("job_source_options_name_not_blank", sql`trim(name) <> ''`),
   ],
 );
 
-export const jobs = pgTable(
+export const jobs = sqliteTable(
   "jobs",
   {
-    id: uuid("id").primaryKey(),
-    profileId: uuid("profile_id")
+    id: text("id").primaryKey(),
+    profileId: text("profile_id")
       .notNull()
       .references(() => profiles.id, { onDelete: "cascade" }),
     title: text("title").notNull(),
-    companyId: uuid("company_id"),
+    companyId: text("company_id"),
     location: text("location"),
     /** As the posting states it, any currency or period; never parsed (docs/01). */
     salary: text("salary"),
     source: text("source", { enum: jobSources }).notNull().default("pasted"),
     sourceUrl: text("source_url"),
-    jobSourceId: uuid("job_source_id"),
+    jobSourceId: text("job_source_id"),
     rawDescription: text("raw_description").notNull(),
     availability: text("availability", { enum: jobAvailabilities }).notNull().default("active"),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
   },
   (t) => [
     foreignKey({
@@ -83,13 +81,13 @@ export const jobs = pgTable(
 );
 
 /** Both composite keys enforce owner and company agreement even under concurrent writes. */
-export const jobFindingSelections = pgTable(
+export const jobFindingSelections = sqliteTable(
   "job_finding_selections",
   {
-    profileId: uuid("profile_id").notNull(),
-    jobId: uuid("job_id").notNull(),
-    companyId: uuid("company_id").notNull(),
-    findingId: uuid("finding_id").notNull(),
+    profileId: text("profile_id").notNull(),
+    jobId: text("job_id").notNull(),
+    companyId: text("company_id").notNull(),
+    findingId: text("finding_id").notNull(),
   },
   (t) => [
     primaryKey({ columns: [t.jobId, t.findingId] }),

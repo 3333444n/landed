@@ -190,21 +190,7 @@ export async function listDocumentsForApplications(
 
 // Revisions
 
-/** Lock the stable parent row, not a revision that can cease to be latest while waiting. */
-export async function lockDocument(
-  db: DbHandle,
-  profileId: string,
-  documentId: string,
-): Promise<boolean> {
-  const rows = await db
-    .select({ id: documents.id })
-    .from(documents)
-    .where(and(eq(documents.profileId, profileId), eq(documents.id, documentId)))
-    .for("update");
-  return rows.length > 0;
-}
-
-/** Call only in a transaction holding lockDocument for this document. */
+/** Call inside runInTransaction, which serializes writers, so createdAt stays monotonic. */
 export async function insertRevision(
   db: DbHandle,
   values: typeof documentRevisions.$inferInsert,

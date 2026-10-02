@@ -72,17 +72,19 @@ export async function getOrRenderPdf(
 
   if (!existing) {
     try {
-      await repo.insertArtifact(deps.db, {
-        id: newId(deps),
-        profileId,
-        documentRevisionId: revisionId,
-        format: "pdf",
-        templateVersion,
-        storageKey,
-        checksum: sha256(bytes),
-        byteSize: bytes.byteLength,
-        createdAt: now(deps),
-      });
+      await deps.runInTransaction((tx) =>
+        repo.insertArtifact(tx, {
+          id: newId(deps),
+          profileId,
+          documentRevisionId: revisionId,
+          format: "pdf",
+          templateVersion,
+          storageKey,
+          checksum: sha256(bytes),
+          byteSize: bytes.byteLength,
+          createdAt: now(deps),
+        }),
+      );
     } catch (error) {
       // A concurrent download inserted the row first: the file is identical, keep going.
       const mapped = await mapDatabaseError<null>(error, async () => null).catch(() => null);

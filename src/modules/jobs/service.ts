@@ -61,7 +61,7 @@ export async function saveJob(
     availability: input.availability,
   };
   try {
-    const result = await deps.db.transaction(async (tx) => {
+    const result = await deps.runInTransaction(async (tx) => {
       if (!existingId) {
         const replay = await repo.findJob(tx, profileId, id);
         if (replay) return { ok: true as const, value: replay };
@@ -81,7 +81,7 @@ export async function saveJob(
         Object.assign(values, { jobSourceId: null });
       // The profile_id foreign key backs ownership; the route already resolved the profile.
       if (existingId) {
-        const current = await repo.lockJob(tx, profileId, id);
+        const current = await repo.findJob(tx, profileId, id);
         if (!current) return notFound("Job");
         if (input.expectedUpdatedAt && current.updatedAt.toISOString() !== input.expectedUpdatedAt)
           return stale();
@@ -125,7 +125,7 @@ export async function deleteJob(
   id: string,
 ): Promise<Result<void>> {
   try {
-    const deleted = await repo.deleteJob(deps.db, profileId, id);
+    const deleted = await deps.runInTransaction((tx) => repo.deleteJob(tx, profileId, id));
     if (!deleted) return notFound("Job");
     return { ok: true, value: undefined };
   } catch (error) {
@@ -147,7 +147,7 @@ export async function createJobSource(
   const parsed = createJobSourceInput.safeParse(raw);
   if (!parsed.success) return validation(fieldErrorsFromZod(parsed.error));
   try {
-    return await deps.db.transaction(async (tx) => {
+    return await deps.runInTransaction(async (tx) => {
       const prior = await repo.findJobSource(tx, profileId, parsed.data.id);
       if (prior) return { ok: true, value: prior };
       return {
@@ -171,7 +171,7 @@ export async function updateJobSource(
   const parsed = updateJobSourceInput.safeParse(raw);
   if (!parsed.success) return validation(fieldErrorsFromZod(parsed.error));
   try {
-    return await deps.db.transaction(async (tx) => {
+    return await deps.runInTransaction(async (tx) => {
       const current = await repo.findJobSource(tx, profileId, id);
       if (!current) return notFound("Source");
       const { expectedUpdatedAt, ...patch } = parsed.data;
@@ -194,7 +194,7 @@ export async function updateJobSourceLink(
   const parsed = updateJobSourceLinkInput.safeParse(raw);
   if (!parsed.success) return validation(fieldErrorsFromZod(parsed.error));
   try {
-    return await deps.db.transaction(async (tx) => {
+    return await deps.runInTransaction(async (tx) => {
       const current = await repo.findJob(tx, profileId, id);
       if (!current) return notFound("Job");
       if (parsed.data.jobSourceId) {
@@ -231,8 +231,8 @@ export async function updateJobCompany(
   const parsed = jobCompanyInput.safeParse(raw);
   if (!parsed.success) return validation(fieldErrorsFromZod(parsed.error));
   try {
-    return await deps.db.transaction(async (tx) => {
-      const job = await repo.lockJob(tx, profileId, jobId);
+    return await deps.runInTransaction(async (tx) => {
+      const job = await repo.findJob(tx, profileId, jobId);
       if (!job) return notFound("Job");
       if (job.updatedAt.toISOString() !== parsed.data.expectedUpdatedAt) return stale();
       if (job.companyId !== parsed.data.companyId)
@@ -253,8 +253,6 @@ export async function updateJobCompany(
     return mapDatabaseError(e, async () => null);
   }
 }
-export const lockJobFindingContext = (deps: JobsDeps, profileId: string) =>
-  repo.lockFindingContext(deps.db, profileId);
 export async function setJobFindingSelection(
   deps: JobsDeps,
   profileId: string,
@@ -264,9 +262,8 @@ export async function setJobFindingSelection(
   const parsed = findingSelectionInput.safeParse(raw);
   if (!parsed.success) return validation(fieldErrorsFromZod(parsed.error));
   try {
-    return await deps.db.transaction(async (tx) => {
-      await repo.lockFindingContext(tx, profileId);
-      const job = await repo.lockJob(tx, profileId, jobId);
+    return await deps.runInTransaction(async (tx) => {
+      const job = await repo.findJob(tx, profileId, jobId);
       if (!job) return notFound("Job");
       if (job.updatedAt.toISOString() !== parsed.data.expectedUpdatedAt) return stale();
       if (!job.companyId && parsed.data.findingIds.length)

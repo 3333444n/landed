@@ -15,6 +15,8 @@ const demo = {
 async function editText(page: Page, label: string, text: string, newLabel = label) {
   await page.getByRole("button", { name: `Edit ${label}`, exact: true }).click();
   const editor = page.getByLabel(`Text of ${label}`, { exact: true });
+  // The editor focuses itself once mounted; typing before that can race its initial content.
+  await expect(editor).toBeFocused();
   if (text) await editor.fill(text);
   else {
     await editor.press("ControlOrMeta+a");

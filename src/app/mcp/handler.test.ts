@@ -14,7 +14,7 @@ import { buildMcpHandler } from "./handler";
 /** Drives the handler in-process with the SDK client; no database is needed without a profile. */
 async function connect() {
   const handler = buildMcpHandler({
-    deps: { db: null as never },
+    deps: { db: null as never, runInTransaction: null as never },
     artifactDir: "/tmp/unused",
     origin: "http://127.0.0.1:3000",
     userAgent: "test-client/1",
