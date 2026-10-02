@@ -3,6 +3,8 @@ appId: io.github.3333444n.landed
 productName: Landed
 directories:
   output: release
+  # icon.png (1024 px) lives here; electron-builder derives each platform's icon from it.
+  buildResources: desktop/resources
 # The app itself is the bundled main process; the Next.js server and the migrations ship beside it.
 files:
   - dist-desktop/**

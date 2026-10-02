@@ -39,6 +39,8 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 async function startApp() {
+  // Development runs keep their own data, apart from an installed Landed's.
+  if (!app.isPackaged) app.setPath("userData", join(__dirname, "../data/desktop-dev"));
   const userData = app.getPath("userData");
   const dataDir = join(userData, "data");
   const artifactDir = join(userData, "artifacts");
@@ -116,7 +118,9 @@ async function startApp() {
     return { action: "deny" };
   });
   window.webContents.on("will-navigate", (event, url) => {
-    if (new URL(url).origin !== origin) event.preventDefault();
+    if (new URL(url).origin === origin) return;
+    event.preventDefault();
+    if (/^https?:\/\//.test(url)) void shell.openExternal(url);
   });
   session.defaultSession.setPermissionRequestHandler((_contents, _permission, callback) =>
     callback(false),
