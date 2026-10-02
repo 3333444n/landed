@@ -1,6 +1,6 @@
 # ADR 006 — Model access path for generated materials
 
-Date: 2026-09-14. Status: accepted and implemented (Phase 1b, 2026-09-14). Revised by [ADR 013](013-desktop-distribution.md) on 2026-10-02 (not implemented): see the revision at the end.
+Date: 2026-09-14. Status: accepted and implemented (Phase 1b, 2026-09-14). Revised by [ADR 013](013-desktop-distribution.md) on 2026-10-02 (implemented 2026-10-02): see the revision at the end.
 
 ## Context
 
@@ -41,7 +41,7 @@ A single provider. Simpler to test and document, but the user base for a self-ho
 
 ## Revision 2026-10-02 (ADR 013)
 
-Status: accepted, not implemented. [ADR 013](013-desktop-distribution.md) replaces the Docker Compose release with a desktop app, which has no environment file for an ordinary user to edit.
+Status: accepted and implemented (2026-10-02). [ADR 013](013-desktop-distribution.md) replaces the Docker Compose release with a desktop app, which has no environment file for an ordinary user to edit.
 
 - In the desktop app the provider, model, base URL and key are set in Settings → Model setup.
 - The key travels once from the window to the main process over a sender-checked IPC call. Main encrypts it with Electron `safeStorage`, which uses the OS keychain, and writes it to a file in the app data folder. It is never stored in the database and never returned to the renderer; the interface shows only its last four characters.

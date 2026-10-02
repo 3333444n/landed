@@ -105,3 +105,7 @@ Back up the database and artifact directory before applying migrations 0008–00
 Migrations 0008–0010 add About me, Interest, Job Sources, Companies and finding selections. Migration 0011 preserves existing company links, creates one distinct company for every unlinked legacy job (without name matching), and moves applicable logo metadata to companies; existing company logos win. Stored legacy image files and frozen document snapshots remain intact. New job forms may leave Company unselected. Refresh the connected assistant's tool list and use this checkout's synchronized skill: the merged ADR 011 extension exposes 42 tools and add_job uses company_id instead of the removed company string. The merged ADR 012 implementation (PRs #54–56) adds set_resume_contacts (43 tools), formatting support and resume contact preferences without a SQL migration. Existing document snapshots remain frozen.
 
 The contributor migration and feature journeys passed the checks recorded in doc 09. This does not establish a new packaged release, a tagged rollback procedure, or new Windows/Linux coverage; those existing limits remain.
+
+## Desktop app: model setup (ADR 013)
+
+In the desktop app, open Settings → Model setup, choose the provider, type the model and the key, and save; the app restarts its server and the column shows the key's last four characters. The key is kept in the operating system's keychain, never in the database or a backup. Remove clears the setting, and paste back keeps working without one. `pnpm dev` and `pnpm start` still read the environment file.
