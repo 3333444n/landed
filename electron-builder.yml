@@ -1,0 +1,41 @@
+# Desktop installers (ADR 013). Run `pnpm desktop:dist`; output goes to release/.
+appId: io.github.3333444n.landed
+productName: Landed
+directories:
+  output: release
+  # icon.png (1024 px) lives here; electron-builder derives each platform's icon from it.
+  buildResources: desktop/resources
+# The app itself is the bundled main process; the Next.js server and the migrations ship beside it.
+files:
+  - dist-desktop/**
+  - package.json
+  - "!node_modules/**"
+extraResources:
+  # Next copies the project's .env files into the standalone output; they must never ship.
+  - from: .next/standalone
+    to: server
+    filter: ["**/*", "!.env*"]
+  # electron-builder always drops a node_modules folder at the root of a copy, so it gets its own.
+  - from: .next/standalone/node_modules
+    to: server/node_modules
+  - from: db/migrations
+    to: migrations
+electronFuses:
+  runAsNode: false
+  enableNodeOptionsEnvironmentVariable: false
+  enableNodeCliInspectArguments: false
+  enableEmbeddedAsarIntegrityValidation: true
+  onlyLoadAppFromAsar: true
+mac:
+  target:
+    - target: dmg
+      arch: [arm64, x64]
+  # Unsigned for now. Ad-hoc signing ("-") re-seals the binary after the fuses change it, without
+  # which macOS on Apple silicon refuses to start it; hardened runtime would reject the ad-hoc
+  # signature against Electron's own frameworks.
+  identity: "-"
+  hardenedRuntime: false
+win:
+  target: nsis
+linux:
+  target: AppImage

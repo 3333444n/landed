@@ -46,3 +46,6 @@ next-env.d.ts
 /backups/
 /artifacts/
 /artifacts-test/
+# Desktop app build output
+/dist-desktop/
+/release/
