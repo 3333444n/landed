@@ -19,7 +19,8 @@ export default defineConfig({
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
-    command: process.env.CI ? `pnpm start -p ${port}` : `pnpm dev -p ${port}`,
+    // Migrate first: the readiness check loads a page that reads the database.
+    command: `node db/migrate.mjs && pnpm ${process.env.CI ? "start" : "dev"} -p ${port}`,
     url: `http://localhost:${port}`,
     reuseExistingServer: false,
     // The fake adapter answers from examples/generation; no key is ever needed (ADR 006).

@@ -44,11 +44,6 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      # The browser tests' database; integration tests migrate their own temporary files.
-      - name: Apply migrations
-        run: pnpm db:migrate
-        env:
-          LANDED_DATABASE_PATH: ./data/landed_e2e_test.db
       - name: Integration tests
         run: pnpm test:integration
       - name: Migration drift check
