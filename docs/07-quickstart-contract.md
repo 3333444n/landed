@@ -1,25 +1,24 @@
 # 07 — Quickstart
 
-Status: contributor path and ordinary-user path implemented and tested on macOS (2026-09-13, re-verified with the Phase 1b image on 2026-09-14); Windows and Linux untested; the "Connect your assistant" path ([ADR 008](adr/008-assistant-surface-over-mcp.md)) is implemented as of 2026-09-16 and tested from Claude Code on a contributor install; the packaged path with the launcher-minted token is not yet exercised in Docker. Updated 2026-09-23.
+Status: contributor path on SQLite (ADR 013, 2026-10-02); the Docker Compose release and its launcher were removed, and the desktop release that replaces them is not built yet. The "Connect your assistant" path ([ADR 008](adr/008-assistant-surface-over-mcp.md)) is implemented as of 2026-09-16 and tested from Claude Code on a contributor install. Windows and Linux untested.
 
 Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is merged. The ADR 011 writing-context and canonical-company extensions are implemented and merged in PRs #43–47 (2026-09-23). See [current verification](09-decisions-and-readiness.md#smaller-pr-stack-verification-2026-09-23).
 
 ## Contributor path (tested)
 
-Prerequisites: Node 24 (see `.node-version`), pnpm 10 (`corepack enable` installs the pinned version), Docker with Compose, Git.
+Prerequisites: Node 24 (see `.node-version`), pnpm 10 (`corepack enable` installs the pinned version), Git. No database server: the data is one SQLite file.
 
 ```sh
 git clone https://github.com/3333444n/landed.git
 cd landed
 pnpm install
-cp .env.example .env            # database credentials for local development
-cp .env.test.example .env.test  # the isolated database used by tests
-pnpm db:up                      # starts PostgreSQL 17 in Docker with a persistent volume
-pnpm db:migrate                 # applies db/migrations to the landed database
+cp .env.example .env            # database path and optional model settings
+cp .env.test.example .env.test  # the separate database file used by browser tests
+pnpm db:migrate                 # creates data/landed.db and applies db/migrations
 pnpm dev                        # http://localhost:3000
 ```
 
-The first visit asks for your name and creates the single profile of this installation. Career facts live under Profile in the sidebar, with General info and About me as separate blocks; postings and applications live under Jobs, shared employer records under Companies and customizable Job Sources under Settings. The button at the bottom of the sidebar switches between light and dark; without a choice the system preference applies. Data lives in the Docker volume `landed_pgdata`, outside the source checkout. `pnpm db:down` stops the database and keeps the volume.
+The first visit asks for your name and creates the single profile of this installation. Career facts live under Profile in the sidebar, with General info and About me as separate blocks; postings and applications live under Jobs, shared employer records under Companies and customizable Job Sources under Settings. The button at the bottom of the sidebar switches between light and dark; without a choice the system preference applies. Data lives in the file named by `LANDED_DATABASE_PATH` (default `./data/landed.db`, ignored by Git); generated PDFs and company logos live under `LANDED_ARTIFACT_DIR`.
 
 Generating documents (Phase 1b) needs either a model provider or nothing at all. With nothing configured, each document offers Paste back: the app shows the prompt, you run it in any assistant you already use and paste the JSON answer back. To let the app call a provider itself, pick one row of the table below, set its values in `.env` (the same blocks are commented in `.env.example`), then restart `pnpm dev`. The Settings column in the app shows what is configured without revealing the key, and lists the same blocks when nothing is configured.
 
@@ -37,91 +36,35 @@ Connect your assistant ([ADR 008](adr/008-assistant-surface-over-mcp.md)): the t
 
 | Variable | Purpose | Value |
 |---|---|---|
-| `LANDED_MCP_TOKEN` | Bearer token the assistant presents on `/mcp`; without it the endpoint answers 503 | any long random string, at least 24 characters, in `.env` only; the packaged installation's launcher generates it |
+| `LANDED_MCP_TOKEN` | Bearer token the assistant presents on `/mcp`; without it the endpoint answers 503 | any long random string, at least 24 characters, in `.env` only |
 
-Tests use a second database, `landed_test`, created automatically when the volume is first initialised, and the fake model adapter (`LANDED_MODEL_PROVIDER=fake` in `.env.test`), so no key is ever needed for the checks. Apply migrations to it once, then run the checks listed in [CONTRIBUTING](../CONTRIBUTING.md):
+Integration tests open temporary database files; browser tests use the file named in `.env.test` and empty it first, never `data/landed.db`. Both use the fake model adapter (`LANDED_MODEL_PROVIDER=fake` in `.env.test`), so no key is ever needed for the checks listed in [CONTRIBUTING](../CONTRIBUTING.md).
 
-```sh
-DATABASE_URL=postgres://landed:landed@localhost:5432/landed_test pnpm db:migrate
-pnpm test:integration
-pnpm test:e2e
-```
-
-Browser tests start their own server on port 3417 and truncate `landed_test` first; they never touch `landed`.
-
-Backup and restore of the development database (tested):
+Backup and restore:
 
 ```sh
-pnpm db:backup                                   # writes backups/landed-<timestamp>.dump
-pnpm db:restore backups/landed-<timestamp>.dump  # replaces the database contents with the dump
+pnpm db:backup                                 # writes backups/landed-<timestamp>.db; safe while the app runs
+pnpm db:restore backups/landed-<timestamp>.db  # stop the app first; replaces the database file
 ```
 
-Troubleshooting: "Docker daemon not running" means start Docker Desktop; "port 5432 already in use" means another PostgreSQL is running, stop it or change the port mapping in `docker-compose.yml` and `DATABASE_URL`; "Invalid configuration: DATABASE_URL" means `.env` is missing.
+`backups/` is ignored by Git but lives in the checkout; copy backups somewhere safe, together with the artifact directory.
 
-## Ordinary user path (tested on macOS with Docker Desktop, 2026-09-13)
+Troubleshooting: "no such table" means the migrations were not applied: run `pnpm db:migrate` with the same `LANDED_DATABASE_PATH` as the app. Preserve the database file; do not delete or reseed it to recover startup.
 
-Prerequisites: Docker Desktop (macOS, Windows) or Docker Engine with the Compose v2 plugin (Linux), and about 1 GB of free disk for the images and your data. No Node, PostgreSQL or agent CLI. A paid AI account is optional: without one, documents are generated through paste-back (below). Docker is a substantial prerequisite; this is not a double-click install.
+## Upgrading from a Docker/PostgreSQL install
+
+The Docker Compose release and the PostgreSQL development database were removed under [ADR 013](adr/013-desktop-distribution.md). To move existing data, keep the old PostgreSQL container running (from the old checkout), take a backup there first, then in the new checkout run:
 
 ```sh
-git clone https://github.com/3333444n/landed.git   # or download and unpack a release bundle
-cd landed
-sh scripts/landed.sh start                          # Windows: powershell -ExecutionPolicy Bypass -File scripts\landed.ps1 start
+pnpm install
+pnpm import:postgres -- --from postgres://<user>:<password>@localhost:5432/landed [--to ./data/landed.db]
 ```
 
-The first `start` takes a few minutes: it creates `.env.release` with a random database password (only if the file does not exist), builds the application image, starts PostgreSQL, applies the migrations in a one-time `migrate` task, and starts the web service only after the migrations succeed. Then open http://127.0.0.1:3000 and enter your name; the profile starts blank. `sh scripts/landed.sh status` shows both services as `healthy` when ready.
-
-Other commands: `stop` (stops the containers, keeps your data), `status`, `logs [service]`, `backup`, `restore <file>`, `token` (prints the address of Settings → Connect your assistant and the assistant token from `.env.release`).
-
-Model provider (optional): `.env.release` contains commented `LANDED_MODEL_*` blocks, one per provider (the same table as in the contributor path above: OpenRouter, Anthropic, OpenAI, the Vercel AI Gateway, or any OpenAI-compatible server by base URL). Fill in one block, then run `start` again; the web service reads the values on restart. Leave them empty to use Paste back on every document instead: the app shows the prompt, you run it in any assistant and paste the answer back, and nothing about your facts leaves your computer except what you paste yourself. The key stays in `.env.release`, which is ignored by Git and never copied into the database or a backup. A local model server on this computer is reached from inside Docker as `http://host.docker.internal:11434/v1`, not `localhost`.
-
-Connect your assistant ([ADR 008](adr/008-assistant-surface-over-mcp.md)): if you already pay for Claude Code, Codex or Claude Desktop, no provider key is needed. Three steps: start Landed (the launcher writes a token into `.env.release` on `start`); open Settings → Connect your assistant in the app (`http://127.0.0.1:<port>/settings/assistant`, also printed by `sh scripts/landed.sh token`), which shows one block per assistant with that token and this installation's port filled in, and copy it into your tool; install the workflow, for Claude Code with `claude plugin marketplace add 3333444n/landed` then `claude plugin install landed@landed` (it asks for the address and the token from the block), for Codex by running it inside the checkout or linking `.agents/skills/landed` into `~/.agents/skills`, and for Claude Desktop with the block alone. Then ask it to write the documents for a job. The assistant talks to Landed at `http://127.0.0.1:<port>/mcp` on your computer only, and every draft it submits passes the same checks as a generated or pasted one.
-
-| Variable | Purpose | Value |
-|---|---|---|
-| `LANDED_MCP_TOKEN` | Bearer token the assistant presents on `/mcp`; without it the endpoint answers 503 | generated by the launcher on first `start`; rotate it by editing the line and running `start` again |
-
-How data is stored: PostgreSQL writes to the Docker named volume `landed-release_pgdata`, outside the source checkout, and generated PDFs (Phase 1b) and company logos to the volume `landed-release_artifacts`. Both survive `stop`, `start`, container restarts, image rebuilds and upgrades. Only the web port is published, and only on 127.0.0.1 of your computer; the database has no host port and is reachable only by the application inside the Compose network ([compose.release.yml](../compose.release.yml)). `.env.release` holds the generated credentials (the database password and the assistant token) and your optional model key and is ignored by Git; keep it, because the database volume was initialised with that password.
-
-Upgrade: `git pull` (or unpack the new bundle over the old folder, keeping `.env.release`), then `sh scripts/landed.sh start` again. It rebuilds the image and the `migrate` task applies any new migrations before the new server starts. `start` on an existing installation whose `.env.release` has no `LANDED_MCP_TOKEN` line (written before the assistant surface, ADR 008) appends a generated one and prints a notice; your other values are untouched. The PostgreSQL image is pinned to a minor version in `compose.release.yml`; a major-version change (17 to 18) will ship with an explicit backup/restore procedure, never a floating tag.
-
-Backup and restore (tested):
-
-```sh
-sh scripts/landed.sh backup                                   # writes backups/landed-release-<timestamp>.dump
-sh scripts/landed.sh restore backups/landed-release-<timestamp>.dump   # replaces the database contents
-```
-
-`backup` also writes `landed-release-<timestamp>-artifacts.tar` with the generated PDFs and company logos when the web service is running, and `restore` puts them back when that file sits next to the dump (shell launcher only; the PowerShell launcher backs up the database alone for now). Copy both files somewhere safe; `backups/` is ignored by Git but lives in the checkout.
-
-Factory reset (separate, deliberate; deletes all your data): take a backup if you want one, then
-
-```sh
-sh scripts/landed.sh stop
-docker volume rm landed-release_pgdata
-docker volume rm landed-release_artifacts   # generated PDFs (Phase 1b); absent on older installations
-rm .env.release          # optional; the next start generates a new password
-sh scripts/landed.sh start
-```
-
-No launcher command removes the volume, and `stop` never passes `-v`.
-
-Troubleshooting:
-
-- Contributor install: a page failing at `findSingleProfile` with a wrapped SQL query needs the underlying server error to identify the cause. For `ECONNREFUSED`, start Docker Desktop/Engine, run `pnpm db:up`, then `pnpm db:migrate` from the checkout whose `.env` points at that database. For missing tables, apply the migrations. For authentication failures, verify the existing credentials. An empty profile alone does not cause a query failure. Preserve the database volume; do not reset or reseed it to recover startup.
-
-- "Docker is installed but not running": start Docker Desktop (or `sudo systemctl start docker` on Linux) and run `start` again.
-- `ports are not available ... 127.0.0.1:3000: bind: address already in use`, or a different app answers at the URL: another program uses port 3000. Edit `LANDED_PORT` in `.env.release` (for example `LANDED_PORT=3480`), run `start` again and open that port.
-- `start` stops with `service "migrate" didn't complete successfully: exit 1`: the migration failed and the web service was deliberately not started. Read `sh scripts/landed.sh logs migrate`, fix the cause (usually the database, see next item), and run `start` again; migrations are applied once and skipped afterwards.
-- Database unavailable (`db` not `healthy` in `status`, or "Migration failed: ... ECONNREFUSED"/authentication errors): read `sh scripts/landed.sh logs db`. A changed `POSTGRES_PASSWORD` in `.env.release` after the first start causes authentication failures, because the volume keeps the original password; restore the old value.
-- Image download or build fails: check the internet connection (the first start downloads the Node and PostgreSQL images), then run `start` again; Docker resumes from its cache.
-- Permission errors from Docker on Linux: add your user to the `docker` group or run the launcher with `sudo`.
-- Low disk space: `docker system df` shows usage; `docker image prune` removes unused images without touching the data volume. Never run `docker volume prune` while Landed is stopped, it would delete `landed-release_pgdata`.
-
-Later phases keep this shape: an explicit demo action uses a separate demo database, never the personal one, and provider configuration stays in the environment file, with instructions in the application. Startup never seeds or resets data.
+The importer only reads PostgreSQL (its session is read-only), creates and migrates the SQLite file, copies every table in one transaction, prints a row-count comparison per table and exits non-zero on any difference. It refuses a target file that already has a profile. The released installation published no database port, so map `5432` on `127.0.0.1` for the duration of the import, or run it against a contributor database. Copy the old artifact directory (the `landed-release_artifacts` volume, or `./artifacts`) to `LANDED_ARTIFACT_DIR` so stored PDFs and logos stay reachable. Delete the old volumes only after checking the imported data in the app.
 
 ## Required verification before claiming easy setup
 
-Verified on macOS (Apple Silicon, Docker Desktop, 2026-09-13) unless marked otherwise.
+Verified on macOS (Apple Silicon, Docker Desktop, 2026-09-13) unless marked otherwise. These records cover the removed Docker release; the desktop release (ADR 013) is verified again when it ships.
 
 - Fresh install without pre-existing local dependencies beyond stated prerequisites: verified (clean state, no `.env.release`, only Docker used).
 - App readiness reflects both service health and successful migrations: verified (`web` waits for `migrate` to complete successfully and `db` to be healthy; its own health check loads a database-backed page).

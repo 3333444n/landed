@@ -4,7 +4,7 @@ Start at the [documentation index](docs/00-index.md) and the [decision register]
 
 ## Set up
 
-The [contributor quickstart](docs/07-quickstart-contract.md#contributor-path-tested) has the tested commands. In short: Node 24, pnpm, Docker; `pnpm install`, `pnpm db:up`, `pnpm db:migrate`, `pnpm dev`.
+The [contributor quickstart](docs/07-quickstart-contract.md#contributor-path-tested) has the tested commands. In short: Node 24, pnpm; `pnpm install`, `pnpm db:migrate`, `pnpm dev`.
 
 ## Checks
 
@@ -15,15 +15,15 @@ Three scripts implement the levels:
 | Script | Runs | Needs | When |
 |---|---|---|---|
 | `pnpm check` | `format:check`, `lint`, `typecheck`, `test` (unit), `scripts/check-skill-sync.sh` (the plugin's copy of the assistant skill matches `.agents/skills/landed/SKILL.md`) | nothing but Node | constantly while coding; seconds |
-| `pnpm verify` | `check` + `test:integration` + `scripts/check-migrations.sh` | `pnpm db:up` and `.env.test` | when a change touches persistence, a Server Action, a route, or a module's public surface; a minute or two |
+| `pnpm verify` | `check` + `test:integration` + `scripts/check-migrations.sh` | `.env.test` | when a change touches persistence, a Server Action, a route, or a module's public surface; a minute or two |
 | `pnpm verify:full` | `verify` + `build` + `CI=true test:e2e` (the journeys against the production build, as CI runs them) | the above plus Playwright's Chromium | before opening any pull request; several minutes |
 
-Pick the level from the blast radius. A pure rule or a component: `check`. Anything that reads or writes the database, a Server Action, a route, or a module's public surface: `verify`. Anything a user journey touches, a layout, a migration, a dependency bump, packaging: `verify:full`. When a required level cannot run (no Docker, no browser), say so in the PR's Testing section instead of skipping silently.
+Pick the level from the blast radius. A pure rule or a component: `check`. Anything that reads or writes the database, a Server Action, a route, or a module's public surface: `verify`. Anything a user journey touches, a layout, a migration, a dependency bump, packaging: `verify:full`. When a required level cannot run (no browser), say so in the PR's Testing section instead of skipping silently.
 
 CI runs the same steps on every pull request (`.github/workflows/ci.yml` calls the same migration script). Two checks stay outside the scripts:
 
 - `pnpm eval` calls the real provider configured in `.env` with the synthetic cases in `examples/generation/cases` and prints grounding warnings, tokens, latency and cost. It spends money, is never part of CI, and is required only when you change a prompt, a document schema or a provider; paste its table into the pull request. Every other check runs with the fake model adapter (`LANDED_MODEL_PROVIDER=fake` in `.env.test`), which answers from `examples/generation/fixtures`, so no key is ever needed.
-- The packaged installation is `Dockerfile`, `compose.release.yml`, `db/migrate.mjs`, `scripts/landed.sh`, `scripts/landed.ps1` and `.env.release.example`. CI does not build the image; a change to any of these files must re-run the checks listed under "Required verification" in [doc 07](docs/07-quickstart-contract.md) (fresh `start`, restart, backup and restore, factory reset) and state the results in the pull request.
+- `scripts/import-postgres.mjs` (`pnpm import:postgres`) is the one-time import from a Docker/PostgreSQL install and has no automated test; a change to it must be re-run against a fictional PostgreSQL database and the row-count table pasted into the pull request.
 
 ## Commits and pull requests
 

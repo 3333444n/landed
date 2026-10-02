@@ -36,7 +36,7 @@ Numbers establish reading order, not software release versions. Accepted choices
 | [010 — Career browsing and skill context](adr/010-career-browsing-and-skill-context.md) | Expandable records, direct skill associations and derived context filters | Accepted, implementation merged (PRs #35–39) |
 | [011 — Writing context, Companies and Job Sources](adr/011-writing-company-context-and-job-sources.md) | Profile narratives, application Interest, shared company context and logos, configurable sources and grounded short cover letters | Implemented and merged, 2026-09-23 |
 | [012 — Document formatting and resume contact selection](adr/012-document-formatting-and-contact-selection.md) | Structured inline marks, contact defaults and per-resume selection/order | Accepted, implemented and merged (PRs #54–56) |
-| [013 — Desktop distribution](adr/013-desktop-distribution.md) | Electron app supervising the existing Next.js server over local HTTP; SQLite file instead of PostgreSQL; MCP over stdio through `Landed --mcp`; Docker release removed; updates on restart with a backup before migrations | Accepted, design only (2026-10-02) |
+| [013 — Desktop distribution](adr/013-desktop-distribution.md) | Electron app supervising the existing Next.js server over local HTTP; SQLite file instead of PostgreSQL; MCP over stdio through `Landed --mcp`; Docker release removed; updates on restart with a backup before migrations | Accepted, partially implemented (SQLite, #60–#61) |
 
 ## Architecture diagrams
 
