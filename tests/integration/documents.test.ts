@@ -641,7 +641,7 @@ describe("PDF artifacts", () => {
       expect(await connection.db.select().from(documentArtifacts)).toHaveLength(1);
 
       // A previous template version must not satisfy the current artifact cache.
-      await connection.db
+      await connection.writer
         .update(documentArtifacts)
         .set({ templateVersion: templateVersion - 1 })
         .where(eq(documentArtifacts.id, rows[0]!.id));
@@ -650,7 +650,9 @@ describe("PDF artifacts", () => {
       );
       expect(updatedTemplate.reused).toBe(false);
       expect(await connection.db.select().from(documentArtifacts)).toHaveLength(2);
-      await connection.db.delete(documentArtifacts).where(eq(documentArtifacts.id, rows[0]!.id));
+      await connection.writer
+        .delete(documentArtifacts)
+        .where(eq(documentArtifacts.id, rows[0]!.id));
 
       // A missing file is rendered again into the same key without a second row.
       await rm(file);

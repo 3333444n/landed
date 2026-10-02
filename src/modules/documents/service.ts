@@ -66,30 +66,26 @@ export async function startRun(
 ): Promise<repo.GenerationRunRecord> {
   const prompt = prompts[identity.documentType];
   const at = now(deps);
-  if (identity.mode !== "adapter") {
-    await repo.cancelQueuedRuns(
-      deps.db,
+  return deps.runInTransaction(async (tx) => {
+    if (identity.mode !== "adapter") {
+      await repo.cancelQueuedRuns(tx, profileId, identity.applicationId, identity.documentType, at);
+    }
+    return repo.insertRun(tx, {
+      id: newId(deps),
       profileId,
-      identity.applicationId,
-      identity.documentType,
-      at,
-    );
-  }
-  return repo.insertRun(deps.db, {
-    id: newId(deps),
-    profileId,
-    applicationId: identity.applicationId,
-    documentType: identity.documentType,
-    state: identity.mode === "adapter" ? "running" : "queued",
-    mode: identity.mode,
-    provider: identity.provider,
-    model: identity.model,
-    promptName: prompt.name,
-    promptVersion: prompt.version,
-    snapshot: identity.snapshot,
-    startedAt: identity.mode === "adapter" ? at : null,
-    createdAt: at,
-    updatedAt: at,
+      applicationId: identity.applicationId,
+      documentType: identity.documentType,
+      state: identity.mode === "adapter" ? "running" : "queued",
+      mode: identity.mode,
+      provider: identity.provider,
+      model: identity.model,
+      promptName: prompt.name,
+      promptVersion: prompt.version,
+      snapshot: identity.snapshot,
+      startedAt: identity.mode === "adapter" ? at : null,
+      createdAt: at,
+      updatedAt: at,
+    });
   });
 }
 
@@ -109,15 +105,17 @@ export async function finishRun(
   if (!run) return notFound("Generation run");
   const at = now(deps);
   if (!outcome.ok) {
-    const failed = await repo.updateRun(deps.db, profileId, runId, {
-      state: "failed",
-      failureKind: outcome.kind,
-      errorMessage: outcome.message,
-      rawOutput: outcome.kind === "validation" ? outcome.rawText : null,
-      ...usageColumns(outcome.usage),
-      finishedAt: at,
-      updatedAt: at,
-    });
+    const failed = await deps.runInTransaction((tx) =>
+      repo.updateRun(tx, profileId, runId, {
+        state: "failed",
+        failureKind: outcome.kind,
+        errorMessage: outcome.message,
+        rawOutput: outcome.kind === "validation" ? outcome.rawText : null,
+        ...usageColumns(outcome.usage),
+        finishedAt: at,
+        updatedAt: at,
+      }),
+    );
     return { ok: true, value: { run: failed!, revision: null } };
   }
   return saveRevision(deps, profileId, run, outcome.value, outcome.usage, "generated", at);
@@ -188,7 +186,9 @@ export async function sweepInterruptedRuns(
   limitMs = 10 * 60 * 1000,
 ): Promise<number> {
   const at = now(deps);
-  return repo.failStaleRuns(deps.db, profileId, new Date(at.getTime() - limitMs), at);
+  return deps.runInTransaction((tx) =>
+    repo.failStaleRuns(tx, profileId, new Date(at.getTime() - limitMs), at),
+  );
 }
 
 export interface DocumentView {
@@ -264,11 +264,9 @@ export async function editUnit(
   if (!parsed.success) return validation(fieldErrorsFromZod(parsed.error));
   const input = parsed.data;
   try {
-    return await deps.db.transaction(async (tx) => {
+    return await deps.runInTransaction(async (tx) => {
       const current = await repo.findRevision(tx, profileId, input.expectedRevisionId);
       if (!current) return notFound("Revision");
-      if (!(await repo.lockDocument(tx, profileId, current.documentId)))
-        return notFound("Document");
       const latest = await repo.latestRevision(tx, profileId, current.documentId);
       if (!latest || latest.id !== current.id) return stale();
       const type = await documentType(tx, profileId, current.documentId);
@@ -320,11 +318,8 @@ export async function markReviewed(
   revisionId: string,
   reviewed: boolean,
 ): Promise<Result<repo.DocumentRevisionRecord>> {
-  const updated = await repo.setReviewedAt(
-    deps.db,
-    profileId,
-    revisionId,
-    reviewed ? now(deps) : null,
+  const updated = await deps.runInTransaction((tx) =>
+    repo.setReviewedAt(tx, profileId, revisionId, reviewed ? now(deps) : null),
   );
   return updated ? { ok: true, value: updated } : notFound("Revision");
 }
@@ -393,21 +388,23 @@ async function saveRevision(
   }
   const checked = contentSchemas[type].safeParse(value);
   if (!checked.success) {
-    const failed = await repo.updateRun(deps.db, profileId, run.id, {
-      state: "failed",
-      failureKind: "validation",
-      errorMessage: "The answer did not match the document schema",
-      rawOutput: JSON.stringify(value),
-      ...usageColumns(usage),
-      finishedAt: at,
-      updatedAt: at,
-    });
+    const failed = await deps.runInTransaction((tx) =>
+      repo.updateRun(tx, profileId, run.id, {
+        state: "failed",
+        failureKind: "validation",
+        errorMessage: "The answer did not match the document schema",
+        rawOutput: JSON.stringify(value),
+        ...usageColumns(usage),
+        finishedAt: at,
+        updatedAt: at,
+      }),
+    );
     return { ok: true, value: { run: failed!, revision: null } };
   }
   const content: DocumentContent = checked.data;
   const warnings = [...groundingCheck(type, content, run.snapshot), ...layoutCheck(type, content)];
   try {
-    return await deps.db.transaction(async (tx) => {
+    return await deps.runInTransaction(async (tx) => {
       const document =
         (await repo.findDocument(tx, profileId, run.applicationId, type)) ??
         (await repo.insertDocument(tx, {
@@ -418,7 +415,6 @@ async function saveRevision(
           createdAt: at,
           updatedAt: at,
         }));
-      if (!(await repo.lockDocument(tx, profileId, document.id))) return notFound("Document");
       const revision = await repo.insertRevision(tx, {
         id: newId(deps),
         profileId,
@@ -451,14 +447,16 @@ async function failPasted(
   raw: string,
   at: Date,
 ): Promise<void> {
-  await repo.updateRun(deps.db, profileId, runId, {
-    state: "failed",
-    failureKind: "pasted_invalid",
-    errorMessage: message,
-    rawOutput: raw.slice(0, 20_000),
-    finishedAt: at,
-    updatedAt: at,
-  });
+  await deps.runInTransaction((tx) =>
+    repo.updateRun(tx, profileId, runId, {
+      state: "failed",
+      failureKind: "pasted_invalid",
+      errorMessage: message,
+      rawOutput: raw.slice(0, 20_000),
+      finishedAt: at,
+      updatedAt: at,
+    }),
+  );
 }
 
 function usageColumns(usage: GenerateUsage | null) {
