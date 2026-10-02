@@ -16,6 +16,7 @@
     "desktop:build": "next build && node desktop/build.mjs",
     "desktop:dev": "pnpm desktop:build && electron .",
     "desktop:dist": "pnpm desktop:build && electron-builder",
+    "mcp": "node desktop/build.mjs mcp && node --env-file-if-exists=.env dist-desktop/mcp.cjs",
     "lint": "eslint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

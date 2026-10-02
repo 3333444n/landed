@@ -1,7 +1,7 @@
 {
   "name": "landed",
   "description": "Maintain your career profile and write job application documents through a local Landed installation. Landed stores your facts, checks drafts against evidence and renders PDFs.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": {
     "name": "3333444n",
     "url": "https://github.com/3333444n"
@@ -10,17 +10,11 @@
   "license": "MIT",
   "skills": "./skills/",
   "userConfig": {
-    "url": {
+    "executable": {
       "type": "string",
-      "title": "Landed address",
-      "description": "The /mcp address of your Landed installation, shown under Settings \u2192 Connect your assistant.",
-      "default": "http://127.0.0.1:3000/mcp"
-    },
-    "token": {
-      "type": "string",
-      "title": "Landed token",
-      "description": "The token shown under Settings \u2192 Connect your assistant (LANDED_MCP_TOKEN).",
-      "sensitive": true,
+      "title": "Landed executable",
+      "description": "The path to the installed Landed app's executable, shown under Settings \u2192 Connect your assistant.",
+      "default": "/Applications/Landed.app/Contents/MacOS/Landed",
       "required": true
     }
   }

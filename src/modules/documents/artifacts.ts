@@ -15,6 +15,8 @@ import * as repo from "./repository";
 export interface RenderedArtifact {
   bytes: Buffer;
   filename: string;
+  /** Absolute path of the stored file, which an assistant over stdio can open directly. */
+  path: string;
   reused: boolean;
 }
 
@@ -47,9 +49,10 @@ export async function getOrRenderPdf(
   const existing = await repo.findArtifact(deps.db, profileId, revisionId, "pdf", templateVersion);
   if (existing) {
     try {
-      const bytes = await readFile(path.join(artifactDir, existing.storageKey));
+      const file = path.resolve(artifactDir, existing.storageKey);
+      const bytes = await readFile(file);
       if (sha256(bytes) === existing.checksum)
-        return { ok: true, value: { bytes, filename, reused: true } };
+        return { ok: true, value: { bytes, filename, path: file, reused: true } };
     } catch {
       // Missing file: fall through and render again into the same key.
     }
@@ -68,7 +71,8 @@ export async function getOrRenderPdf(
         );
   const storageKey =
     existing?.storageKey ?? path.join(profileId, `${revisionId}-pdf-v${templateVersion}.pdf`);
-  await writeFileAtomically(path.join(artifactDir, storageKey), bytes);
+  const file = path.resolve(artifactDir, storageKey);
+  await writeFileAtomically(file, bytes);
 
   if (!existing) {
     try {
@@ -91,7 +95,7 @@ export async function getOrRenderPdf(
       if (mapped && mapped.ok) throw error;
     }
   }
-  return { ok: true, value: { bytes, filename, reused: false } };
+  return { ok: true, value: { bytes, filename, path: file, reused: false } };
 }
 
 function slug(text: string): string {

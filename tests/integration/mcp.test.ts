@@ -1,16 +1,15 @@
 import { saveCompany } from "@/modules/companies";
 /*
- * The assistant surface end to end, in process: the handler from src/app/mcp/handler.ts is
- * driven by the SDK client through a custom fetch, against the test database. The route's own
- * checks (token, bearer) are unit tested; the Host guard runs in src/proxy.ts, outside this test.
+ * The assistant surface end to end, in process: the server from src/app/mcp/server.ts is driven
+ * by the SDK client over an in-memory transport, against the test database.
  */
 import { mkdtemp, rm } from "node:fs/promises";
 import { readFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
+import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { buildMcpHandler } from "@/app/mcp/handler";
+import { createMcpServer } from "@/app/mcp/server";
 import { pursueJob } from "@/app/jobs/pursue-job";
 import type { DatabaseConnection } from "@/infrastructure/database";
 import { getRun } from "@/modules/documents";
@@ -30,18 +29,13 @@ const fixture = (name: string) =>
     unknown
   >;
 
-const origin = "http://127.0.0.1:3000";
 const userAgent = "claude-code/2.1.0";
 
 async function connect(): Promise<Client> {
-  const handler = buildMcpHandler({ deps: deps(), artifactDir, origin, userAgent });
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  await createMcpServer({ deps: deps(), artifactDir, userAgent }).connect(serverTransport);
   const c = new Client({ name: "landed-test", version: "1" });
-  await c.connect(
-    new StreamableHTTPClientTransport(new URL(`${origin}/mcp`), {
-      fetch: (input, init) => handler.fetch(new Request(input, init)),
-      requestInit: { headers: { Authorization: "Bearer not-checked-by-the-handler-itself" } },
-    }),
-  );
+  await c.connect(clientTransport);
   return c;
 }
 
@@ -457,16 +451,17 @@ describe("get_document, edit_unit and render_pdf", () => {
       filename: string;
       pages: number;
       size_bytes: number;
-      download_url: string;
+      path: string;
       reused: boolean;
     }>("render_pdf", { job_id: demo.jobId, type: "resume" });
     expect(pdf).toMatchObject({
       filename: "alex-rivera-example-analytics-resume.pdf",
       pages: 1,
-      download_url: `${origin}/jobs/${demo.jobId}/resume/pdf`,
+      path: expect.stringMatching(/^\/.+\.pdf$/),
       reused: false,
     });
     expect(pdf.size_bytes).toBeGreaterThan(1000);
+    expect(pdf.path.startsWith(path.resolve(artifactDir))).toBe(true);
     const again = await call<{ reused: boolean }>("render_pdf", {
       job_id: demo.jobId,
       type: "resume",

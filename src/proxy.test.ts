@@ -29,9 +29,9 @@ describe("proxy", () => {
     expect(response.status).toBe(403);
     expect(await response.text()).toMatch(/its own address/);
   });
-  it("refuses pages, route handlers and /mcp without the session cookie when a secret is set", async () => {
+  it("refuses pages and route handlers without the session cookie when a secret is set", async () => {
     vi.stubEnv("LANDED_SESSION_SECRET", secret);
-    for (const path of ["/jobs", "/jobs/j1/resume/pdf", "/mcp"]) {
+    for (const path of ["/jobs", "/jobs/j1/resume/pdf"]) {
       const response = proxy(request(path, { cookie: "landed_session=wrong" }));
       expect(response.status).toBe(403);
       expect(response.headers.get("content-type")).toBe("text/plain; charset=utf-8");
@@ -41,7 +41,7 @@ describe("proxy", () => {
   });
   it("passes a request carrying the session cookie", () => {
     vi.stubEnv("LANDED_SESSION_SECRET", secret);
-    const response = proxy(request("/mcp", { cookie: `theme=dark; landed_session=${secret}` }));
+    const response = proxy(request("/jobs", { cookie: `theme=dark; landed_session=${secret}` }));
     expect(response.headers.get("x-middleware-next")).toBe("1");
   });
 });

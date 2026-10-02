@@ -1,17 +1,12 @@
 import { randomUUID } from "node:crypto";
-import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
 import { expect, test } from "@playwright/test";
+import { connectAssistant } from "./assistant-client";
 
 // Playwright owns port 3417 and landed_test. Verify the server before using mutation tools.
 test("assistant profile writes appear in Profile and stale edits are refused", async ({ page }) => {
   await page.goto("/settings/model");
   await expect(page.getByRole("heading", { name: "Test double", exact: true })).toBeVisible();
-  const client = new Client({ name: "profile-browser-test", version: "1" });
-  await client.connect(
-    new StreamableHTTPClientTransport(new URL("http://127.0.0.1:3417/mcp"), {
-      requestInit: { headers: { Authorization: "Bearer test-token-test-token-test-token" } },
-    }),
-  );
+  const client = await connectAssistant("profile-browser-test");
   type Row = { id: string; updated_at: string; display_name: string };
   async function call(name: string, args: Record<string, unknown> = {}) {
     const result = await client.callTool({ name, arguments: args });

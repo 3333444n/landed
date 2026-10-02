@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
-import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
 import { expect, test } from "@playwright/test";
+import { connectAssistant } from "./assistant-client";
 
 // Mutations and screenshots use only Playwright's isolated fictional database and fake adapter.
 test("browse nested facts, edit role pills, and filter direct and derived skill contexts", async ({
@@ -8,12 +8,7 @@ test("browse nested facts, edit role pills, and filter direct and derived skill 
 }) => {
   await page.goto("/settings/model");
   await expect(page.getByRole("heading", { name: "Test double", exact: true })).toBeVisible();
-  const client = new Client({ name: "ui-refinement-test", version: "1" });
-  await client.connect(
-    new StreamableHTTPClientTransport(new URL("http://127.0.0.1:3417/mcp"), {
-      requestInit: { headers: { Authorization: "Bearer test-token-test-token-test-token" } },
-    }),
-  );
+  const client = await connectAssistant("ui-refinement-test");
   async function call(name: string, args: Record<string, unknown> = {}) {
     const result = await client.callTool({ name, arguments: args });
     expect(result.isError).not.toBe(true);

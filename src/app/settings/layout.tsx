@@ -2,7 +2,7 @@ import { Plug, Settings, Tags } from "lucide-react";
 import type { ReactNode } from "react";
 import { Card, CardList } from "@/components/Card";
 import { Column } from "@/components/Column";
-import { getAssistantConfig, getModelStatus } from "@/infrastructure/server";
+import { getModelStatus } from "@/infrastructure/server";
 import type { ModelStatus } from "@/infrastructure/config";
 
 export const dynamic = "force-dynamic";
@@ -22,7 +22,6 @@ function modelSubtitle(status: ModelStatus): string {
 
 /** The Settings hub: one card per column, each opening it next to this list. Reads no database. */
 export default function SettingsLayout({ children }: { children: ReactNode }) {
-  const assistant = getAssistantConfig();
   const cards = [
     {
       href: "/settings/job-sources",
@@ -39,10 +38,7 @@ export default function SettingsLayout({ children }: { children: ReactNode }) {
     {
       href: "/settings/assistant",
       title: "Connect your assistant",
-      subtitle:
-        assistant.kind === "configured"
-          ? `Token ends in ····${assistant.tokenHint}`
-          : "Not configured",
+      subtitle: "Claude Code, Codex, Claude Desktop",
       icon: Plug,
     },
   ];

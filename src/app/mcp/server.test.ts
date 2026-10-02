@@ -1,4 +1,4 @@
-import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
+import { Client, InMemoryTransport } from "@modelcontextprotocol/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getCurrentProfile } from "@/modules/profile";
 
@@ -9,26 +9,23 @@ vi.mock("@/modules/profile", async (importOriginal) => ({
 beforeEach(() => {
   vi.mocked(getCurrentProfile).mockReset().mockResolvedValue(null);
 });
-import { buildMcpHandler } from "./handler";
+import { createMcpServer } from "./server";
 
-/** Drives the handler in-process with the SDK client; no database is needed without a profile. */
+/** Drives the server in-process with the SDK client; no database is needed without a profile. */
 async function connect() {
-  const handler = buildMcpHandler({
+  const server = createMcpServer({
     deps: { db: null as never, runInTransaction: null as never },
     artifactDir: "/tmp/unused",
-    origin: "http://127.0.0.1:3000",
     userAgent: "test-client/1",
   });
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  await server.connect(serverTransport);
   const client = new Client({ name: "test", version: "1" });
-  await client.connect(
-    new StreamableHTTPClientTransport(new URL("http://127.0.0.1:3000/mcp"), {
-      fetch: (input, init) => handler.fetch(new Request(input, init)),
-    }),
-  );
-  return { client, handler };
+  await client.connect(clientTransport);
+  return { client };
 }
 
-describe("buildMcpHandler", () => {
+describe("createMcpServer", () => {
   it("lists document and profile tools with their annotations", async () => {
     const { client } = await connect();
     const { tools } = await client.listTools();
@@ -99,45 +96,5 @@ describe("buildMcpHandler", () => {
       expect(JSON.stringify(result)).not.toContain("SECRET_SQL_PARAMETERS");
     }
     await client.close();
-  });
-
-  it("serves a 2025-era client statelessly: SSE answers, both Accept types required", async () => {
-    const { handler } = await connect();
-    const post = (headers: Record<string, string>, body: unknown) =>
-      handler.fetch(
-        new Request("http://127.0.0.1:3000/mcp", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", ...headers },
-          body: JSON.stringify(body),
-        }),
-      );
-    const accept = { Accept: "application/json, text/event-stream" };
-    const initialize = {
-      jsonrpc: "2.0",
-      id: 1,
-      method: "initialize",
-      params: {
-        protocolVersion: "2025-06-18",
-        capabilities: {},
-        clientInfo: { name: "legacy", version: "1" },
-      },
-    };
-    const started = await post(accept, initialize);
-    expect(started.status).toBe(200);
-    expect(started.headers.get("content-type")).toContain("text/event-stream");
-    expect(await started.text()).toContain('"protocolVersion"');
-
-    const listed = await post(accept, { jsonrpc: "2.0", id: 2, method: "tools/list" });
-    expect(listed.status).toBe(200);
-    expect(await listed.text()).toContain('"list_jobs"');
-
-    const refused = await post({ Accept: "application/json" }, initialize);
-    expect(refused.status).toBe(406);
-  });
-
-  it("answers GET with 405 on the stateless path", async () => {
-    const { handler } = await connect();
-    const response = await handler.fetch(new Request("http://127.0.0.1:3000/mcp"));
-    expect(response.status).toBe(405);
   });
 });
