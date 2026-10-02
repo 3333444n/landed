@@ -22,6 +22,7 @@ import { serveLandedStdio } from "../src/app/mcp/stdio";
 import { sessionCookieName } from "../src/infrastructure/session-guard";
 import { migrateWithBackup, NewerDatabaseError } from "../src/infrastructure/migrate";
 import { clearModelSettings, loadModelEnv, saveModelSettings } from "./model-settings";
+import { checkForUpdate } from "./updates";
 
 let window: BrowserWindow | null = null;
 let server: UtilityProcess | null = null;
@@ -116,7 +117,10 @@ async function startApp() {
       preload: join(__dirname, "preload.cjs"),
     },
   });
-  window.once("ready-to-show", () => window?.show());
+  window.once("ready-to-show", () => {
+    window?.show();
+    if (app.isPackaged) void checkForUpdate();
+  });
   window.webContents.setWindowOpenHandler(({ url }) => {
     if (/^https?:\/\//.test(url)) void shell.openExternal(url);
     return { action: "deny" };

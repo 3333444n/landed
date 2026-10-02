@@ -32,6 +32,7 @@ mac:
   target:
     - target: dmg
       arch: [arm64, x64]
+  artifactName: ${productName}-${version}-${arch}.${ext}
   # Unsigned for now. Ad-hoc signing ("-") re-seals the binary after the fuses change it, without
   # which macOS on Apple silicon refuses to start it; hardened runtime would reject the ad-hoc
   # signature against Electron's own frameworks.

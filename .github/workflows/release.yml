@@ -1,0 +1,45 @@
+name: Release
+
+# Pushing a tag vX.Y.Z builds the installers on each platform and attaches them to a draft
+# release; a maintainer reviews and publishes it (CONTRIBUTING.md).
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+env:
+  GH_TOKEN: ${{ github.token }}
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    steps:
+      - run: gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft --generate-notes
+
+  installers:
+    needs: draft
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm desktop:dist --publish never
+      - name: Tools answer over stdio from the packaged app
+        run: ${{ runner.os == 'Linux' && 'xvfb-run -a' || '' }} node scripts/smoke-mcp.mjs
+      - name: Attach the installers to the draft release
+        run: |
+          shopt -s nullglob
+          gh release upload "$GITHUB_REF_NAME" release/*.dmg release/*.exe release/*.AppImage
