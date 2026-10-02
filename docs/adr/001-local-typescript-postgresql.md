@@ -1,6 +1,6 @@
 # ADR 001 — Local TypeScript application with PostgreSQL
 
-Date: 2026-09-13. Status: accepted and implemented; packaging is decided in [ADR 003](003-local-packaging.md).
+Date: 2026-09-13. Status: accepted and implemented; packaging is decided in [ADR 003](003-local-packaging.md). Revised by [ADR 013](013-desktop-distribution.md) (2026-10-02, not implemented): SQLite replaces PostgreSQL in the desktop distribution.
 
 ## Context
 

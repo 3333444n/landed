@@ -1,10 +1,10 @@
 # 09 — Decisions and implementation readiness
 
-Updated 2026-09-26. Accepted decisions below reflect the user's explicit instructions. Recommendations remain proposals.
+Updated 2026-10-02. Accepted decisions below reflect the user's explicit instructions. Recommendations remain proposals.
 
 Merged baseline: Phases 0, 1a and 1b, career browsing, and the assistant surface through ADR 011 are implemented, including 42 MCP tools, writing context, Companies and Job Sources. Expanded document editing and cover-letter template 8 merged in PRs #50–51 on 2026-09-26.
 
-This branch implements [ADR 012](adr/012-document-formatting-and-contact-selection.md): structured inline formatting, resume contact defaults and selection/order, template 9 and 43 MCP tools. It is verified and pending merge. The final section records its validation and provider limitations; dated milestone sections preserve their historical scope and test counts. Unimplemented later capabilities remain design only.
+Merged in PRs #54–56: [ADR 012](adr/012-document-formatting-and-contact-selection.md): structured inline formatting, resume contact defaults and selection/order, template 9 and 43 MCP tools. It is verified and merged. The final section records its validation and provider limitations; dated milestone sections preserve their historical scope and test counts. Unimplemented later capabilities remain design only.
 
 ## Accepted
 
@@ -105,7 +105,9 @@ Vector embeddings/indexes; separate vector storage; generalized agent framework;
 
 - [ADR 011 — Writing context, Companies and Job Sources](adr/011-writing-company-context-and-job-sources.md): profile narratives, company context and canonical identity, sources and cover-letter grounding; implemented and merged.
 
-- [ADR 012 — Document formatting and resume contact selection](adr/012-document-formatting-and-contact-selection.md): accepted and implemented on this branch, pending merge; optional structured marks and resume contact preferences, template 9 and 43 MCP tools.
+- [ADR 012 — Document formatting and resume contact selection](adr/012-document-formatting-and-contact-selection.md): accepted, implemented and merged in PRs #54–56; optional structured marks and resume contact preferences, template 9 and 43 MCP tools.
+
+- [ADR 013 — Desktop distribution](adr/013-desktop-distribution.md): accepted 2026-10-02, design only; supersedes ADR 003 and revises ADRs 001, 004, 006 and 008.
 
 ## Profile management over MCP (merged)
 
@@ -214,9 +216,9 @@ The required schema-change evaluation passed all nine cases with OpenRouter / `g
 
 PR #50 (resume metadata editing) and PR #51 (cover-letter editing and template 8) are merged. Both pull-request checks and their merge checks passed. The merged tree matched the independently verified combined implementation: 199 unit tests, 105 integration tests and 12 browser journeys, with migration consistency and production build. The schema evaluation above remains applicable to those changes. ADR 012’s later formatting and contact changes have separate validation below.
 
-## Document formatting and resume contacts (2026-09-26, implemented, pending merge)
+## Document formatting and resume contacts (2026-09-26, implemented, merged in PRs #54–56)
 
-[ADR 012](adr/012-document-formatting-and-contact-selection.md) is accepted: visual B/I/U field editing for resumes and cover letters, blue underlined document links, profile contact defaults and revision-local selection/order. Implementation is verified on this branch and pending merge. The full local verification and provider evaluation are recorded below.
+[ADR 012](adr/012-document-formatting-and-contact-selection.md) is accepted: visual B/I/U field editing for resumes and cover letters, blue underlined document links, profile contact defaults and revision-local selection/order. Implementation is verified and merged (PRs #54–56). The full local verification and provider evaluation are recorded below.
 
 
 ### Provider evaluation, 2026-09-26
@@ -238,7 +240,7 @@ Final evaluation used OpenRouter / google/gemini-3.1-flash-lite: eight of nine a
 
 ### Local verification
 
-The accepted combined implementation passed `pnpm verify:full`: 217 unit tests, 112 PostgreSQL integration tests, migration consistency, production build and all 12 Chromium journeys. Checks use the fake provider and isolated test database. Browser coverage includes combined marks, floating controls, real keyboard clearing, sanitized paste, stale-input retention and contact selection/order/defaults. The final browser contract uses selection-only formatting controls, direct contact-row editing and navigable contacts inside its editor. Fictional PDFs and responsive light/dark previews were visually inspected; PDF extraction preserves text across font changes. The final provider evaluation above remains 8/9 valid, with divergent model text correctly rejected. No SQL migration is required. This verification does not establish packaged-install coverage; ADR 012 remains pending merge.
+The accepted combined implementation passed `pnpm verify:full`: 217 unit tests, 112 PostgreSQL integration tests, migration consistency, production build and all 12 Chromium journeys. Checks use the fake provider and isolated test database. Browser coverage includes combined marks, floating controls, real keyboard clearing, sanitized paste, stale-input retention and contact selection/order/defaults. The final browser contract uses selection-only formatting controls, direct contact-row editing and navigable contacts inside its editor. Fictional PDFs and responsive light/dark previews were visually inspected; PDF extraction preserves text across font changes. The final provider evaluation above remains 8/9 valid, with divergent model text correctly rejected. No SQL migration is required. This verification does not establish packaged-install coverage; ADR 012 merged afterwards in PRs #54–56.
 
 
 ### Review boundaries, 2026-09-26
@@ -265,3 +267,9 @@ Separate `pnpm eval` with OpenRouter / google/gemini-3.1-flash-lite: **8/9 valid
 | partial-fit | recruiter_message | ok | none | 1882 | 155 | 1510 | 0.000703 |
 
 The later contact layer restores the previously evaluated combined schema and prompt. Its separate 8/9 result above remains applicable; these two reports cover distinct review boundaries and neither replaces the other.
+
+## Desktop distribution (2026-10-02, accepted, design only)
+
+[ADR 013](adr/013-desktop-distribution.md) accepts a desktop distribution to remove the Docker prerequisite for people who do not use a terminal and to let a harness use Landed's tools while the app is closed. Decided: an Electron app whose main process supervises the existing Next.js standalone server in a `utilityProcess` on 127.0.0.1, with the window loading it over HTTP and IPC kept to update status and model key entry; one SQLite file per installation through `node:sqlite` and Drizzle 1.0 (fallback `better-sqlite3`), with writes serialized on one connection and version tokens unchanged; MCP over stdio through `Landed --mcp`, replacing the HTTP `/mcp` endpoint and `LANDED_MCP_TOKEN`; the Docker release removed; installers on GitHub Releases, updates applied on restart, a `VACUUM INTO` backup before migrations, and unsigned macOS builds that link to the release page instead of installing updates; the model key held in the OS keychain through `safeStorage` ([ADR 006 revision](adr/006-model-access-path.md#revision-2026-10-02-adr-013)); a one-time import script from PostgreSQL for existing installations.
+
+Nothing in this section is implemented. The Docker Compose release, PostgreSQL, the HTTP endpoint and environment-file model configuration remain the current behavior until the implementing pull requests merge; documents 03, 04, 06 and 07 change with them.

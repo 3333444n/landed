@@ -1,6 +1,6 @@
 # ADR 006 — Model access path for generated materials
 
-Date: 2026-09-14. Status: accepted and implemented (Phase 1b, 2026-09-14).
+Date: 2026-09-14. Status: accepted and implemented (Phase 1b, 2026-09-14). Revised by [ADR 013](013-desktop-distribution.md) on 2026-10-02 (not implemented): see the revision at the end.
 
 ## Context
 
@@ -38,3 +38,16 @@ A single provider. Simpler to test and document, but the user base for a self-ho
 - Every check in CI runs with the fake adapter. Real-model behaviour is measured by `pnpm eval` on the synthetic cases, by whoever holds a key, and the results are reported in pull requests rather than assumed.
 - The adapter is infrastructure, not a business module: `src/infrastructure/model/` holds the interface, the AI SDK class, the fake and the factory. The Documents module receives an adapter and a snapshot and never knows which provider answered.
 - Reconsider when a hosted or multi-user mode exists (then credentials belong to accounts), when a harness integration has a verified recipe for the packaged installation, or when provider-specific features (caching, batch) matter enough to justify per-provider code.
+
+## Revision 2026-10-02 (ADR 013)
+
+Status: accepted, not implemented. [ADR 013](013-desktop-distribution.md) replaces the Docker Compose release with a desktop app, which has no environment file for an ordinary user to edit.
+
+- In the desktop app the provider, model, base URL and key are set in Settings → Model setup.
+- The key travels once from the window to the main process over a sender-checked IPC call. Main encrypts it with Electron `safeStorage`, which uses the OS keychain, and writes it to a file in the app data folder. It is never stored in the database and never returned to the renderer; the interface shows only its last four characters.
+- When main starts or restarts the server process, it passes the configuration as the same `LANDED_MODEL_*` environment variables, so the `ModelAdapter`, the factory and the run records are unchanged.
+- `pnpm dev` and `pnpm start` keep the environment-file path for contributors.
+- On Linux without a keyring, `safeStorage` may fall back to a weak key; the setting says so when that is the case.
+- The key is still never logged.
+
+The reasoning above against a database row still holds: the key stays out of the database and out of every backup copy, and the keychain supplies the secret the earlier alternative lacked.
