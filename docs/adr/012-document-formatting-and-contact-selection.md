@@ -1,6 +1,6 @@
 # ADR 012 — Document formatting and resume contact selection
 
-Status: Accepted, implemented and verified on this branch (2026-09-26), pending merge.
+Status: Accepted, implemented and verified (2026-09-26), merged in PRs #54–56.
 
 ## Context
 
@@ -16,4 +16,4 @@ Actual document links are blue and underlined, an explicit exception to monochro
 
 ## Consequences
 
-Existing JSON remains readable without a SQL migration or historical rewrite. Browser, PDF and MCP use the same formatting and contact contracts. Formatting introduces an editor dependency and expands render/extraction tests. Provider schemas and prompts require evaluation. PDF text extraction verifies wording and order, not certification for every external parser. Defaults do not silently update existing revisions. Apply profile default is an explicit pending edit. Template 9 refreshes cached PDFs; MCP adds `set_resume_contacts`, bringing this branch to 43 tools. See [validation and the provider evaluation](../09-decisions-and-readiness.md#document-formatting-and-resume-contacts-2026-09-26-implemented-pending-merge).
+Existing JSON remains readable without a SQL migration or historical rewrite. Browser, PDF and MCP use the same formatting and contact contracts. Formatting introduces an editor dependency and expands render/extraction tests. Provider schemas and prompts require evaluation. PDF text extraction verifies wording and order, not certification for every external parser. Defaults do not silently update existing revisions. Apply profile default is an explicit pending edit. Template 9 refreshes cached PDFs; MCP adds `set_resume_contacts`, bringing the endpoint to 43 tools. See [validation and the provider evaluation](../09-decisions-and-readiness.md#document-formatting-and-resume-contacts-2026-09-26-implemented-pending-merge).

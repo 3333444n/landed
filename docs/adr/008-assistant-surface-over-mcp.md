@@ -1,6 +1,6 @@
 # ADR 008 — Assistant surface over MCP
 
-Date: 2026-09-16. Status: accepted, implemented (2026-09-16). It was implemented as a stack of pull requests (the endpoint and tools, the Settings column and launcher token, the skill and plugin, then `add_job`); [doc 09](../09-decisions-and-readiness.md) records the verification and the known gaps.
+Date: 2026-09-16. Status: accepted, implemented (2026-09-16). Transport revised by [ADR 013](013-desktop-distribution.md) (2026-10-02, not implemented): stdio through `Landed --mcp` replaces the HTTP endpoint and its token; tools, validation and run records are unchanged. It was implemented as a stack of pull requests (the endpoint and tools, the Settings column and launcher token, the skill and plugin, then `add_job`); [doc 09](../09-decisions-and-readiness.md) records the verification and the known gaps.
 
 ## Context
 

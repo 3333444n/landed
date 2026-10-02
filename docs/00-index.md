@@ -1,6 +1,6 @@
 # 00 — Documentation index
 
-Status: Phase 0 complete (career data entry, packaged Docker installation, column interface since 2026-09-14); Phase 1a complete (manual jobs and application tracking, 2026-09-14); Phase 1b complete (generated materials, review, PDFs, model access, 2026-09-14); Phase 1c additions to the paste flow complete (salary, company logo, word cloud, 2026-09-14); the assistant surface over MCP complete ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16); Phases 2 to 4 are design. Updated 2026-09-26.
+Status: Phase 0 complete (career data entry, packaged Docker installation, column interface since 2026-09-14); Phase 1a complete (manual jobs and application tracking, 2026-09-14); Phase 1b complete (generated materials, review, PDFs, model access, 2026-09-14); Phase 1c additions to the paste flow complete (salary, company logo, word cloud, 2026-09-14); the assistant surface over MCP complete ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16); Phases 2 to 4 are design; the desktop distribution ([ADR 013](adr/013-desktop-distribution.md)) is accepted, design only. Updated 2026-10-02.
 
 Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is merged. The ADR 011 writing-context and canonical-company extensions are implemented and merged in PRs #43–47 (2026-09-23). See [current verification](09-decisions-and-readiness.md#smaller-pr-stack-verification-2026-09-23).
 
@@ -24,18 +24,19 @@ Numbers establish reading order, not software release versions. Accepted choices
 
 | ADR | Decision | Status |
 |---|---|---|
-| [001 — Local TypeScript application with PostgreSQL](adr/001-local-typescript-postgresql.md) | Language, framework, database, local execution | Accepted, implemented |
+| [001 — Local TypeScript application with PostgreSQL](adr/001-local-typescript-postgresql.md) | Language, framework, database, local execution | Accepted, implemented; database revised by ADR 013 (design only) |
 | [002 — Simple achievements and generation snapshots](adr/002-achievements-and-snapshots.md) | Achievements edited in place; Phase 1b input snapshots | Accepted, implemented (snapshots since Phase 1b) |
-| [003 — Local packaging and quickstart](adr/003-local-packaging.md) | Docker Compose release and launcher | Accepted, implemented |
-| [004 — Drizzle for persistence](adr/004-drizzle-persistence.md) | Schema, queries and SQL migrations | Accepted, implemented |
+| [003 — Local packaging and quickstart](adr/003-local-packaging.md) | Docker Compose release and launcher | Accepted, implemented; superseded by ADR 013 (design only) |
+| [004 — Drizzle for persistence](adr/004-drizzle-persistence.md) | Schema, queries and SQL migrations | Accepted, implemented; PostgreSQL specifics revised by ADR 013 (design only) |
 | [005 — Interface as URL-driven columns](adr/005-url-driven-columns.md) | Path as navigation state, sidebar and shifting columns, derived job status | Accepted, implemented |
-| [006 — Model access path](adr/006-model-access-path.md) | App calls a provider through one adapter; env-only configuration; paste-back mode; fake adapter for checks | Accepted, implemented |
+| [006 — Model access path](adr/006-model-access-path.md) | App calls a provider through one adapter; env-only configuration; paste-back mode; fake adapter for checks | Accepted, implemented; key entry revised by ADR 013 (design only) |
 | [007 — User-initiated image fetch](adr/007-user-initiated-image-fetch.md) | The one outbound call besides the provider: a logo address the user pastes, fetched once through a guarded fetcher and stored | Accepted, implemented |
-| [008 — Assistant surface over MCP](adr/008-assistant-surface-over-mcp.md) | Your own assistant (Claude Code, Codex, Claude Desktop) drives Landed through a local MCP endpoint with a launcher-minted token; original scope: reads, drafts and adding a posting; Landed keeps validation, grounding and the run record | Accepted, implemented (2026-09-16) |
+| [008 — Assistant surface over MCP](adr/008-assistant-surface-over-mcp.md) | Your own assistant (Claude Code, Codex, Claude Desktop) drives Landed through a local MCP endpoint with a launcher-minted token; original scope: reads, drafts and adding a posting; Landed keeps validation, grounding and the run record | Accepted, implemented (2026-09-16); transport revised by ADR 013 (design only) |
 | [009 — Profile management over MCP](adr/009-profile-management-over-mcp.md) | Profile creation and partial updates; individual career-record CRUD with retry ids and version checks | Implemented and merged into `main` |
 | [010 — Career browsing and skill context](adr/010-career-browsing-and-skill-context.md) | Expandable records, direct skill associations and derived context filters | Accepted, implementation merged (PRs #35–39) |
 | [011 — Writing context, Companies and Job Sources](adr/011-writing-company-context-and-job-sources.md) | Profile narratives, application Interest, shared company context and logos, configurable sources and grounded short cover letters | Implemented and merged, 2026-09-23 |
-| [012 — Document formatting and resume contact selection](adr/012-document-formatting-and-contact-selection.md) | Structured inline marks, contact defaults and per-resume selection/order | Accepted, implemented on this branch, pending merge |
+| [012 — Document formatting and resume contact selection](adr/012-document-formatting-and-contact-selection.md) | Structured inline marks, contact defaults and per-resume selection/order | Accepted, implemented and merged (PRs #54–56) |
+| [013 — Desktop distribution](adr/013-desktop-distribution.md) | Electron app supervising the existing Next.js server over local HTTP; SQLite file instead of PostgreSQL; MCP over stdio through `Landed --mcp`; Docker release removed; updates on restart with a backup before migrations | Accepted, design only (2026-10-02) |
 
 ## Architecture diagrams
 
@@ -65,6 +66,6 @@ Implementation, `pnpm verify:full`, local assistant acceptance and merge are com
 [ADR 011](adr/011-writing-company-context-and-job-sources.md) adds Profile narratives, application Interest, shared Companies and sourced findings, customizable Job Sources and shorter cover letters with separate context citations. Implemented and merged in PRs #43–47 on 2026-09-23. See doc 09 for actual validation results.
 
 
-## Document formatting and resume contacts (2026-09-26, implemented, pending merge)
+## Document formatting and resume contacts (2026-09-26, implemented, merged in PRs #54–56)
 
-ADR 012 adds visual document formatting, resume contact defaults and per-resume selection/order, implemented and verified on this branch, pending merge. Template 9 adds inline marks and blue underlined document links; the endpoint exposes 43 tools on this branch. See [ADR 012](adr/012-document-formatting-and-contact-selection.md).
+ADR 012 adds visual document formatting, resume contact defaults and per-resume selection/order, implemented, verified and merged in PRs #54–56. Template 9 adds inline marks and blue underlined document links; the endpoint exposes 43 tools. See [ADR 012](adr/012-document-formatting-and-contact-selection.md).
