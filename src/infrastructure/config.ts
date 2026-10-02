@@ -40,7 +40,7 @@ const envSchema = z.object({
   LANDED_ARTIFACT_DIR: z.preprocess(blank, z.string().trim().default("./artifacts")),
   /**
    * The bearer token an assistant presents on /mcp (ADR 008). Long enough that guessing it is
-   * hopeless; the packaged install mints one, contributors paste any random string.
+   * hopeless; any long random string works.
    */
   LANDED_MCP_TOKEN: z.preprocess(
     blank,

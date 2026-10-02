@@ -3,7 +3,6 @@
 .env.*
 !.env.example
 !.env.test.example
-!.env.release.example
 /data/
 *.db
 *.db-wal

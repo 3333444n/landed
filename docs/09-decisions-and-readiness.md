@@ -107,7 +107,7 @@ Vector embeddings/indexes; separate vector storage; generalized agent framework;
 
 - [ADR 012 — Document formatting and resume contact selection](adr/012-document-formatting-and-contact-selection.md): accepted, implemented and merged in PRs #54–56; optional structured marks and resume contact preferences, template 9 and 43 MCP tools.
 
-- [ADR 013 — Desktop distribution](adr/013-desktop-distribution.md): accepted 2026-10-02, design only; supersedes ADR 003 and revises ADRs 001, 004, 006 and 008.
+- [ADR 013 — Desktop distribution](adr/013-desktop-distribution.md): accepted 2026-10-02, partially implemented (SQLite, #60–#61); supersedes ADR 003 and revises ADRs 001, 004, 006 and 008.
 
 ## Profile management over MCP (merged)
 

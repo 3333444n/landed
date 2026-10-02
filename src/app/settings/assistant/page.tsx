@@ -11,8 +11,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * The port the browser used, so the block names the same installation. The hostname is always
- * 127.0.0.1: that is what the host guard accepts and what the packaged installation publishes,
- * even when the person opened the app as localhost.
+ * 127.0.0.1: that is what the host guard accepts, even when the person opened the app as localhost.
  */
 function endpointUrl(host: string | null): string {
   const port = host?.match(/:(\d+)$/)?.[1];
@@ -84,9 +83,7 @@ export default async function AssistantSetupPage() {
         <Card title="Not configured">
           <p className={styles.text}>
             Add a line LANDED_MCP_TOKEN= followed by any long random string (at least 24 characters)
-            to your .env file, then restart. The packaged installation generates the line on first
-            start: if your .env.release predates it, run start again and the launcher appends one.
-            The token stays in that file and is shown only here.
+            to your .env file, then restart. The token stays in that file and is shown only here.
           </p>
         </Card>
       ) : (

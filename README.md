@@ -13,7 +13,7 @@ Tailoring an application by hand takes an hour per job, and the shortcuts are ba
 
 | Area | What you get |
 |---|---|
-| Career facts | Profile, work history, education, projects, skills and achievements, edited in the browser and stored in PostgreSQL on your computer. Browse expandable cards, edit desired-role pills, link skills to roles/projects and filter Skills/Achievements by multiple contexts |
+| Career facts | Profile, work history, education, projects, skills and achievements, edited in the browser and stored in a SQLite file on your computer. Browse expandable cards, edit desired-role pills, link skills to roles/projects and filter Skills/Achievements by multiple contexts |
 | Jobs | Paste a posting with its salary; each one gets an application with a status you set by hand (preparing, ready, applied, interviewing, offer, rejected, withdrawn, accepted), notes, filters and sorting. A word cloud shows which words the posting repeats and which of them are already among your skills |
 | Companies and context | Shared company names and logos, sourced findings, application interest, profile writing context and customizable Job Sources |
 | Documents | Per job, a generated resume, cover letter and recruiter message. Each bullet cites your records; numbers that do not appear in the cited evidence are flagged. Edit summaries, bullets, body text and document metadata in place; every edit is a saved revision |
@@ -29,17 +29,18 @@ On this branch, [document formatting and resume contact controls](docs/adr/012-d
 
 ## Quickstart
 
-You need Docker Desktop (macOS, Windows) or Docker Engine with Compose (Linux). No Node, no database install, no AI account.
+The Docker release was removed; a desktop app ([ADR 013](docs/adr/013-desktop-distribution.md)) replaces it and is not released yet. Until then, run it from source with Node 24 and pnpm. No database install, no AI account.
 
 ```sh
 git clone https://github.com/3333444n/landed.git
 cd landed
-sh scripts/landed.sh start        # Windows: powershell -ExecutionPolicy Bypass -File scripts\landed.ps1 start
+pnpm install
+cp .env.example .env
+pnpm db:migrate
+pnpm dev
 ```
 
-The first start takes a few minutes, then open http://127.0.0.1:3000 and enter your name. `stop`, `status`, `logs`, `backup`, `restore` and `token` are the other launcher commands. To let Landed call a model itself, open Settings in the app: it lists the three lines to add to `.env.release` for each provider. The [quickstart](docs/07-quickstart-contract.md) has the provider table, backup, upgrade and troubleshooting.
-
-To work on the code you need Node 24, pnpm and Docker; the [contributor path](docs/07-quickstart-contract.md#contributor-path-tested) is six commands.
+Then open http://localhost:3000 and enter your name. Your data is one SQLite file, `data/landed.db`; `pnpm db:backup` copies it to `backups/`. To let Landed call a model itself, open Settings in the app: it lists the lines to add to `.env` for each provider. The [quickstart](docs/07-quickstart-contract.md) has the provider table, backup, restore and the import from an older Docker/PostgreSQL install.
 
 ## How a document gets made
 
@@ -71,14 +72,14 @@ Then ask for a resume: "tailor my resume for the Acme job". The assistant checks
 
 ## Architecture in one screen
 
-TypeScript, Next.js (App Router, Server Actions), PostgreSQL through Drizzle with committed SQL migrations, Zod for every boundary, the Vercel AI SDK behind one adapter interface, `@modelcontextprotocol/server` for the assistant endpoint at `/mcp`, `@react-pdf/renderer` for PDFs, `lucide-react` for interface icons, Vitest and Playwright for tests, Docker Compose for the packaged install. A modular monolith: five modules (`profile`, `companies`, `jobs`, `applications`, `documents`), each six files with the same roles, each owning its tables; cross-module workflows live in the app layer and never reach into another module's persistence.
+TypeScript, Next.js (App Router, Server Actions), SQLite (`node:sqlite`) through Drizzle with committed SQL migrations, Zod for every boundary, the Vercel AI SDK behind one adapter interface, `@modelcontextprotocol/server` for the assistant endpoint at `/mcp`, `@react-pdf/renderer` for PDFs, `lucide-react` for interface icons, Vitest and Playwright for tests, Docker Compose for the packaged install. A modular monolith: five modules (`profile`, `companies`, `jobs`, `applications`, `documents`), each six files with the same roles, each owning its tables; cross-module workflows live in the app layer and never reach into another module's persistence.
 
 ```mermaid
 flowchart LR
   subgraph local["Your computer"]
     browser["Browser"] --> app["Next.js server\nmodule use cases"]
     assistant["Your assistant\n(Claude Code, Codex, Claude Desktop)"] -->|"/mcp, bearer token"| app
-    app --> db[("PostgreSQL")]
+    app --> db[("SQLite")]
     app --> files[("PDF artifacts\nand backups")]
   end
   app -.->|"only with a provider configured"| provider["Model provider"]
@@ -102,7 +103,7 @@ The [numbered documentation](docs/00-index.md) covers product, domain, modules, 
 
 ## Testing and quality
 
-CI runs on every pull request: formatting, lint, types, unit tests, integration tests against a real PostgreSQL, a production build, browser journeys, and a check that the committed migrations match the schema. All of it runs with a fake model adapter, so no credentials are ever needed; the assistant endpoint is driven in process with the MCP client and no model. Real providers are measured separately with `pnpm eval` on synthetic cases; [doc 06](docs/06-ai-and-integrations.md) lists which providers have actually been run. Commits follow Conventional Commits and pull requests state what was tested.
+CI runs on every pull request: formatting, lint, types, unit tests, integration tests against real SQLite files, a production build, browser journeys, and a check that the committed migrations match the schema. All of it runs with a fake model adapter, so no credentials are ever needed; the assistant endpoint is driven in process with the MCP client and no model. Real providers are measured separately with `pnpm eval` on synthetic cases; [doc 06](docs/06-ai-and-integrations.md) lists which providers have actually been run. Commits follow Conventional Commits and pull requests state what was tested.
 
 ## Contributing
 
