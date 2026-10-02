@@ -143,7 +143,7 @@ const guarded =
       return await body(args);
     } catch {
       return failure(
-        "internal: Landed could not complete the operation. Check that the database is running and try again.",
+        "internal: Landed could not complete the operation. Try again; if it keeps failing, restart Landed.",
       );
     }
   };
