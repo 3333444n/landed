@@ -17,7 +17,7 @@ Merged in PRs #54–56: [ADR 012](adr/012-document-formatting-and-contact-select
 - Prioritize an easy clean installation and fictional examples for other users.
 - Drizzle ORM for schema, typed queries, and SQL migration files ([ADR 004](adr/004-drizzle-persistence.md)).
 - Libraries: Zod for validation and structured model output, Vercel AI SDK for model access, `@modelcontextprotocol/server` for the assistant endpoint, @react-pdf/renderer for PDFs, lucide-react for interface icons, Tiptap 3.31.3 for document field editing under ADR 012, Vitest and Playwright for tests, pnpm as the package manager.
-- Node 22 LTS and PostgreSQL 17 as the supported runtime versions.
+- Node 24 LTS and PostgreSQL 17 as the supported runtime versions.
 - GitHub Actions runs lint, typecheck, tests, build, and migration checks on every pull request.
 - MIT license, copyright Luis Peregrino.
 - Browser mutations use Next.js Server Actions that call module use cases; route handlers are added when a non-browser client needs them.

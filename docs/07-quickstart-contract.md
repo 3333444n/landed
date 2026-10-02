@@ -6,7 +6,7 @@ Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is me
 
 ## Contributor path (tested)
 
-Prerequisites: Node 22 (see `.node-version`), pnpm 10 (`corepack enable` installs the pinned version), Docker with Compose, Git.
+Prerequisites: Node 24 (see `.node-version`), pnpm 10 (`corepack enable` installs the pinned version), Docker with Compose, Git.
 
 ```sh
 git clone https://github.com/3333444n/landed.git
@@ -129,7 +129,7 @@ Verified on macOS (Apple Silicon, Docker Desktop, 2026-09-13) unless marked othe
 - Backup/restore works on a new installation: verified, including the artifacts archive (2026-09-14: a probe file in `/app/artifacts` was archived by `backup`, deleted, and came back with `restore`; the web service answered afterwards). PowerShell launcher: database only.
 - Restart/stop never silently deletes volumes. Factory reset is separate and explicit: verified (`stop` runs `down` without `-v`; the reset is documented above and manual).
 - Helpful troubleshooting for Docker not running, occupied port, failed download, permission failure, database unavailable, migration failure, and low disk space: written above; the Docker-not-running, port-in-use and migration-failure cases were exercised, the others are documented from Docker's own messages.
-- Pin supported versions and explain upgrade steps: images pinned (`node:22.23-bookworm-slim`, `postgres:17.11`); the PostgreSQL major-version procedure is still to be written when a major bump is planned.
+- Pin supported versions and explain upgrade steps: images pinned (`node:24.21-bookworm-slim`, `postgres:17.11`); the PostgreSQL major-version procedure is still to be written when a major bump is planned.
 - Verify release images on intended CPU architectures and document tested macOS, Windows, and Linux setups: tested on macOS arm64 only. Windows (`scripts/landed.ps1`), Linux and x86-64 are untested.
 - Phase 0 and 1a work offline after installation; example data and tests require no provider key: verified (the containers make no outbound requests; Next.js telemetry is disabled in the image). From Phase 1b the web service calls the provider configured in `.env.release`; it also fetches a logo address when the user supplies one (ADR 007). Paste-back and connected assistants may send the facts they receive to their own model providers.
 - Connect your assistant (ADR 008): the contributor path is tested (2026-09-16, macOS): `LANDED_MCP_TOKEN` set in `.env`, the Claude Code block copied from the Settings column, the plugin installed, and a posting added and the three documents written, submitted and rendered from Claude Code through `/mcp`. The packaged path is not tested: the launcher's token generation on a fresh `start`, the append on an older `.env.release`, the `token` command and the endpoint inside the container have not been exercised in Docker (the base image pull stalled during the check). The Codex and Claude Desktop blocks are written from their vendors' documentation and not run end to end.

@@ -28,16 +28,19 @@ export const companies = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
+    // Checks spell out the table-qualified column names that drizzle-kit 0.31 recorded in the
+    // migration snapshots; drizzle-kit 1.0 renders interpolated columns unqualified, which it would
+    // otherwise report as a changed constraint.
     check(
       "companies_logo_pair",
-      sql`(${t.logoStorageKey} IS NULL) = (${t.logoContentType} IS NULL)`,
+      sql`("companies"."logo_storage_key" IS NULL) = ("companies"."logo_content_type" IS NULL)`,
     ),
     check(
       "companies_logo_content_type_valid",
-      sql`${t.logoContentType} IS NULL OR ${t.logoContentType} IN ('image/png', 'image/jpeg', 'image/webp', 'image/svg+xml')`,
+      sql`"companies"."logo_content_type" IS NULL OR "companies"."logo_content_type" IN ('image/png', 'image/jpeg', 'image/webp', 'image/svg+xml')`,
     ),
     unique("companies_profile_id_id_unique").on(t.profileId, t.id),
-    check("companies_name_not_blank", sql`btrim(${t.name}) <> ''`),
+    check("companies_name_not_blank", sql`btrim("companies"."name") <> ''`),
   ],
 );
 export const companyFindings = pgTable(
@@ -59,7 +62,10 @@ export const companyFindings = pgTable(
       foreignColumns: [companies.profileId, companies.id],
     }).onDelete("cascade"),
     unique("company_findings_owner_company_id_unique").on(t.profileId, t.companyId, t.id),
-    check("company_findings_text_not_blank", sql`btrim(${t.text}) <> ''`),
-    check("company_findings_kind_valid", sql`${t.kind} IN ('statement','interpretation')`),
+    check("company_findings_text_not_blank", sql`btrim("company_findings"."text") <> ''`),
+    check(
+      "company_findings_kind_valid",
+      sql`"company_findings"."kind" IN ('statement','interpretation')`,
+    ),
   ],
 );
