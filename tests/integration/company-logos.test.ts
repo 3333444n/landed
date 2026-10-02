@@ -163,16 +163,16 @@ it("accepts migrated legacy file keys and rejects invalid image bytes and databa
   expect((await storeLogo(artifactDir, profileId, companyId, Buffer.from("not an image"))).ok).toBe(
     false,
   );
-  await expect(
+  expect(() =>
     connection.writer.run(
       sql`UPDATE companies SET logo_content_type = NULL WHERE id = ${companyId}`,
     ),
-  ).rejects.toThrow();
-  await expect(
+  ).toThrow();
+  expect(() =>
     connection.writer.run(
       sql`UPDATE companies SET logo_content_type = 'image/gif' WHERE id = ${companyId}`,
     ),
-  ).rejects.toThrow();
+  ).toThrow();
 });
 it("MCP logo composition uses guarded fetch, preserves omission, clears null, and skips stale or retried fetches", async () => {
   vi.mocked(fetchImage).mockResolvedValue({ ok: true, bytes: png, contentType: "image/png" });
