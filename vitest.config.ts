@@ -11,7 +11,7 @@ export default defineConfig({
         resolve: { alias: { "@": src } },
         test: {
           name: "unit",
-          include: ["src/**/*.test.ts"],
+          include: ["src/**/*.test.ts", "desktop/**/*.test.ts"],
           environment: "node",
         },
       },
