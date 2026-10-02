@@ -15,13 +15,17 @@ const demo = {
 async function editText(page: Page, label: string, text: string, newLabel = label) {
   await page.getByRole("button", { name: `Edit ${label}`, exact: true }).click();
   const editor = page.getByLabel(`Text of ${label}`, { exact: true });
-  // The editor focuses itself once mounted; typing before that can race its initial content.
+  // The editor moves the cursor to the end once mounted, which can race fill's select-all, so
+  // retry until the field holds exactly the new text.
   await expect(editor).toBeFocused();
-  if (text) await editor.fill(text);
-  else {
-    await editor.press("ControlOrMeta+a");
-    await editor.press("Backspace");
-  }
+  await expect(async () => {
+    if (text) await editor.fill(text);
+    else {
+      await editor.press("ControlOrMeta+a");
+      await editor.press("Backspace");
+    }
+    await expect(editor).toHaveText(text, { timeout: 500 });
+  }).toPass();
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(page.getByRole("button", { name: `Edit ${newLabel}`, exact: true })).toBeVisible();
 }
