@@ -1,45 +1,51 @@
 # Landed
 
-**Get the interview.** Landed is a job-search application that runs on your own computer. It keeps your real career facts in a local database, and for each job posting you paste in it writes a tailored resume, cover letter and recruiter message from those facts. Its grounding checks flag missing evidence and unsupported numbers; drafts still need your review.
+**Get the interview.** Landed is a desktop app that keeps your real career facts on your own computer and, for each job you paste in, writes a tailored resume, cover letter and recruiter message from those facts, then checks that nothing was invented.
 
 [![CI](https://github.com/3333444n/landed/actions/workflows/ci.yml/badge.svg)](https://github.com/3333444n/landed/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ## Why it exists
 
-Tailoring an application by hand takes an hour per job, and the shortcuts are bad: a generic resume, or an AI chat that happily invents metrics you then have to catch. Landed sits in between. You enter your work history, projects, skills and achievements once, with the numbers you can actually defend. Generated content carries evidence references, grounding violations get warning chips, and you can edit the text before downloading a one-page PDF. Storage stays local. A configured provider or your chosen assistant receives the facts needed for the task; the assistant has its own data handling. Pasting a logo address also makes a guarded image request.
+I needed a job, and tailoring every application by hand took an hour. The shortcuts were worse: a generic resume, or an AI chat that happily invents metrics you then have to catch. So I built Landed and made it open source.
 
-## What it does today
+You enter your work history, projects, skills and achievements once, with the numbers you can actually defend. Every generated bullet cites the records it came from, numbers that don't appear in those records are flagged, and nothing is sent anywhere for you. Drafts stay drafts until you review them.
 
-| Area | What you get |
-|---|---|
-| Career facts | Profile, work history, education, projects, skills and achievements, edited in the browser and stored in a SQLite file on your computer. Browse expandable cards, edit desired-role pills, link skills to roles/projects and filter Skills/Achievements by multiple contexts |
-| Jobs | Paste a posting with its salary; each one gets an application with a status you set by hand (preparing, ready, applied, interviewing, offer, rejected, withdrawn, accepted), notes, filters and sorting. A word cloud shows which words the posting repeats and which of them are already among your skills |
-| Companies and context | Shared company names and logos, sourced findings, application interest, profile writing context and customizable Job Sources |
-| Documents | Per job, a generated resume, cover letter and recruiter message. Each bullet cites your records; numbers that do not appear in the cited evidence are flagged. Edit summaries, bullets, body text and document metadata in place; every edit is a saved revision |
-| PDFs | One-page resume filled to the margin and a snapshot-backed cover letter with clickable contact links; short letters fit one page and longer letters can continue. PDFs are built from saved revisions; review remains a manual step |
-| Model access | Bring an API key for OpenRouter, Anthropic, OpenAI, the Vercel AI Gateway or any OpenAI-compatible server (Ollama and similar), or use no key at all: paste-back mode shows you the prompt, you run it in whatever assistant you already have and paste the answer back through the same checks |
-| Your assistant | Create and edit career facts, delete individual records, and write documents through 42 merged MCP tools, including Companies and writing context. Connection instructions for Claude Code, Codex and Claude Desktop, without a Landed model key: your assistant writes the documents and Landed checks them |
-| Runs | Every model call is recorded with model, prompt version, tokens, latency and cost, visible next to the document |
-| Data safety | Backup and restore of the database, the PDFs and the logos; keys live only in your environment file; provider requests, connected assistants, paste-back and logo-address fetches have the data boundaries described in [SECURITY](SECURITY.md) |
+## What it does
 
-Status: **Phase 1b and the assistant surface are implemented, including Profile context, Companies, Job Sources and short cover letters and expanded document editing (2026-09-26)**. The table describes implemented features; client-specific verification is listed in the decision register. In particular, the packaged Docker install is tested on macOS, and the assistant connection has been used end to end from Claude Code on a contributor install (the packaged install's generated token is not yet exercised in Docker); Windows and Linux are untested. What is not built yet: importing a posting from a link, scoring how well you match, built-in company research, automatic discovery of jobs, and interview tracking. See [product scope and phases](docs/01-product-and-phases.md) for the roadmap and [decisions and readiness](docs/09-decisions-and-readiness.md) for the honest list of known gaps.
+- **Career facts in one place.** Profile, work history, education, projects, skills and achievements, stored in one file on your computer.
+- **Jobs and applications.** Paste a posting; track its status, notes and interest; see which of its words already match your skills.
+- **Tailored documents.** A one-page resume, a cover letter and a recruiter message per job, edited in place, with every change saved as a revision and downloaded as PDF.
+- **Grounding checks.** Evidence must exist, numbers must appear in the cited records, and violations show as warnings, never silent edits.
+- **Companies and context.** Shared company profiles with sourced findings, used to write short, specific cover letters.
+- **Any model, or none.** Use an API key (OpenRouter, Anthropic, OpenAI, the Vercel AI Gateway or any OpenAI-compatible server such as Ollama), paste prompts into an assistant you already have, or let your assistant drive Landed directly.
 
-On this branch, [document formatting and resume contact controls](docs/adr/012-document-formatting-and-contact-selection.md) are implemented and verified, pending merge: select text for bold/italic/underline, choose and order resume contacts, and use profile defaults for new resumes. This extension adds template 9 and a 43rd MCP tool.
+Not built yet: importing a posting from a link, match scoring, built-in company research, automatic job discovery and interview tracking. See the [roadmap](docs/01-product-and-phases.md).
 
 ## Install
 
-Download the installer for your computer from [GitHub Releases](https://github.com/3333444n/landed/releases). The builds are not signed yet, so each system asks once:
+Download the installer for your computer from [GitHub Releases](https://github.com/3333444n/landed/releases). The builds are not signed yet, so your system asks once:
 
-- macOS (`arm64` for Apple silicon, `x64` for Intel): open the dmg and drag Landed to Applications. The first launch is blocked; open System Settings → Privacy & Security → Open Anyway, or run `xattr -dr com.apple.quarantine /Applications/Landed.app`.
-- Windows: run the installer; at the SmartScreen warning choose More info → Run anyway.
-- Linux: `chmod +x Landed-*.AppImage`, then run it.
+- **macOS** (`arm64` for Apple silicon, `x64` for Intel): open the dmg and drag Landed to Applications. The first launch is blocked; open System Settings → Privacy & Security → Open Anyway.
+- **Windows:** run the installer; at the SmartScreen warning choose More info → Run anyway.
+- **Linux:** `chmod +x Landed-*.AppImage`, then run it.
 
-Updates: Landed tells you at startup when a newer version exists. Download it and install it over the old one. Your data stays in the app's user-data folder and is backed up before the new version migrates it.
+Landed tells you when a new version is out. Install it over the old one: your data stays where it is and is backed up before the new version upgrades it.
 
-## Quickstart
+## Use it with your assistant
 
-To run it from source instead, you need Node 24 and pnpm. No database install, no AI account.
+If you already pay for Claude Code, Codex or Claude Desktop, you don't need an API key. Open **Settings → Connect your assistant**, copy the block for your tool, and ask: "tailor my resume for the Acme job." The assistant reads your facts and the posting, writes the documents, and every draft goes through the same checks. It runs Landed itself over a local connection, so it works even while the app is closed, and it never marks an application applied or sends anything.
+
+For Claude Code, the plugin also teaches it the workflow:
+
+```sh
+claude plugin marketplace add 3333444n/landed
+claude plugin install landed@landed
+```
+
+## Run from source
+
+You need Node 24 and pnpm. No database server, no AI account.
 
 ```sh
 git clone https://github.com/3333444n/landed.git
@@ -50,82 +56,29 @@ pnpm db:migrate
 pnpm dev
 ```
 
-Then open http://localhost:3000 and enter your name. Your data is one SQLite file, `data/landed.db`; `pnpm db:backup` copies it to `backups/`. To let Landed call a model itself, open Settings in the app: it lists the lines to add to `.env` for each provider. The [quickstart](docs/07-quickstart-contract.md) has the provider table, backup, restore and the import from an older Docker/PostgreSQL install.
+Open http://localhost:3000. The [quickstart](docs/07-quickstart-contract.md) covers providers, backups and building the desktop app.
 
-## How a document gets made
+## How it works
 
-1. You press Generate on a job. Landed freezes a snapshot of your facts and the posting, and writes a run record before anything is sent.
-2. The model is asked for structured content (a Zod schema), with the posting kept inside a labelled data block and treated as untrusted input rather than instructions.
-3. The answer is validated against the schema, then checked deterministically: every evidence id must exist in the snapshot, and every number in the text must appear in the cited records. Violations become warning chips, never silent edits.
-4. The result is saved as an immutable revision. You edit in place (each save is a new revision), mark it reviewed, and download the PDF. Nothing is ever submitted for you.
-
-Paste-back mode is the same pipeline with you as the model: the app shows the prompt, you paste the JSON answer back, and it goes through the same validation and checks. Your own assistant (below) is the same pipeline again, with the assistant asking for the prompt and submitting the answer itself through a local connection.
-
-## Use your own assistant
-
-Use the assistant you already pay for, no key needed ([ADR 008](docs/adr/008-assistant-surface-over-mcp.md)). The assistant reads your jobs and facts through a local MCP connection (the assistant may use a remote model provider), writes the documents, and every draft it hands back goes through the same checks as above. Three steps:
-
-1. Start Landed as usual.
-2. Open Settings → Connect your assistant in the app and copy the block for your tool (Claude Code, Codex or Claude Desktop). It contains the address and the token this installation generated.
-3. Install the workflow so the assistant knows the steps. Claude Code:
-
-   ```sh
-   claude plugin marketplace add 3333444n/landed
-   claude plugin install landed@landed    # asks for the address and the token from step 2
-   ```
-
-   Codex discovers the same skill by itself when you run it inside the Landed checkout; to use it from anywhere, link it into your user skills: `mkdir -p ~/.agents/skills && ln -s "$PWD/.agents/skills/landed" ~/.agents/skills/landed`. Claude Desktop uses the block from step 2 alone.
-
-The merged [profile-management extension](docs/adr/009-profile-management-over-mcp.md) supports conversational profile creation and editing, plus individual career-record deletion through the same connection. See the [profile setup instructions](docs/07-quickstart-contract.md#using-profile-tools-adr-009).
-
-Then ask for a resume: "tailor my resume for the Acme job". The assistant checks the fit first, writes the resume, cover letter and recruiter message in turn, fixes the warnings Landed raises, and gives you the PDF links. It never marks an application applied and never sends anything.
-
-## Architecture in one screen
-
-TypeScript, Next.js (App Router, Server Actions), SQLite (`node:sqlite`) through Drizzle with committed SQL migrations, Zod for every boundary, the Vercel AI SDK behind one adapter interface, `@modelcontextprotocol/server` for the assistant endpoint at `/mcp`, `@react-pdf/renderer` for PDFs, `lucide-react` for interface icons, Vitest and Playwright for tests, Docker Compose for the packaged install. A modular monolith: five modules (`profile`, `companies`, `jobs`, `applications`, `documents`), each six files with the same roles, each owning its tables; cross-module workflows live in the app layer and never reach into another module's persistence.
+TypeScript, Next.js and SQLite through Drizzle, wrapped in Electron. The window talks to a local server that only it can reach; your assistant talks to the same data over stdio through MCP. Five modules (profile, companies, jobs, applications, documents) each own their tables, and every boundary is validated with Zod.
 
 ```mermaid
 flowchart LR
   subgraph local["Your computer"]
-    browser["Browser"] --> app["Next.js server\nmodule use cases"]
-    assistant["Your assistant\n(Claude Code, Codex, Claude Desktop)"] -->|"/mcp, bearer token"| app
-    app --> db[("SQLite")]
-    app --> files[("PDF artifacts\nand backups")]
+    window["Landed window"] -->|"local only"| app["Landed server"]
+    assistant["Your assistant"] -->|"stdio"| mcp["Landed --mcp"]
+    app --> db[("Your data\none SQLite file")]
+    mcp --> db
   end
-  app -.->|"only with a provider configured"| provider["Model provider"]
-  assistant -.->|"according to assistant settings"| assistantProvider["Assistant model provider"]
-  app -.->|"user-supplied logo address, guarded fetch"| images["Image host"]
+  app -.->|"only if you add a key"| provider["Model provider"]
 ```
 
-Decisions that shaped it, each with its reasoning and the alternatives rejected:
-
-- [ADR 001](docs/adr/001-local-typescript-postgresql.md): local TypeScript application on PostgreSQL, no hosted service.
-- [ADR 002](docs/adr/002-achievements-and-snapshots.md): achievements edited in place; generation snapshots and document revisions are the history.
-- [ADR 003](docs/adr/003-local-packaging.md): Docker Compose packaging with a one-shot migrate task and a launcher.
-- [ADR 004](docs/adr/004-drizzle-persistence.md): Drizzle with generated SQL migrations reviewed like code.
-- [ADR 005](docs/adr/005-url-driven-columns.md): the interface as URL-driven columns; a job's status is derived, never stored.
-- [ADR 006](docs/adr/006-model-access-path.md): the app calls the provider through one adapter; keys live in the environment only; paste-back as the zero-setup path; a fake adapter for every automated check.
-- [ADR 007](docs/adr/007-user-initiated-image-fetch.md): a logo address you paste is the one outbound request you start, fetched once through a guarded fetcher and stored.
-- [ADR 008](docs/adr/008-assistant-surface-over-mcp.md): your own assistant drives Landed through a local MCP endpoint with a launcher-minted token; Landed keeps validation, grounding and the run record.
-- [ADR 009 — Profile management over MCP](docs/adr/009-profile-management-over-mcp.md): typed profile and individual-record operations, partial updates, retry ids and required version checks; implemented and merged.
-
-The [numbered documentation](docs/00-index.md) covers product, domain, modules, data model, workflows and failures, AI and integrations, quickstart, and the decision register. The interface follows [DESIGN.md](DESIGN.md); the produced PDFs follow [DESIGN-DOCS.md](DESIGN-DOCS.md).
-
-## Testing and quality
-
-CI runs on every pull request: formatting, lint, types, unit tests, integration tests against real SQLite files, a production build, browser journeys, and a check that the committed migrations match the schema. All of it runs with a fake model adapter, so no credentials are ever needed; the assistant endpoint is driven in process with the MCP client and no model. Real providers are measured separately with `pnpm eval` on synthetic cases; [doc 06](docs/06-ai-and-integrations.md) lists which providers have actually been run. Commits follow Conventional Commits and pull requests state what was tested.
+Each decision is written down with its reasoning and the alternatives rejected: start with the [documentation index](docs/00-index.md) and the [architecture decisions](docs/00-index.md#decision-records). Data handling is described in [SECURITY](SECURITY.md).
 
 ## Contributing
 
-Issues and pull requests are welcome, including documentation fixes. Start with [CONTRIBUTING](CONTRIBUTING.md), which has the checks, the commit and pull-request conventions, and the rules that are easy to miss. Please report security issues as described in [SECURITY](SECURITY.md). Fictional example data lives in [examples](examples/README.md); never commit real career data.
+Issues and pull requests are welcome, documentation fixes included. [CONTRIBUTING](CONTRIBUTING.md) has the setup, the checks (all of them run without credentials) and the conventions. Example data in [examples](examples/README.md) is fictional; never commit real career data.
 
 ## License
 
 [MIT](LICENSE). Built by [Luis Peregrino](https://github.com/3333444n).
-
-
-## Writing context and Companies
-
-The career hub is Profile, with General info and a separate About me narrative; each application records Interest. Companies stores shared names, logos, location, website, About and sourced findings. Jobs select that canonical Company and up to five relevant findings; Job Sources is a customizable, initially empty list under Settings. Short cover letters use this context alongside career evidence, with distinct citations and review warnings.
-
-The merged ADR 011 baseline exposes 42 MCP tools; the pending formatting extension adds a 43rd. Its company-identity follow-up removes the duplicate free-text employer field and job-owned logos; add_job accepts optional company_id. These changes merged in PRs #43–47 on 2026-09-23. Review the [upgrade notes](docs/07-quickstart-contract.md#upgrading-to-writing-context-and-canonical-companies-implemented-and-merged) before upgrading an existing installation.

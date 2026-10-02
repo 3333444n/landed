@@ -1,10 +1,10 @@
 # Contributing
 
-Start at the [documentation index](docs/00-index.md) and the [decision register](docs/09-decisions-and-readiness.md). Phase 0 (career data entry), Phase 1a (jobs and applications), Phase 1b (generated materials, review, PDFs, model access) and the assistant surface ([ADR 008](docs/adr/008-assistant-surface-over-mcp.md), 2026-09-16) are implemented. The profile-management extension ([ADR 009](docs/adr/009-profile-management-over-mcp.md)) adds 18 tools and is merged. The context and canonical-company work under ADR 011 extends the endpoint to 42 tools and merged in PRs #43–47 on 2026-09-23. Expanded document editing and the letter layout merged in PRs #50–51. ADR 012 implements formatting and contact selection on this branch (template 9, 43 tools), pending merge. Remaining later-phase capabilities are design only. Distinguish accepted decisions from suggestions and avoid describing planned features as implemented.
+Start at the [documentation index](docs/00-index.md) and the [decision register](docs/09-decisions-and-readiness.md). Phase 0 (career data entry), Phase 1a (jobs and applications), Phase 1b (generated materials, review, PDFs, model access) and the assistant surface ([ADR 008](docs/adr/008-assistant-surface-over-mcp.md), 2026-09-16) are implemented. The profile-management extension ([ADR 009](docs/adr/009-profile-management-over-mcp.md)) adds 18 tools and is merged. The context and canonical-company work under ADR 011 extends the tools to 42 and merged in PRs #43–47 on 2026-09-23. Expanded document editing and the letter layout merged in PRs #50–51. ADR 012 (formatting and contact selection, template 9, 43 tools) merged in PRs #54–56. The desktop distribution ([ADR 013](docs/adr/013-desktop-distribution.md): Electron, SQLite, MCP over stdio) merged in PRs #58–#65. Remaining later-phase capabilities are design only. Distinguish accepted decisions from suggestions and avoid describing planned features as implemented.
 
 ## Set up
 
-The [contributor quickstart](docs/07-quickstart-contract.md#contributor-path-tested) has the tested commands. In short: Node 24, pnpm; `pnpm install`, `pnpm db:migrate`, `pnpm dev`.
+The [contributor quickstart](docs/07-quickstart-contract.md#contributor-path) has the tested commands. In short: Node 24, pnpm; `pnpm install`, `pnpm db:migrate`, `pnpm dev`.
 
 ## Checks
 
@@ -49,7 +49,7 @@ Prefer independent branches from `origin/main`. Use a stack only when one change
 - Achievements are edited in place; do not add revision history without a revised decision.
 - Every database schema change ships with its generated migration in `db/migrations`, reviewed like code, and with updates to [doc 04](docs/04-data-model.md).
 - UI follows [DESIGN.md](DESIGN.md); colours live in `src/app/palettes.css` and every other token in `src/app/tokens.css`, never in component files, and components use only the semantic tokens. The produced PDFs follow [DESIGN-DOCS.md](DESIGN-DOCS.md).
-- The model key comes from the environment only (`LANDED_MODEL_API_KEY`); never store it, log it, or send it to the browser. Prompts keep pasted postings in labelled data blocks, never in the instructions, and bump the prompt version when the text changes.
+- The model key comes from the environment only (`LANDED_MODEL_API_KEY`; the desktop app passes it from the OS keychain); never store it in the database, log it, or send it to the window. Prompts keep pasted postings in labelled data blocks, never in the instructions, and bump the prompt version when the text changes.
 - Modules expose plain functions from `index.ts`; framework code never imports a module's repository or schema. The MCP tools (`src/app/mcp/tools.ts` and `profile-tools.ts`) call the composition functions in `src/app` and module operations, never a repository, and never throw.
 - The MCP server runs over stdio (`pnpm mcp`, or the app with `--mcp`); nothing on that path may write to stdout except the protocol. The assistant workflow is edited in `.agents/skills/landed/SKILL.md` and copied to `plugins/landed/skills/landed/SKILL.md`; `pnpm check` fails on drift.
 - Do not include personal profiles, credentials, real resumes, or private notes in patches, screenshots, tests or examples. Use the [fictional examples](examples/README.md).

@@ -1,6 +1,6 @@
 # ADR 009 — Profile management over MCP
 
-Date: 2026-09-17. Status: accepted; implementation merged into `main` in PR #33. Extends the original write scope of [ADR 008](008-assistant-surface-over-mcp.md).
+Date: 2026-09-17. Status: accepted; implementation merged into `main` in PR #33. Extends the original write scope of [ADR 008](008-assistant-surface-over-mcp.md). Under [ADR 013](013-desktop-distribution.md) (2026-10-02) the advisory locks below were replaced by the serialized `runInTransaction` writer; the tools are served over stdio.
 
 ## Context
 

@@ -1,12 +1,12 @@
 # 08 — Contributions and living documentation
 
-Status: CI, commit conventions, PR template, the skill sync check and SECURITY in place; the packaged installation is built from the checkout, no tagged release yet. Updated 2026-09-23.
+Status: CI, commit conventions, PR template, the skill sync check and SECURITY in place; desktop installers are built from `v*` tags by the release workflow (ADR 013). Updated 2026-10-02.
 
 Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is merged. The ADR 011 writing-context and canonical-company extensions are implemented and merged in PRs #43–47 (2026-09-23). See [current verification](09-decisions-and-readiness.md#smaller-pr-stack-verification-2026-09-23).
 
 ## Small public-repository baseline
 
-In place: README with truthful feature status and a link to the tested quickstart; LICENSE (MIT); CONTRIBUTING with checks, commit and PR conventions; environment examples with no real credentials; lockfile; synthetic examples; and CI (`.github/workflows/ci.yml`) that runs formatting, linting, type checks, unit tests, integration and browser tests against a PostgreSQL 17 service, a build, and a migration drift check (`pnpm db:generate` must produce no changes); and [SECURITY](../SECURITY.md) with a private reporting channel. CI does not build the release image; packaging changes are verified by hand against the checklist in document 07.
+In place: README with truthful feature status and a link to the tested quickstart; LICENSE (MIT); CONTRIBUTING with checks, commit and PR conventions; environment examples with no real credentials; lockfile; synthetic examples; and CI (`.github/workflows/ci.yml`) that runs formatting, linting, type checks, unit tests, integration tests on temporary SQLite files, browser tests, a build, and a migration drift check (`pnpm db:generate` must produce no changes); a release workflow (`.github/workflows/release.yml`) that builds the macOS, Windows and Linux installers from a `v*` tag, runs the stdio smoke test against each and attaches them to a draft release; and [SECURITY](../SECURITY.md) with a private reporting channel. CI on pull requests does not build installers; packaging changes are checked with `pnpm desktop:dist` and the smoke test.
 
 Commits follow `<type>(<scope>): <description>` with the types listed in CONTRIBUTING; pull requests use the What/Why/How/Testing template in `.github/`.
 

@@ -47,7 +47,7 @@ Status: accepted and implemented (2026-10-02). [ADR 013](013-desktop-distributio
 - The key travels once from the window to the main process over a sender-checked IPC call. Main encrypts it with Electron `safeStorage`, which uses the OS keychain, and writes it to a file in the app data folder. It is never stored in the database and never returned to the renderer; the interface shows only its last four characters.
 - When main starts or restarts the server process, it passes the configuration as the same `LANDED_MODEL_*` environment variables, so the `ModelAdapter`, the factory and the run records are unchanged.
 - `pnpm dev` and `pnpm start` keep the environment-file path for contributors.
-- On Linux without a keyring, `safeStorage` may fall back to a weak key; the setting says so when that is the case.
+- On Linux without a usable keychain (`safeStorage` would fall back to a weak key), the key is refused and the setting says why; a provider that needs no key can still be saved.
 - The key is still never logged.
 
 The reasoning above against a database row still holds: the key stays out of the database and out of every backup copy, and the keychain supplies the secret the earlier alternative lacked.

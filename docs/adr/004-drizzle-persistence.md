@@ -1,6 +1,6 @@
 # ADR 004 — Drizzle for persistence
 
-Date: 2026-09-13. Status: accepted. Revised by [ADR 013](013-desktop-distribution.md) (2026-10-02, not implemented): Drizzle stays over SQLite, and migrations restart from a SQLite baseline.
+Date: 2026-09-13. Status: accepted. Revised by [ADR 013](013-desktop-distribution.md) (2026-10-02, implemented): Drizzle stays over SQLite, and migrations restart from a SQLite baseline.
 
 ## Context
 

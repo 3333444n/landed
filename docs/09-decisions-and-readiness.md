@@ -6,9 +6,11 @@ Merged baseline: Phases 0, 1a and 1b, career browsing, and the assistant surface
 
 Merged in PRs #54–56: [ADR 012](adr/012-document-formatting-and-contact-selection.md): structured inline formatting, resume contact defaults and selection/order, template 9 and 43 MCP tools. It is verified and merged. The final section records its validation and provider limitations; dated milestone sections preserve their historical scope and test counts. Unimplemented later capabilities remain design only.
 
+Implemented in PRs #58–#65 on 2026-10-02: the [desktop distribution](#desktop-distribution-2026-10-02-implemented) under [ADR 013](adr/013-desktop-distribution.md). Landed ships as an Electron app on SQLite with the assistant tools over stdio; the Docker Compose release, PostgreSQL and the HTTP `/mcp` endpoint are removed. Sections dated before it describe their own scope.
+
 ## Accepted
 
-- TypeScript, Next.js/Node.js, PostgreSQL; local operation initially.
+- TypeScript, Next.js/Node.js, local operation; SQLite since ADR 013 (PostgreSQL before 2026-10-02).
 - Manual career data entry and durable storage in Phase 0; resume import later.
 - Editable achievements without achievement-history/versioning functionality.
 - Phase 1 includes resumes, cover letters, recruiter messages, saved materials, PDFs, and application tracking.
@@ -16,8 +18,8 @@ Merged in PRs #54–56: [ADR 012](adr/012-document-formatting-and-contact-select
 - Phase 3 automates discovery and draft generation; Phase 4 adds detailed interview tracking.
 - Prioritize an easy clean installation and fictional examples for other users.
 - Drizzle ORM for schema, typed queries, and SQL migration files ([ADR 004](adr/004-drizzle-persistence.md)).
-- Libraries: Zod for validation and structured model output, Vercel AI SDK for model access, `@modelcontextprotocol/server` for the assistant endpoint, @react-pdf/renderer for PDFs, lucide-react for interface icons, Tiptap 3.31.3 for document field editing under ADR 012, Vitest and Playwright for tests, pnpm as the package manager.
-- Node 24 LTS and PostgreSQL 17 as the supported runtime versions.
+- Libraries: Zod for validation and structured model output, Vercel AI SDK for model access, `@modelcontextprotocol/server` for the assistant tools, Electron and electron-builder for the desktop app, @react-pdf/renderer for PDFs, lucide-react for interface icons, Tiptap 3.31.3 for document field editing under ADR 012, Vitest and Playwright for tests, pnpm as the package manager.
+- Node 24 LTS as the supported runtime (it provides `node:sqlite`; Electron 44 bundles it).
 - GitHub Actions runs lint, typecheck, tests, build, and migration checks on every pull request.
 - MIT license, copyright Luis Peregrino.
 - Browser mutations use Next.js Server Actions that call module use cases; route handlers are added when a non-browser client needs them.
@@ -26,7 +28,7 @@ Merged in PRs #54–56: [ADR 012](adr/012-document-formatting-and-contact-select
 - Styling: own components with CSS Modules and design tokens in one stylesheet; no utility framework or component library (2026-09-13).
 - Conventional Commits with a scope, and a What/Why/How/Testing pull-request template (2026-09-13).
 - Stale-edit detection through `updated_at` as the version token; client-minted record ids for idempotent creates (2026-09-13, doc 05).
-- Docker Compose user packaging with a one-shot migrate service and a shell/PowerShell launcher; Node plus a Compose database for development ([ADR 003](adr/003-local-packaging.md), implemented 2026-09-13).
+- Desktop packaging: an Electron app with installers on GitHub Releases, SQLite and MCP over stdio ([ADR 013](adr/013-desktop-distribution.md), implemented 2026-10-02). It superseded the Docker Compose release of [ADR 003](adr/003-local-packaging.md) (2026-09-13).
 - Interface layout: a persistent sidebar (drawer below 1200px), shifting columns driven by the URL path, no borders, three tonal steps, and a derived (never stored) job status chip ([ADR 005](adr/005-url-driven-columns.md), DESIGN.md, doc 05; implemented 2026-09-14).
 - Interface material and colour (decided 2026-09-14, after Phase 1b): a canvas lit by a glow in the accent's hue, layered glass (flat translucent fill, 1px gradient edge, no blur) on cards, panels and round buttons, Lucide icons in tiles beside every column title, card and sidebar item, icon-only Filter and Sort menus, a light/dark switch, and a palette layer (`src/app/palettes.css`: near-black and near-white neutrals, the accent and glow in one hue; `steel` is the only palette; another can be added as a block and tried with `?palette=<name>`). Rules in DESIGN.md.
 - Phase 1 is delivered as 1a (manual jobs, applications, status tracking, filters and sort; no new dependency) and 1b (generation, PDFs, model access). Decided 2026-09-14 with: `@react-pdf/renderer` added in 1b with the first PDF feature; Preparing included in the Needs attention filter; document blocks were inert "Not started" placeholders in 1a; any application status selectable at any time, with the submission time recorded on the first entry to `applied`; sort by updated (default) and added (doc 01, doc 05).
@@ -41,20 +43,20 @@ Merged in PRs #54–56: [ADR 012](adr/012-document-formatting-and-contact-select
   - Profile gains a `links` list (LinkedIn, GitHub, website) with a migration, for the resume header.
 - A modular monolith with Profile first, Jobs and Applications in Phase 1a, Documents in Phase 1b (proposed 2026-09-13, implemented and accepted 2026-09-14).
 - Input snapshots attached to generated materials, with saved document revisions but no achievement revisions (ADR 002; implemented 2026-09-14).
-- Structured document content in PostgreSQL; PDFs in a persistent local volume with database metadata (implemented 2026-09-14).
+- Structured document content in the database; PDFs as files under the artifact directory with database metadata (implemented 2026-09-14).
 - Testing scope by behavioural blast radius with `pnpm check`, `pnpm verify` and `pnpm verify:full` (CONTRIBUTING "Checks", 2026-09-14).
 - Phase 1c additions (decided 2026-09-14, after Phase 1b, when link import was parked): salary as one free-text field, shown and never parsed; a company logo as an uploaded image or a pasted image address (PNG, JPEG, WebP, SVG, up to 1 MB), stored as uploaded under the artifact directory and never hotlinked, chosen from the tile next to the form's title, and replacing the job's status icon on the list card and job header once present (the chip keeps the status word; DESIGN.md amended); a word cloud of plain frequencies, top 40, biggest in the middle, words matching the profile's skills highlighted in the accent, on the job column and live under the Description field ([ADR 007](adr/007-user-initiated-image-fetch.md) for the fetch).
-- Assistant surface over MCP (decided and implemented 2026-09-16, [ADR 008](adr/008-assistant-surface-over-mcp.md), docs 03, 05, 06, 07, SECURITY):
+- Assistant surface over MCP (decided and implemented 2026-09-16, [ADR 008](adr/008-assistant-surface-over-mcp.md), docs 03, 05, 06, 07, SECURITY; the transport and token below were replaced by stdio under ADR 013 on 2026-10-02):
   - The user's own assistant (Claude Code, Codex or Claude Desktop) drives Landed through a Streamable HTTP MCP endpoint at `/mcp` in the same Next.js process, using `@modelcontextprotocol/server` v2 directly. No second process, nothing on the internet.
   - A bearer token `LANDED_MCP_TOKEN` from the environment file only, minted by the launcher like the database password and appended to an existing `.env.release` on upgrade; shown in the browser only on the Connect your assistant column, because it protects local data the browser already shows. Host and Origin validation for the whole application, loopback names only until a remote design lists others.
   - Run mode `assistant` and revision source `assistant`; a brief opens a queued run, a submission finishes it, an invalid answer fails it with `pasted_invalid` and opens a fresh one; the newest brief from either surface supersedes an older queued run; queued runs are never swept (doc 05).
   - Original ADR 008 scope (extended by merged ADR 009): tools call module operations through the composition layer, never SQL. Eight tools: `list_jobs`, `get_job`, `add_job`, `get_document_brief`, `submit_document`, `get_document`, `edit_unit`, `render_pdf` (`add_job` decided 2026-09-16: a client-minted `job_id` for idempotence, validation errors naming the tool's parameters, and link intake left to the harness, which fetches the page with its own tools respecting robots.txt and passes the text; Landed never fetches a posting page); no deletion, no application status change, no profile write. The assistant's model writes and Landed validates, checks grounding and records the run, with provider and model recorded from what the client reports (doc 06).
   - Settings becomes a hub with two cards, Model setup and Connect your assistant; a portable skill under `.agents/skills` with a Claude Code plugin wrapping it; the fit evaluation and a reviewer pass live in the skill, not in Landed.
-  - Kept as they were: the API key path, paste-back, the fake adapter for every check; `pnpm verify` exercises the endpoint in process with the MCP client and no model.
+  - Kept as they were: the API key path, paste-back, the fake adapter for every check; `pnpm verify` exercises the tools in process with the MCP client and no model.
 
 ## Proposed defaults
 
-- Provider support claims follow the evaluation set: a provider is listed as verified only after `pnpm eval` has been run against it; phone or claude.ai access waits for its own design, which reuses the local assistant endpoint of ADR 008 behind a tunnel with authentication.
+- Provider support claims follow the evaluation set: a provider is listed as verified only after `pnpm eval` has been run against it; phone or claude.ai access waits for its own design; since ADR 013 there is no HTTP endpoint to reuse.
 - LangGraph as a later orchestration candidate after a small explicit implementation establishes requirements.
 
 ## Phase 0 complete (2026-09-13)
@@ -87,13 +89,13 @@ Implemented and tested under [ADR 008](adr/008-assistant-surface-over-mcp.md), a
 
 ## Deliberately deferred
 
-Vector embeddings/indexes; separate vector storage; generalized agent framework; multi-provider support matrix; remote MCP (local MCP is decided in ADR 008; remote access from claude.ai or a phone is a later ADR that reuses the same endpoint behind a tunnel); authentication for hosted use; queues/brokers; all job providers; comprehensive interviews; automatic import from a posting link in the app, after a probe showed that major job boards refuse plain server fetches (Phase 2A keeps the design, with paste as the fallback; assistant users get link intake through their harness and `add_job` instead, 2026-09-16); filling the paste form's fields from a whole copied posting page (designed on 2026-09-14, deferred to a later session). Reopen each when its phase or an observed requirement needs it.
+Vector embeddings/indexes; separate vector storage; generalized agent framework; multi-provider support matrix; remote MCP (local MCP over stdio is decided in ADR 008 and ADR 013; remote access from claude.ai or a phone needs a later ADR); authentication for hosted use; queues/brokers; all job providers; comprehensive interviews; automatic import from a posting link in the app, after a probe showed that major job boards refuse plain server fetches (Phase 2A keeps the design, with paste as the fallback; assistant users get link intake through their harness and `add_job` instead, 2026-09-16); filling the paste form's fields from a whole copied posting page (designed on 2026-09-14, deferred to a later session). Reopen each when its phase or an observed requirement needs it.
 
 ## Decision records
 
 - [ADR 001 — Local TypeScript application with PostgreSQL](adr/001-local-typescript-postgresql.md)
 - [ADR 002 — Simple achievements and generation snapshots](adr/002-achievements-and-snapshots.md)
-- [ADR 003 — Packaging and quickstart](adr/003-local-packaging.md)
+- [ADR 003 — Packaging and quickstart](adr/003-local-packaging.md): superseded by ADR 013.
 - [ADR 004 — Drizzle for persistence](adr/004-drizzle-persistence.md)
 - [ADR 005 — Interface as URL-driven columns](adr/005-url-driven-columns.md)
 - [ADR 006 — Model access path](adr/006-model-access-path.md)
@@ -107,7 +109,7 @@ Vector embeddings/indexes; separate vector storage; generalized agent framework;
 
 - [ADR 012 — Document formatting and resume contact selection](adr/012-document-formatting-and-contact-selection.md): accepted, implemented and merged in PRs #54–56; optional structured marks and resume contact preferences, template 9 and 43 MCP tools.
 
-- [ADR 013 — Desktop distribution](adr/013-desktop-distribution.md): accepted 2026-10-02, partially implemented (SQLite, #60–#61); supersedes ADR 003 and revises ADRs 001, 004, 006 and 008.
+- [ADR 013 — Desktop distribution](adr/013-desktop-distribution.md): accepted and implemented 2026-10-02 (PRs #58–#65); supersedes ADR 003 and revises ADRs 001, 004, 006 and 008.
 
 ## Profile management over MCP (merged)
 
@@ -268,8 +270,16 @@ Separate `pnpm eval` with OpenRouter / google/gemini-3.1-flash-lite: **8/9 valid
 
 The later contact layer restores the previously evaluated combined schema and prompt. Its separate 8/9 result above remains applicable; these two reports cover distinct review boundaries and neither replaces the other.
 
-## Desktop distribution (2026-10-02, accepted, design only)
+## Desktop distribution (2026-10-02, implemented)
 
-[ADR 013](adr/013-desktop-distribution.md) accepts a desktop distribution to remove the Docker prerequisite for people who do not use a terminal and to let a harness use Landed's tools while the app is closed. Decided: an Electron app whose main process supervises the existing Next.js standalone server in a `utilityProcess` on 127.0.0.1, with the window loading it over HTTP and IPC kept to update status and model key entry; one SQLite file per installation through `node:sqlite` and Drizzle 1.0 (fallback `better-sqlite3`), with writes serialized on one connection and version tokens unchanged; MCP over stdio through `Landed --mcp`, replacing the HTTP `/mcp` endpoint and `LANDED_MCP_TOKEN`; the Docker release removed; installers on GitHub Releases, updates applied on restart, a `VACUUM INTO` backup before migrations, and unsigned macOS builds that link to the release page instead of installing updates; the model key held in the OS keychain through `safeStorage` ([ADR 006 revision](adr/006-model-access-path.md#revision-2026-10-02-adr-013)); a one-time import script from PostgreSQL for existing installations.
+[ADR 013](adr/013-desktop-distribution.md), merged in PRs #58–#65: SQLite foundation (#58), the per-launch session cookie (#59), the SQLite cutover (#60), the Electron shell and installers (#61), Docker and PostgreSQL removed with the one-time importer (#62), the model setting in the OS keychain (#63), MCP over stdio replacing the HTTP endpoint and `LANDED_MCP_TOKEN` (#64), and the release check with the tag-driven release workflow (#65). Docs 03 to 07 describe the result.
 
-Nothing in this section is implemented. The Docker Compose release, PostgreSQL, the HTTP endpoint and environment-file model configuration remain the current behavior until the implementing pull requests merge; documents 03, 04, 06 and 07 change with them.
+Verification: `pnpm verify:full` passed with 253 unit tests, 113 integration tests, the migration drift check, the production build and 12 browser journeys. The packaged app was smoke-tested on macOS. Windows and Linux builds are first exercised by the release workflow, which builds each installer and runs the same stdio smoke test (`scripts/smoke-mcp.mjs`) on every platform.
+
+Known gaps:
+
+- macOS and Windows builds are unsigned, so each system warns on first open.
+- No automatic install: the app checks GitHub's latest release at launch and offers its download page; automatic install waits for code signing.
+- Windows stdio is unverified until the first tagged release runs the workflow.
+- A stdio process checks the schema only when it starts; one left running across an app update keeps serving until the assistant restarts it.
+- Phone or claude.ai access to a local installation needs a new design.
