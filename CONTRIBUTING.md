@@ -32,6 +32,7 @@ The Electron shell ([ADR 013](docs/adr/013-desktop-distribution.md)) lives in `d
 - `pnpm desktop:build`: `next build`, then `desktop/build.mjs` completes the standalone server and bundles the main process into `dist-desktop/`.
 - `pnpm desktop:dev`: builds, then opens the app with `electron .` (data in `data/desktop-dev`, apart from an installed app's).
 - `pnpm desktop:dist`: builds, then writes installers to `release/` (macOS dmg for arm64 and x64, unsigned and ad-hoc sealed; Windows NSIS; Linux AppImage).
+- Cut a release: bump `version` in `package.json` on `main`, tag it `vX.Y.Z` and push the tag. `.github/workflows/release.yml` builds the installers on macOS, Windows and Linux, checks that the packaged app answers over stdio (`scripts/smoke-mcp.mjs`) and attaches them to a draft release; review it and publish it. Installed apps offer the update at their next start.
 
 ## Commits and pull requests
 

@@ -27,9 +27,19 @@ Status: **Phase 1b and the assistant surface are implemented, including Profile 
 
 On this branch, [document formatting and resume contact controls](docs/adr/012-document-formatting-and-contact-selection.md) are implemented and verified, pending merge: select text for bold/italic/underline, choose and order resume contacts, and use profile defaults for new resumes. This extension adds template 9 and a 43rd MCP tool.
 
+## Install
+
+Download the installer for your computer from [GitHub Releases](https://github.com/3333444n/landed/releases). The builds are not signed yet, so each system asks once:
+
+- macOS (`arm64` for Apple silicon, `x64` for Intel): open the dmg and drag Landed to Applications. The first launch is blocked; open System Settings → Privacy & Security → Open Anyway, or run `xattr -dr com.apple.quarantine /Applications/Landed.app`.
+- Windows: run the installer; at the SmartScreen warning choose More info → Run anyway.
+- Linux: `chmod +x Landed-*.AppImage`, then run it.
+
+Updates: Landed tells you at startup when a newer version exists. Download it and install it over the old one. Your data stays in the app's user-data folder and is backed up before the new version migrates it.
+
 ## Quickstart
 
-The Docker release was removed; a desktop app ([ADR 013](docs/adr/013-desktop-distribution.md)) replaces it and is not released yet. Until then, run it from source with Node 24 and pnpm. No database install, no AI account.
+To run it from source instead, you need Node 24 and pnpm. No database install, no AI account.
 
 ```sh
 git clone https://github.com/3333444n/landed.git
