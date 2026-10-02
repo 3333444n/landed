@@ -19,13 +19,11 @@ Tailoring an application by hand takes an hour per job, and the shortcuts are ba
 | Documents | Per job, a generated resume, cover letter and recruiter message. Each bullet cites your records; numbers that do not appear in the cited evidence are flagged. Edit summaries, bullets, body text and document metadata in place; every edit is a saved revision |
 | PDFs | One-page resume filled to the margin and a snapshot-backed cover letter with clickable contact links; short letters fit one page and longer letters can continue. PDFs are built from saved revisions; review remains a manual step |
 | Model access | Bring an API key for OpenRouter, Anthropic, OpenAI, the Vercel AI Gateway or any OpenAI-compatible server (Ollama and similar), or use no key at all: paste-back mode shows you the prompt, you run it in whatever assistant you already have and paste the answer back through the same checks |
-| Your assistant | Create and edit career facts, delete individual records, and write documents through 42 merged MCP tools, including Companies and writing context. Connection instructions for Claude Code, Codex and Claude Desktop, without a Landed model key: your assistant writes the documents and Landed checks them |
+| Your assistant | Create and edit career facts, delete individual records, and write documents through 43 MCP tools, including Companies and writing context. Connection instructions for Claude Code, Codex and Claude Desktop, without a Landed model key: your assistant writes the documents and Landed checks them |
 | Runs | Every model call is recorded with model, prompt version, tokens, latency and cost, visible next to the document |
-| Data safety | Backup and restore of the database, the PDFs and the logos; keys live only in your environment file; provider requests, connected assistants, paste-back and logo-address fetches have the data boundaries described in [SECURITY](SECURITY.md) |
+| Data safety | The database is backed up before every upgrade migrates it; the model key lives in your operating system's keychain (or `.env` when run from source); provider requests, connected assistants, paste-back and logo-address fetches have the data boundaries described in [SECURITY](SECURITY.md) |
 
-Status: **Phase 1b and the assistant surface are implemented, including Profile context, Companies, Job Sources and short cover letters and expanded document editing (2026-09-26)**. The table describes implemented features; client-specific verification is listed in the decision register. In particular, the packaged Docker install is tested on macOS, and the assistant connection has been used end to end from Claude Code on a contributor install (the packaged install's generated token is not yet exercised in Docker); Windows and Linux are untested. What is not built yet: importing a posting from a link, scoring how well you match, built-in company research, automatic discovery of jobs, and interview tracking. See [product scope and phases](docs/01-product-and-phases.md) for the roadmap and [decisions and readiness](docs/09-decisions-and-readiness.md) for the honest list of known gaps.
-
-On this branch, [document formatting and resume contact controls](docs/adr/012-document-formatting-and-contact-selection.md) are implemented and verified, pending merge: select text for bold/italic/underline, choose and order resume contacts, and use profile defaults for new resumes. This extension adds template 9 and a 43rd MCP tool.
+Status: **Phases 0 and 1, the assistant surface, Companies and writing context, document formatting and the desktop app are implemented (2026-10-02)**. The table describes implemented features; client-specific verification is listed in the decision register. The packaged app is smoke-tested on macOS; the Windows and Linux installers are first exercised by the release workflow, and the builds are not signed yet. What is not built yet: importing a posting from a link, scoring how well you match, built-in company research, automatic discovery of jobs, and interview tracking. See [product scope and phases](docs/01-product-and-phases.md) for the roadmap and [decisions and readiness](docs/09-decisions-and-readiness.md) for the honest list of known gaps.
 
 ## Install
 
@@ -63,18 +61,17 @@ Paste-back mode is the same pipeline with you as the model: the app shows the pr
 
 ## Use your own assistant
 
-Use the assistant you already pay for, no key needed ([ADR 008](docs/adr/008-assistant-surface-over-mcp.md)). The assistant reads your jobs and facts through a local MCP connection (the assistant may use a remote model provider), writes the documents, and every draft it hands back goes through the same checks as above. Three steps:
+Use the assistant you already pay for, no key needed ([ADR 008](docs/adr/008-assistant-surface-over-mcp.md)). The assistant reads your jobs and facts through a local MCP connection over stdio (the assistant may use a remote model provider), writes the documents, and every draft it hands back goes through the same checks as above. Two steps:
 
-1. Start Landed as usual.
-2. Open Settings → Connect your assistant in the app and copy the block for your tool (Claude Code, Codex or Claude Desktop). It contains the address and the token this installation generated.
-3. Install the workflow so the assistant knows the steps. Claude Code:
+1. Open Settings → Connect your assistant in the app and copy the block for your tool (Claude Code, Codex or Claude Desktop). It names the Landed executable with `--mcp` (from a checkout, `pnpm mcp`); the assistant starts it itself over stdio, so there is no token and nothing listens on the network, and it works while the app is closed.
+2. Install the workflow so the assistant knows the steps. Claude Code:
 
    ```sh
    claude plugin marketplace add 3333444n/landed
-   claude plugin install landed@landed    # asks for the address and the token from step 2
+   claude plugin install landed@landed    # asks for the executable path from step 1
    ```
 
-   Codex discovers the same skill by itself when you run it inside the Landed checkout; to use it from anywhere, link it into your user skills: `mkdir -p ~/.agents/skills && ln -s "$PWD/.agents/skills/landed" ~/.agents/skills/landed`. Claude Desktop uses the block from step 2 alone.
+   Codex discovers the same skill by itself when you run it inside the Landed checkout; to use it from anywhere, link it into your user skills: `mkdir -p ~/.agents/skills && ln -s "$PWD/.agents/skills/landed" ~/.agents/skills/landed`. Claude Desktop uses the block from step 1 alone.
 
 The merged [profile-management extension](docs/adr/009-profile-management-over-mcp.md) supports conversational profile creation and editing, plus individual career-record deletion through the same connection. See the [profile setup instructions](docs/07-quickstart-contract.md#using-profile-tools-adr-009).
 
@@ -82,14 +79,15 @@ Then ask for a resume: "tailor my resume for the Acme job". The assistant checks
 
 ## Architecture in one screen
 
-TypeScript, Next.js (App Router, Server Actions), SQLite (`node:sqlite`) through Drizzle with committed SQL migrations, Zod for every boundary, the Vercel AI SDK behind one adapter interface, `@modelcontextprotocol/server` for the assistant endpoint at `/mcp`, `@react-pdf/renderer` for PDFs, `lucide-react` for interface icons, Vitest and Playwright for tests, Docker Compose for the packaged install. A modular monolith: five modules (`profile`, `companies`, `jobs`, `applications`, `documents`), each six files with the same roles, each owning its tables; cross-module workflows live in the app layer and never reach into another module's persistence.
+TypeScript, Next.js (App Router, Server Actions), SQLite (`node:sqlite`) through Drizzle with committed SQL migrations, Zod for every boundary, the Vercel AI SDK behind one adapter interface, `@modelcontextprotocol/server` for the assistant tools over stdio, `@react-pdf/renderer` for PDFs, `lucide-react` for interface icons, Vitest and Playwright for tests, Electron and electron-builder for the desktop app. A modular monolith: five modules (`profile`, `companies`, `jobs`, `applications`, `documents`), each six files with the same roles, each owning its tables; cross-module workflows live in the app layer and never reach into another module's persistence.
 
 ```mermaid
 flowchart LR
   subgraph local["Your computer"]
-    browser["Browser"] --> app["Next.js server\nmodule use cases"]
-    assistant["Your assistant\n(Claude Code, Codex, Claude Desktop)"] -->|"/mcp, bearer token"| app
+    window["Landed window\n(Electron)"] -->|"127.0.0.1, session cookie"| app["Next.js server\nmodule use cases"]
+    assistant["Your assistant\n(Claude Code, Codex, Claude Desktop)"] -->|"stdio"| mcp["Landed --mcp"]
     app --> db[("SQLite")]
+    mcp --> db
     app --> files[("PDF artifacts\nand backups")]
   end
   app -.->|"only with a provider configured"| provider["Model provider"]
@@ -99,21 +97,22 @@ flowchart LR
 
 Decisions that shaped it, each with its reasoning and the alternatives rejected:
 
-- [ADR 001](docs/adr/001-local-typescript-postgresql.md): local TypeScript application on PostgreSQL, no hosted service.
+- [ADR 001](docs/adr/001-local-typescript-postgresql.md): local TypeScript application, no hosted service (its PostgreSQL choice revised by ADR 013).
 - [ADR 002](docs/adr/002-achievements-and-snapshots.md): achievements edited in place; generation snapshots and document revisions are the history.
-- [ADR 003](docs/adr/003-local-packaging.md): Docker Compose packaging with a one-shot migrate task and a launcher.
+- [ADR 003](docs/adr/003-local-packaging.md): the former Docker Compose packaging, superseded by ADR 013.
 - [ADR 004](docs/adr/004-drizzle-persistence.md): Drizzle with generated SQL migrations reviewed like code.
 - [ADR 005](docs/adr/005-url-driven-columns.md): the interface as URL-driven columns; a job's status is derived, never stored.
 - [ADR 006](docs/adr/006-model-access-path.md): the app calls the provider through one adapter; keys live in the environment only; paste-back as the zero-setup path; a fake adapter for every automated check.
 - [ADR 007](docs/adr/007-user-initiated-image-fetch.md): a logo address you paste is the one outbound request you start, fetched once through a guarded fetcher and stored.
-- [ADR 008](docs/adr/008-assistant-surface-over-mcp.md): your own assistant drives Landed through a local MCP endpoint with a launcher-minted token; Landed keeps validation, grounding and the run record.
-- [ADR 009 — Profile management over MCP](docs/adr/009-profile-management-over-mcp.md): typed profile and individual-record operations, partial updates, retry ids and required version checks; implemented and merged.
+- [ADR 008](docs/adr/008-assistant-surface-over-mcp.md): your own assistant drives Landed over MCP; Landed keeps validation, grounding and the run record.
+- [ADR 009 — Profile management over MCP](docs/adr/009-profile-management-over-mcp.md): typed profile and individual-record operations, partial updates, retry ids and required version checks.
+- [ADR 013](docs/adr/013-desktop-distribution.md): the Electron desktop app on a SQLite file, with the assistant tools over stdio.
 
 The [numbered documentation](docs/00-index.md) covers product, domain, modules, data model, workflows and failures, AI and integrations, quickstart, and the decision register. The interface follows [DESIGN.md](DESIGN.md); the produced PDFs follow [DESIGN-DOCS.md](DESIGN-DOCS.md).
 
 ## Testing and quality
 
-CI runs on every pull request: formatting, lint, types, unit tests, integration tests against real SQLite files, a production build, browser journeys, and a check that the committed migrations match the schema. All of it runs with a fake model adapter, so no credentials are ever needed; the assistant endpoint is driven in process with the MCP client and no model. Real providers are measured separately with `pnpm eval` on synthetic cases; [doc 06](docs/06-ai-and-integrations.md) lists which providers have actually been run. Commits follow Conventional Commits and pull requests state what was tested.
+CI runs on every pull request: formatting, lint, types, unit tests, integration tests against real SQLite files, a production build, browser journeys, and a check that the committed migrations match the schema. All of it runs with a fake model adapter, so no credentials are ever needed; the assistant tools are driven in process and over stdio with the MCP client and no model. Real providers are measured separately with `pnpm eval` on synthetic cases; [doc 06](docs/06-ai-and-integrations.md) lists which providers have actually been run. Commits follow Conventional Commits and pull requests state what was tested.
 
 ## Contributing
 
@@ -128,4 +127,4 @@ Issues and pull requests are welcome, including documentation fixes. Start with 
 
 The career hub is Profile, with General info and a separate About me narrative; each application records Interest. Companies stores shared names, logos, location, website, About and sourced findings. Jobs select that canonical Company and up to five relevant findings; Job Sources is a customizable, initially empty list under Settings. Short cover letters use this context alongside career evidence, with distinct citations and review warnings.
 
-The merged ADR 011 baseline exposes 42 MCP tools; the pending formatting extension adds a 43rd. Its company-identity follow-up removes the duplicate free-text employer field and job-owned logos; add_job accepts optional company_id. These changes merged in PRs #43–47 on 2026-09-23. Review the [upgrade notes](docs/07-quickstart-contract.md#upgrading-to-writing-context-and-canonical-companies-implemented-and-merged) before upgrading an existing installation.
+The merged ADR 011 baseline exposes 42 MCP tools and the formatting extension (ADR 012) a 43rd. Its company-identity follow-up removes the duplicate free-text employer field and job-owned logos; add_job accepts optional company_id. These changes merged in PRs #43–47 on 2026-09-23.

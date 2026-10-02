@@ -1,10 +1,33 @@
 # 07 — Quickstart
 
-Status: contributor path on SQLite (ADR 013, 2026-10-02); the Docker Compose release and its launcher were removed, and the desktop release that replaces them is not built yet. The "Connect your assistant" path ([ADR 008](adr/008-assistant-surface-over-mcp.md)) is implemented as of 2026-09-16 and tested from Claude Code on a contributor install. Windows and Linux untested.
+Status: the desktop app ([ADR 013](adr/013-desktop-distribution.md), 2026-10-02) is the installation; the packaged app was smoke-tested on macOS, and the Windows and Linux installers are first exercised by the release workflow. The contributor path runs on SQLite with no database server. Updated 2026-10-02.
 
-Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is merged. The ADR 011 writing-context and canonical-company extensions are implemented and merged in PRs #43–47 (2026-09-23). See [current verification](09-decisions-and-readiness.md#smaller-pr-stack-verification-2026-09-23).
+## Install the desktop app
 
-## Contributor path (tested)
+Download the installer for your computer from [GitHub Releases](https://github.com/3333444n/landed/releases): a dmg for macOS (`arm64` for Apple silicon, `x64` for Intel), an NSIS installer for Windows, an AppImage for Linux. The builds are not signed yet, so each system asks once; the [README](../README.md#install) has the steps for each.
+
+The first launch creates Landed's data folder in your user profile (macOS: `~/Library/Application Support/Landed`; Windows: `%APPDATA%\Landed`; Linux: `~/.config/Landed`) with `data/landed.db`, `artifacts/` for PDFs and logos, and `backups/`, then opens the window on an empty Profile. No account, database or key is needed. The server listens only on 127.0.0.1 and answers only the Landed window.
+
+Generating documents works three ways. With nothing configured, each document offers Paste back: the app shows the prompt, you run it in any assistant you already use and paste the JSON answer back. To let the app call a provider itself, use Settings → Model setup (below). Or connect the assistant you already pay for (below).
+
+Connect your assistant: open Settings → Connect your assistant and copy the block for your tool; it names the installed executable with `--mcp` (on macOS `/Applications/Landed.app/Contents/MacOS/Landed --mcp`). The assistant starts that command itself: it opens no window, uses the same data as the app (it works while the app is closed) and talks to the assistant over stdio only, so there is no token and nothing listens on the network. For Claude Code, the plugin (`claude plugin marketplace add 3333444n/landed`, then `claude plugin install landed@landed`) connects the same way and asks for the executable path. After updating Landed, restart the assistant so it starts the new version.
+
+Updates: at launch the app checks GitHub's latest release and, when it is newer, offers to open its download page. Install the new version over the old one; nothing installs automatically yet. Its first launch backs up the database, then migrates it.
+
+Backups: before applying pending migrations the app copies the database to `backups/landed-<version>-<time>.db` in its data folder and keeps the last five. For your own copy, quit the app and copy the data folder somewhere safe; to restore, quit the app, replace `data/landed.db` with the copy and delete any `landed.db-wal` and `landed.db-shm` beside it.
+
+Troubleshooting:
+
+- "This data was created by a newer Landed": the database carries a migration this version does not know. Install the latest version; nothing was changed.
+- An assistant reports "Landed was updated; restart your assistant": an older `--mcp` process met a newer database. Restart the assistant.
+- "This computer has no keychain Landed can use": on Linux without a keyring service, the key cannot be stored safely and is refused. Use paste-back or your assistant, or run from a checkout with the key in `.env`.
+- "Landed could not start": the dialog names the cause. Keep the data folder; do not delete it to recover.
+
+## Model setup
+
+In the desktop app, open Settings → Model setup, choose the provider, type the model and the key, and save; the app restarts its server and the column shows the key's last four characters. The key is kept in the operating system's keychain, never in the database or a backup. Remove clears the setting, and paste back keeps working without one. `pnpm dev` and `pnpm start` still read the environment file.
+
+## Contributor path
 
 Prerequisites: Node 24 (see `.node-version`), pnpm 10 (`corepack enable` installs the pinned version), Git. No database server: the data is one SQLite file.
 
@@ -47,35 +70,24 @@ pnpm db:restore backups/landed-<timestamp>.db  # stop the app first; replaces th
 
 Troubleshooting: "no such table" means the migrations were not applied: run `pnpm db:migrate` with the same `LANDED_DATABASE_PATH` as the app. Preserve the database file; do not delete or reseed it to recover startup.
 
-## Upgrading from a Docker/PostgreSQL install
+To run the desktop shell from the checkout, `pnpm desktop:dev` builds and opens it with its own data in `data/desktop-dev`; `pnpm desktop:dist` writes installers to `release/` ([CONTRIBUTING](../CONTRIBUTING.md#desktop-app)).
 
-The Docker Compose release and the PostgreSQL development database were removed under [ADR 013](adr/013-desktop-distribution.md). To move existing data, keep the old PostgreSQL container running (from the old checkout), take a backup there first, then in the new checkout run:
+## Moving data from a Docker/PostgreSQL install
+
+The Docker Compose release and the PostgreSQL development database were removed under [ADR 013](adr/013-desktop-distribution.md). To move existing data into a checkout, keep the old PostgreSQL container running (from the old checkout), take a backup there first, then in the new checkout run:
 
 ```sh
 pnpm install
 pnpm import:postgres -- --from postgres://<user>:<password>@localhost:5432/landed [--to ./data/landed.db]
 ```
 
-The importer only reads PostgreSQL (its session is read-only), creates and migrates the SQLite file, copies every table in one transaction, prints a row-count comparison per table and exits non-zero on any difference. It refuses a target file that already has a profile. The released installation published no database port, so map `5432` on `127.0.0.1` for the duration of the import, or run it against a contributor database. Copy the old artifact directory (the `landed-release_artifacts` volume, or `./artifacts`) to `LANDED_ARTIFACT_DIR` so stored PDFs and logos stay reachable. Delete the old volumes only after checking the imported data in the app.
+The importer only reads PostgreSQL (its session is read-only), creates and migrates the SQLite file, copies every table in one transaction, prints a row-count comparison per table and exits non-zero on any difference. It refuses a target file that already has a profile. The released installation published no database port, so map `5432` on `127.0.0.1` for the duration of the import, or run it against a contributor database. Copy the old artifact directory (the `landed-release_artifacts` volume, or `./artifacts`) to `LANDED_ARTIFACT_DIR` so stored PDFs and logos stay reachable. To use the imported file in the desktop app, quit the app and copy it over `data/landed.db` in the app's data folder, and the artifact directory over its `artifacts/`. Delete the old volumes only after checking the imported data in the app.
 
-Connect your assistant ([ADR 013](adr/013-desktop-distribution.md)): if you already pay for Claude Code, Codex or Claude Desktop, no provider key is needed. Open Settings → Connect your assistant in the desktop app and copy the block for your tool; it names the installed executable with `--mcp` (on macOS `/Applications/Landed.app/Contents/MacOS/Landed --mcp`). The assistant starts that command itself: it opens no window, uses the same data as the app and talks to the assistant over stdio only, so there is no token and nothing listens on the network. For Claude Code, the plugin (`claude plugin marketplace add 3333444n/landed`, then `claude plugin install landed@landed`) connects the same way and asks for the executable path. After updating Landed, restart the assistant so it starts the new version; an older version refuses to start on a database the new version has migrated.
+## Verification
 
-## Required verification before claiming easy setup
+Recorded in [doc 09](09-decisions-and-readiness.md#desktop-distribution-2026-10-02-implemented): `pnpm verify:full` on the desktop stack (253 unit tests, 113 integration tests, 12 browser journeys), a smoke test of the packaged app on macOS, and the release workflow's stdio smoke test against each packaged app. Not yet covered: signed builds, automatic install, and Windows stdio until the first tagged release. Phase 0 and 1a work offline; the app's own outbound requests are the configured provider, a logo address you paste and the launch-time release check. Paste-back and connected assistants may send the facts they receive to their own model providers.
 
-Verified on macOS (Apple Silicon, Docker Desktop, 2026-09-13) unless marked otherwise. These records cover the removed Docker release; the desktop release (ADR 013) is verified again when it ships.
-
-- Fresh install without pre-existing local dependencies beyond stated prerequisites: verified (clean state, no `.env.release`, only Docker used).
-- App readiness reflects both service health and successful migrations: verified (`web` waits for `migrate` to complete successfully and `db` to be healthy; its own health check loads a database-backed page).
-- Data survives process/container restart, image recreation, and supported application upgrade: verified for restart, `stop`/`start` and image rebuild, and once for an upgrade with a new migration (2026-09-14: the Phase 1b image started over a volume created with migrations 0000 and 0001 and the migrate task applied 0002 before the web service started). There are seven migrations (0000 to 0006); a tagged version-to-version upgrade is not yet exercised because there is no tagged release.
-- Backup/restore works on a new installation: verified, including the artifacts archive (2026-09-14: a probe file in `/app/artifacts` was archived by `backup`, deleted, and came back with `restore`; the web service answered afterwards). PowerShell launcher: database only.
-- Restart/stop never silently deletes volumes. Factory reset is separate and explicit: verified (`stop` runs `down` without `-v`; the reset is documented above and manual).
-- Helpful troubleshooting for Docker not running, occupied port, failed download, permission failure, database unavailable, migration failure, and low disk space: written above; the Docker-not-running, port-in-use and migration-failure cases were exercised, the others are documented from Docker's own messages.
-- Pin supported versions and explain upgrade steps: images pinned (`node:24.21-bookworm-slim`, `postgres:17.11`); the PostgreSQL major-version procedure is still to be written when a major bump is planned.
-- Verify release images on intended CPU architectures and document tested macOS, Windows, and Linux setups: tested on macOS arm64 only. Windows (`scripts/landed.ps1`), Linux and x86-64 are untested.
-- Phase 0 and 1a work offline after installation; example data and tests require no provider key: verified (the containers make no outbound requests; Next.js telemetry is disabled in the image). From Phase 1b the web service calls the provider configured in `.env.release`; it also fetches a logo address when the user supplies one (ADR 007). Paste-back and connected assistants may send the facts they receive to their own model providers.
-- Connect your assistant (ADR 008): the contributor path is tested (2026-09-16, macOS): `LANDED_MCP_TOKEN` set in `.env`, the Claude Code block copied from the Settings column, the plugin installed, and a posting added and the three documents written, submitted and rendered from Claude Code through `/mcp`. The packaged path is not tested: the launcher's token generation on a fresh `start`, the append on an older `.env.release`, the `token` command and the endpoint inside the container have not been exercised in Docker (the base image pull stalled during the check). The Codex and Claude Desktop blocks are written from their vendors' documentation and not run end to end.
-
-Store runtime data in volumes outside the source checkout. Ignore files are a second guard, not backup or access control. Release bundles include only an explicit allowlist of application assets; never package the entire workspace with personal files.
+Runtime data lives outside the source checkout, in the app's data folder. Ignore files are a second guard, not backup or access control. Installers include only the built app, the server and the migrations (`electron-builder.yml`), never the workspace or `.env` files.
 
 ## Reference lessons
 
@@ -85,25 +97,8 @@ Store runtime data in volumes outside the source checkout. Ignore files are a se
 
 ## Using profile tools (ADR 009)
 
-Use the same Settings → Connect your assistant setup and refresh the connected tool list after restarting the updated server. The merged profile extension provides `get_profile`, `create_profile`, `update_profile` and add/update/delete tools for each career-record type. Use the skill from the same checkout; a published plugin from an older release may still describe only the document workflow.
+Use the same Settings → Connect your assistant setup; after updating Landed, restart the assistant so it starts the new version. The merged profile extension provides `get_profile`, `create_profile`, `update_profile` and add/update/delete tools for each career-record type. Use the skill from the same checkout; a published plugin from an older release may still describe only the document workflow.
 
-On an empty installation, ask “Create my profile with the name Morgan Example.” Then try “Add PostgreSQL to my skills,” “Put that skill in the Databases category,” and “Delete the PostgreSQL skill.” Refresh the Profile hub (About me on the earlier baseline) in the browser to inspect each result. These examples are fictional; use an isolated local database for demonstrations. The profile workflow does not require a job or a model API key. Existing installations keep their data, token and configuration; whole-profile deletion is not exposed.
+On an empty installation, ask “Create my profile with the name Morgan Example.” Then try “Add PostgreSQL to my skills,” “Put that skill in the Databases category,” and “Delete the PostgreSQL skill.” Refresh the Profile hub in the app to inspect each result. These examples are fictional; use an isolated local database for demonstrations. The profile workflow does not require a job or a model API key. Existing installations keep their data and configuration; whole-profile deletion is not exposed.
 
 The user confirmed successful local assistant testing on 2026-09-17. Harness-specific coverage and packaged verification for this extension have not yet been recorded. The original connection verification above applies only to ADR 008.
-
-
-## Upgrading for career context links (migration 0007)
-
-The packaged launcher applies migrations during startup. Contributors update their checkout and run `pnpm db:migrate` before starting the updated application. Follow the backup instructions above before upgrading; do not reset the database or delete its volume. Migration 0007 adds direct skill-to-role and skill-to-project link tables without a data backfill. Existing facts and saved generation snapshots remain unchanged. Roles/projects with direct skill links must be detached before deletion.
-
-## Upgrading to writing context and canonical Companies (implemented and merged)
-
-Back up the database and artifact directory before applying migrations 0008–0011. Use the documented contributor `pnpm db:backup` / `pnpm db:migrate` commands, or the packaged launcher's documented backup and update workflow; do not reset or recreate volumes. Stop older app instances sharing the database before migration and restart only the matching new code afterward. Migration 0011 removes job-owned name/logo columns, so an old checkout is not compatible with the upgraded schema. Rollback requires restoring the matching database/artifact backup and code version, not merely checking out an older branch.
-
-Migrations 0008–0010 add About me, Interest, Job Sources, Companies and finding selections. Migration 0011 preserves existing company links, creates one distinct company for every unlinked legacy job (without name matching), and moves applicable logo metadata to companies; existing company logos win. Stored legacy image files and frozen document snapshots remain intact. New job forms may leave Company unselected. Refresh the connected assistant's tool list and use this checkout's synchronized skill: the merged ADR 011 extension exposes 42 tools and add_job uses company_id instead of the removed company string. The merged ADR 012 implementation (PRs #54–56) adds set_resume_contacts (43 tools), formatting support and resume contact preferences without a SQL migration. Existing document snapshots remain frozen.
-
-The contributor migration and feature journeys passed the checks recorded in doc 09. This does not establish a new packaged release, a tagged rollback procedure, or new Windows/Linux coverage; those existing limits remain.
-
-## Desktop app: model setup (ADR 013)
-
-In the desktop app, open Settings → Model setup, choose the provider, type the model and the key, and save; the app restarts its server and the column shows the key's last four characters. The key is kept in the operating system's keychain, never in the database or a backup. Remove clears the setting, and paste back keeps working without one. `pnpm dev` and `pnpm start` still read the environment file.

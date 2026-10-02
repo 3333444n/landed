@@ -1,34 +1,42 @@
 # 03 — System and modules
 
-Status: stack, Profile, Jobs and Applications modules and packaged runtime implemented; Documents module, model adapter and PDF rendering implemented (Phase 1b, ADR 006); the assistant surface at `/mcp` and the Host and Origin guard implemented ([ADR 008](adr/008-assistant-surface-over-mcp.md), 2026-09-16). Updated 2026-09-23.
+Status: stack, modules, model adapter and PDF rendering implemented; the desktop app, SQLite and the assistant surface over stdio implemented ([ADR 013](adr/013-desktop-distribution.md), 2026-10-02). Updated 2026-10-02.
 
 Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is merged. The ADR 011 writing-context and canonical-company extensions are implemented and merged in PRs #43–47 (2026-09-23). See [current verification](09-decisions-and-readiness.md#smaller-pr-stack-verification-2026-09-23).
 
 ## System boundary
 
-The browser connects to a local Next.js server. Server-side application operations validate requests and use PostgreSQL. The packaged installation (`compose.release.yml`, started by `scripts/landed.sh`) runs three Compose services: `db` (pinned PostgreSQL 17 image, named volume, no host port), `migrate` (a one-shot task that builds the application image and applies `db/migrations` through `db/migrate.mjs`, then exits) and `web` (the same image, started only after `migrate` succeeds and `db` is healthy, published on 127.0.0.1 only). Contributor mode is different: `docker-compose.yml` runs only PostgreSQL, published on 127.0.0.1:5432, and Next.js runs from the checkout with `pnpm dev`. The two Compose projects have separate names and volumes.
+Landed is an Electron desktop app ([ADR 013](adr/013-desktop-distribution.md)). The main process (`desktop/main.ts`) is a thin supervisor: it keeps the data in the app's data folder (`landed.db`, `artifacts/`, `backups/`), runs pending migrations through `src/infrastructure/migrate.ts` after a backup, starts the Next.js standalone server in a `utilityProcess` on a free 127.0.0.1 port and opens one sandboxed window on it. Server-side operations validate requests and use the SQLite file. Started with `--mcp`, the same executable opens no window and serves the assistant tools over stdio on the same database and artifact folder. Contributors run `pnpm dev` from the checkout against `./data/landed.db`, and `pnpm mcp` for the stdio server.
 
-This is a modular application plus its database, not a collection of microservices. Browser rendering and server execution remain separate even though Next.js supplies both. Next.js uses React; Vite is an alternative build/dev tool, not a React replacement.
+This is a modular application plus its database file, not a collection of microservices. Browser rendering and server execution remain separate even though Next.js supplies both.
 
 Runtime view:
 
 ```mermaid
 flowchart LR
-  subgraph local["Your computer: one local installation"]
-    browser["Browser UI"] -->|"HTTP on 127.0.0.1"| app["Next.js server<br/>module-owned use cases"]
-    assistant["Your assistant<br/>(Claude Code, Codex, Claude Desktop)"] -->|"HTTP on 127.0.0.1 → /mcp<br/>bearer token (ADR 008, implemented)"| app
-    app -->|"SQL transactions"| db[("PostgreSQL")]
-    app -->|"read / write"| files[("Local files<br/>backups and PDF artifacts")]
-    migrate["migrate task (one-shot)<br/>applies db/migrations, then exits"] -.->|"before web starts"| db
+  subgraph local["Your computer: one Landed installation"]
+    main["Electron main<br/>data folder, migrations, model setting"]
+    window["Window<br/>sandboxed renderer"]
+    app["Next.js server (utilityProcess)<br/>module-owned use cases"]
+    stdio["Landed --mcp<br/>no window, same tools"]
+    main -->|"starts, restarts"| app
+    window -->|"HTTP on 127.0.0.1<br/>session cookie"| app
+    window <-->|"IPC: model setting"| main
+    assistant["Your assistant<br/>(Claude Code, Codex, Claude Desktop)"] -->|"stdio"| stdio
+    app -->|"transactions"| db[("SQLite file")]
+    stdio -->|"transactions"| db
+    app -->|"read / write"| files[("PDF and logo files")]
+    stdio -->|"read / write"| files
   end
-  app -.->|"outbound HTTPS: the configured provider,<br/>or an image address the user pastes (ADR 007)"| providers["External providers<br/>models (ADR 006, implemented), logo images (ADR 007, implemented), later job sources"]
+  app -.->|"outbound HTTPS: the configured provider,<br/>or an image address the user pastes (ADR 007)"| providers["External providers<br/>models (ADR 006), logo images (ADR 007), later job sources"]
+  main -.->|"at launch: latest release"| github["GitHub Releases"]
 ```
 
-This is a logical runtime view: PostgreSQL is a process/container with its own volume, and the `migrate` task is a Compose service that runs once per `start` rather than a product component. The diagram abstracts volumes and networks.
+The app makes no network request except to the model provider configured in Settings (and only then; with no provider configured, Landed makes no model request itself), to an image address the user pastes for a company logo, fetched once through the guarded fetcher in `src/infrastructure/fetch` ([ADR 007](adr/007-user-initiated-image-fetch.md)), and, once per launch of the installed app, to GitHub for the latest release. The assistant used for paste-back or MCP may send supplied facts to its own provider. Later job/search providers require outbound access too.
 
-Phase 0 and 1a have no runtime network dependency beyond local processes. Installation/image downloads require internet. From Phase 1b the web service makes outbound HTTPS calls to the model provider configured in the environment file, and only then; with no provider configured, Landed makes no model request itself. The assistant used for paste-back or MCP may send supplied facts to its own provider. The one other outbound call is user-initiated: pasting an image address for a company's logo fetches that address once, through the guarded fetcher in `src/infrastructure/fetch` ([ADR 007](adr/007-user-initiated-image-fetch.md)). Later job/search providers require outbound access too.
+The assistant surface ([ADR 008](adr/008-assistant-surface-over-mcp.md), transport from ADR 013) needs no network listener and no token: the harness starts `Landed --mcp` (or `pnpm mcp` from a checkout) and is the only party on that process's stdin and stdout. The server answers only the window: when `LANDED_SESSION_SECRET` is set (the desktop app mints one per launch and puts it in an `HttpOnly`, `SameSite=Strict` cookie on its own window), `src/proxy.ts` refuses with 403 any request without a `landed_session` cookie equal to it (`src/infrastructure/session-guard.ts`, a constant-time compare of SHA-256 digests). Before that, every request's `Host` must be `localhost`, `127.0.0.1` or `::1` (or a name listed in `LANDED_ALLOWED_HOSTS`, empty until a remote design uses it), and an `Origin` header, when present, must name one of the same hosts, which defeats DNS rebinding. `pnpm dev` sets no session secret, so the contributor server relies on the Host guard alone. LAN or public access, and remote MCP from claude.ai or a phone, require a separate access and security design.
 
-The assistant surface ([ADR 008](adr/008-assistant-surface-over-mcp.md), implemented 2026-09-16) is an inbound connection, not an outbound one: the user's own assistant on the host computer calls `POST /mcp` on the same port the browser uses, with the bearer token `LANDED_MCP_TOKEN` from the environment file (minted by the launcher for the packaged installation), and Landed's tools call module operations through the composition layer. Two rules then apply to the whole application, not only to `/mcp`: every request's `Host` must be `localhost`, `127.0.0.1` or `::1` (or a name listed in `LANDED_ALLOWED_HOSTS`, empty until a remote design uses it), and an `Origin` header, when present, must name one of the same hosts; any other request is refused with 403 before a handler runs, because the Settings column shows the token and a server that answered any `Host` could be read through DNS rebinding. When `LANDED_SESSION_SECRET` is set (the desktop app sets it, [ADR 013](adr/013-desktop-distribution.md)), the same proxy also refuses with 403 any request without a `landed_session` cookie equal to it (`src/infrastructure/session-guard.ts`, a constant-time compare of SHA-256 digests). LAN or public access, and remote MCP from claude.ai or a phone, still require a separate access and security design.
+Runtime configuration is read from the environment only. The desktop main process sets `LANDED_DATABASE_PATH`, `LANDED_ARTIFACT_DIR`, `LANDED_SESSION_SECRET`, `LANDED_EXECUTABLE_PATH` (shown on the Connect your assistant column), `LANDED_DESKTOP=1` (Model setup shows the form instead of environment-file recipes) and the `LANDED_MODEL_*` variables from the saved model setting; a checkout reads `.env` (`.env.example`).
 
 The root layout initializes the saved theme and palette with Next.js `Script` using `beforeInteractive`. Static sidebar brand images are served directly (`unoptimized`), because the image optimizer's internal requests do not carry the Host header required by the guard.
 
@@ -72,7 +80,7 @@ Arrows are code calls or dependencies, not HTTP connections or deployment bounda
 | Research (later) | Sourced findings and bounded research runs | Jobs reads, search/fetch adapters, model runtime |
 | Discovery (later) | Provider adapters, schedules, ingestion runs | Jobs write operations; orchestration can then invoke Matching/Documents |
 
-PDF rendering is a small component within Documents initially, not a separately deployed service. It converts validated structured content through templates into PDFs. Extract an independent package only if real reuse or isolation needs emerge. Model integration is infrastructure, not a business module that knows how resumes work: `src/infrastructure/model/` holds the `ModelAdapter` interface (a structured-output request with a Zod schema in, a validated value with usage or a classified failure out), the AI SDK implementation as a class holding the configured provider client, the fake adapter that answers from `examples/generation`, and the factory that reads the environment ([ADR 006](adr/006-model-access-path.md)). The Model setup column under `/settings/model` reads the same configuration and shows its status without the key. The assistant surface (ADR 008) is the other adapter over the same composition functions: `src/app/mcp/` holds the route (`route.ts`), the SDK handler (`handler.ts`), the tool registrations (`tools.ts`, `profile-tools.ts`, `company-tools.ts` and `job-source-tools.ts`; the ADR 011 additions are implemented and merged), the bearer check (`auth.ts`) and the projections (`serialize.ts`); `src/proxy.ts` applies the Host and Origin guard from `src/infrastructure/host-guard.ts` and the session check from `src/infrastructure/session-guard.ts`; and the runtime configuration has `LANDED_MCP_TOKEN`, `LANDED_ALLOWED_HOSTS` and `LANDED_SESSION_SECRET` next to the model variables, read from the environment only, the token shown in the browser solely on the Connect your assistant column under `/settings/assistant`.
+PDF rendering is a small component within Documents initially, not a separately deployed service. It converts validated structured content through templates into PDFs. Extract an independent package only if real reuse or isolation needs emerge. Model integration is infrastructure, not a business module that knows how resumes work: `src/infrastructure/model/` holds the `ModelAdapter` interface (a structured-output request with a Zod schema in, a validated value with usage or a classified failure out), the AI SDK implementation as a class holding the configured provider client, the fake adapter that answers from `examples/generation`, and the factory that reads the environment ([ADR 006](adr/006-model-access-path.md)). The Model setup column under `/settings/model` reads the same configuration and shows its status without the key; in the desktop app it also saves the setting through the window's one IPC bridge (`desktop/preload.ts`), and main keeps the key encrypted with the OS keychain (`desktop/model-settings.ts`). The assistant surface (ADR 008) is the other adapter over the same composition functions: `src/app/mcp/` holds the stdio entry (`stdio.ts`, which migrates first), the server factory (`server.ts`, no Next imports), the tool registrations (`tools.ts`, `profile-tools.ts`, `company-tools.ts` and `job-source-tools.ts`) and the projections (`serialize.ts`); `src/proxy.ts` applies the Host and Origin guard from `src/infrastructure/host-guard.ts` and the session check from `src/infrastructure/session-guard.ts`.
 
 Keep cross-module workflows at an application composition boundary; avoid circular imports. The implemented example is `src/app/jobs/pursue-job.ts`: pasting a posting must create the job and its application together, so the function opens one transaction and passes the handle to the Jobs and Applications use cases, whose own transactions nest as savepoints inside it; a failure in either rolls back both. Neither module imports the other, and the owner-aware foreign key in the database checks the link. Documents likewise stores an opaque application id without importing Applications operations; `src/app/jobs/generate-document.ts` coordinates reading the pursuit, building the snapshot and generating a document. Database foreign keys do not mandate circular code dependencies.
 
@@ -97,12 +105,11 @@ src/
                          layout.tsx (review column with inline editing), page.tsx (null),
                          evidence/, paste/, runs/ columns, pdf/route.ts download; document-actions.ts,
                          generate-document.ts and snapshot.ts (composition)
-    settings/            layout.tsx (the hub: Model setup and Connect your assistant cards), page.tsx (placeholder),
-                         model/ (Model setup column, configuration status, no key), assistant/ (Connect your
-                         assistant column: one copyable block per assistant, the only place the token is shown)
-    mcp/                 route.ts (POST /mcp: 503 without a token, 401 on a wrong bearer), handler.ts (the SDK
-                         handler, no Next imports), tools.ts and profile-tools.ts (tool registrations), auth.ts (constant-time bearer
-                         compare), serialize.ts (projections)
+    settings/            layout.tsx (the hub), page.tsx (placeholder), model/ (Model setup column: status,
+                         and the form in the desktop app), assistant/ (Connect your assistant column: one
+                         copyable stdio registration per assistant), job-sources/
+    mcp/                 stdio.ts (migrate, then serve), server.ts (the MCP server, no Next imports),
+                         tools.ts, profile-tools.ts, company-tools.ts, job-source-tools.ts, serialize.ts
     form-state.ts        shared action result shape and form helpers
     palettes.css         the palettes (every colour as a light and a dark value; steel is the default)
     tokens.css           semantic tokens from DESIGN.md: colours picked from the palette by scheme, plus sizes, radii, spacing, type, motion
@@ -115,21 +122,25 @@ src/
     companies/           same shape plus company logo storage; files under the artifact directory, row after file
     applications/        same shape; pursuits and the derived job status rule
     documents/           same shape plus prompts/ (versioned prompt builders), pdf/ (templates) and artifacts.ts
-  proxy.ts               runs before every request: 403 unless Host and Origin name this computer (ADR 008)
+  proxy.ts               runs before every request: 403 unless Host and Origin name this computer and,
+                         in the desktop app, the request carries the session cookie
   components/            shared presentation components (Shell, SidebarNav, ThemeToggle, Drawer, Column, Toolbar, ToolbarMenu, Card, IconTile, LogoPicker, WordCloud, Field, CopyButton, AutoGrowTextarea, ...)
-  infrastructure/        database pool, configuration, model/ (adapter interface, AI SDK class, fake, factory), fetch/ (guarded image fetch, ADR 007), host-guard.ts (pure Host and Origin check)
-db/migrations/           generated SQL migrations and drizzle-kit journal
-db/migrate.mjs           migration runner used inside the release image (production dependencies only)
-db/init/                 creates the test database on first start of the development database
-docker-compose.yml       development database only
-Dockerfile               multi-stage release image (Next.js standalone output, non-root user)
-compose.release.yml      packaged installation: db, migrate, web
-scripts/                 landed.sh / landed.ps1 launcher; db-backup.sh / db-restore.sh for contributors;
-                         check-migrations.sh (drift) and check-skill-sync.sh (the plugin's copy of the skill)
+  infrastructure/        sqlite.ts (connections, runInTransaction), database.ts, migrate.ts (backup, newer-database
+                         refusal, migrations), config.ts, server.ts, session-guard.ts, host-guard.ts,
+                         model/ (adapter interface, AI SDK class, fake, factory), fetch/ (guarded image fetch, ADR 007)
+desktop/                 Electron main.ts, preload.ts, model-settings.ts, updates.ts, mcp.ts (pnpm mcp),
+                         build.mjs (esbuild bundles), resources/ (icon)
+electron-builder.yml     installers: dmg (macOS), NSIS (Windows), AppImage (Linux)
+db/migrations/           generated SQL migrations, one folder per migration (migration.sql, snapshot.json)
+db/migrate.mjs           applies them to the contributor database (pnpm db:migrate)
+scripts/                 db-backup.mjs / db-restore.mjs, import-postgres.mjs (one-time import from a Docker
+                         installation), smoke-mcp.mjs (release smoke test), check-migrations.sh (drift),
+                         check-skill-sync.sh (the plugin's copy of the skill)
+.github/workflows/       ci.yml (checks on every pull request), release.yml (installers from a v* tag)
 .agents/skills/landed/   SKILL.md, the assistant workflow (single source; Codex reads it here)
 plugins/landed/          the Claude Code plugin: manifest, .mcp.json, a copy of the skill
 .claude-plugin/          marketplace.json publishing that plugin
-tests/integration/       Vitest against real PostgreSQL
+tests/integration/       Vitest against temporary SQLite files, the stdio server included
 tests/e2e/               Playwright browser journeys
 examples/                synthetic data; generation/ holds the evaluation cases and fixtures (Phase 1b)
 tests/eval/               the evaluation cases against the configured real provider (pnpm eval, never in CI)
@@ -138,19 +149,19 @@ docs/                    numbered design and ADRs
 
 Inside a module: `schema.ts` declares tables, `contracts.ts` holds Zod input schemas and result types (browser-safe), `rules.ts` holds pure functions, `repository.ts` holds Drizzle queries over a database or transaction handle, `service.ts` holds use cases that open transactions and map database errors to typed results, and `index.ts` is the only import path for callers. Layouts render their own column followed by `children`, so a route like `/about/achievements/[id]` produces the hub, the list and the edit form as sibling columns and CSS shows the last two (one on a phone); the old Phase 0 addresses redirect to their new columns from `next.config.ts`. Server Actions in `src/app` import from `index.ts`; a client component that needs a contract imports `contracts.ts` directly so no database code reaches the browser bundle.
 
-Documents has the same file shape plus `prompts/` (one versioned prompt builder per document type), `pdf/` (the two react-pdf templates and the renderer) and `artifacts.ts` (atomic file writes under `LANDED_ARTIFACT_DIR`, a named volume in the packaged installation, with metadata rows inserted only after the file exists). The PDF downloads are the first Route Handlers in the app (`pdf/route.ts` under the resume and cover-letter routes), because a file download is not a form submission.
+Documents has the same file shape plus `prompts/` (one versioned prompt builder per document type), `pdf/` (the two react-pdf templates and the renderer) and `artifacts.ts` (atomic file writes under `LANDED_ARTIFACT_DIR`, the app data folder's `artifacts/` in the desktop app, with metadata rows inserted only after the file exists). The PDF downloads are the first Route Handlers in the app (`pdf/route.ts` under the resume and cover-letter routes), because a file download is not a form submission.
 
 Framework handlers translate requests, validate transport input, invoke operations, and return useful errors. Domain rules live in modules. Database constraints back up critical rules. Persistence uses Drizzle: the schema is TypeScript, queries stay close to SQL, and migrations are generated as reviewable SQL files ([ADR 004](adr/004-drizzle-persistence.md)). Do not maintain multiple persistence implementations for hypothetical portability.
 
 ## Sources
 
 - [Next.js](https://nextjs.org/docs) — React framework with server capabilities.
-- [Vite](https://vite.dev/guide/) — frontend development/build tooling.
-- [Docker Compose](https://docs.docker.com/compose/intro/compose-application-model/) — services, networks, volumes, and application configuration.
+- [Electron](https://www.electronjs.org/docs/latest/) — desktop shell, `utilityProcess` and `safeStorage`.
+- [SQLite](https://sqlite.org/docs.html) — the database file, WAL mode and `VACUUM INTO`.
 
 ## Profile adapter extension (ADR 009, merged)
 
-The profile tools use the existing MCP transport and configuration. They resolve the profile for each call and invoke public Profile operations with explicit dependencies. Partial updates and version checks live inside Profile transactions, not in the MCP adapter. Reads project selected sections with snake_case fields and ISO timestamps. The browser and assistant therefore share ownership and validation rules, while the assistant gets a patch contract appropriate for conversational edits. No new worker, provider call or remote service is required.
+The profile tools use the same MCP server and transport as the other tools. They resolve the profile for each call and invoke public Profile operations with explicit dependencies. Partial updates and version checks live inside Profile transactions, not in the MCP adapter. Reads project selected sections with snake_case fields and ISO timestamps. The browser and assistant therefore share ownership and validation rules, while the assistant gets a patch contract appropriate for conversational edits. No new worker, provider call or remote service is required.
 
 
 Career browsing refinement (local, ADR 010): `ExpandableCard` owns native disclosure presentation and a separate named edit link. `RecordCards` supplies shared read-only career details to the overview and lists. Client `CareerList` components read scoped URL filter parameters over server-loaded records, with pure context derivation in `context-filters.ts`. The Profile module owns direct skill context writes and coherent aggregate reads; MCP adapts the same public operations. `PillInput` retains the existing profile form/storage contract. The document column separates header actions, supporting links and a wrapping generation/approval row.

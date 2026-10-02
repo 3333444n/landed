@@ -1,6 +1,8 @@
 # 01 — Product and phases
 
-Status: Phase 0 complete (2026-09-13); Phase 1a complete (2026-09-14); Phase 1b complete (2026-09-14); Phase 1c additions complete (2026-09-14); "Use your own assistant" complete (2026-09-16); Phases 2 to 4 proposed. Updated 2026-09-23.
+Status: Phase 0 complete (2026-09-13); Phase 1a complete (2026-09-14); Phase 1b complete (2026-09-14); Phase 1c additions complete (2026-09-14); "Use your own assistant" complete (2026-09-16); desktop distribution complete (2026-10-02); Phases 2 to 4 proposed. Updated 2026-10-02.
+
+Since 2026-10-02 Landed installs as a desktop app with its data in one SQLite file and the assistant tools over stdio ([ADR 013](adr/013-desktop-distribution.md)); it replaced the Docker Compose release and PostgreSQL named in the dated records below.
 
 Profile management under [ADR 009](adr/009-profile-management-over-mcp.md) is merged. The ADR 011 writing-context and canonical-company extensions are implemented and merged in PRs #43–47 (2026-09-23). See [current verification](09-decisions-and-readiness.md#smaller-pr-stack-verification-2026-09-23).
 
@@ -10,7 +12,7 @@ Landed is a locally run job-search application that produces factual, tailored m
 
 A user starts an empty installation, adds profile information, employment, education, projects, skills, and achievements through the browser, and finds the same records after restarting the app. No LLM account is required. Manual entry only; resume import is deferred.
 
-Completion requires clear validation, basic editing/deletion, explicit saved/error feedback, persistent PostgreSQL storage, fictional example data, and a tested backup/restore procedure. These are reliability requirements for retaining user data, not a separate enterprise platform. A polished onboarding wizard and portable application-level import/export can follow if they delay the first useful flow.
+Completion requires clear validation, basic editing/deletion, explicit saved/error feedback, persistent local storage, fictional example data, and a tested backup/restore procedure. These are reliability requirements for retaining user data, not a separate enterprise platform. A polished onboarding wizard and portable application-level import/export can follow if they delay the first useful flow.
 
 Completed on 2026-09-13: browser entry and in-place editing of the profile, work history, education, projects, skills and achievements with skill links; field-level validation; stale-edit detection between tabs; restricted deletion of records that other facts depend on; backup and restore scripts; integration and browser tests against real PostgreSQL; and the packaged Docker Compose installation with its launcher, tested on macOS ([doc 07](07-quickstart-contract.md)). Known gaps carried into Phase 1: no loader for `examples/demo-profile.json` (the tests use its values directly); after a validation error, checkbox groups (work arrangement, skill links) show the stored selection rather than what was just ticked; an unreachable database surfaces as a generic server error rather than a friendly message; profile deletion exists in the schema but is not exposed in the interface; Windows and Linux installs are untested.
 
@@ -72,7 +74,7 @@ This is the largest manually initiated phase: importing web content, ranking, an
 
 3B: automatically generate resume/cover-letter drafts only for qualifying new jobs, within user-set per-run job count and cost/time limits. Do not replace reviewed/submitted materials. Repeated execution must not create duplicate jobs or duplicate draft bundles. Nothing is automatically sent or submitted.
 
-This phase needs durable work records, recovery after restart, retry limits, and bounded concurrency. A PostgreSQL-backed task mechanism is a candidate; no broker is mandated. Sleep/offline means paused discovery; define bounded catch-up behavior rather than generating an unlimited backlog on wake.
+This phase needs durable work records, recovery after restart, retry limits, and bounded concurrency. A database-backed task mechanism is one option; no broker is mandated. Sleep/offline means paused discovery; define bounded catch-up behavior rather than generating an unlimited backlog on wake.
 
 Discovered jobs appear in the same Jobs list as pursued ones, distinguished by the derived status chip (doc 05), not by a separate screen. Two decisions belong to this phase: automatic drafting needs an application record to attach documents to, so it creates one the user never chose, which must read "Needs review" rather than "Preparing"; and "not interested" on a discovered job needs a dismissed flag on the job, because the `withdrawn` application status implies a pursuit that never existed.
 

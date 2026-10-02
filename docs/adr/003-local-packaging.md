@@ -1,6 +1,6 @@
 # ADR 003 — Local packaging and quickstart
 
-Date: 2026-09-13. Status: accepted and implemented 2026-09-13. Superseded by [ADR 013](013-desktop-distribution.md) (2026-10-02, not implemented): a desktop app replaces the Docker Compose release.
+Date: 2026-09-13. Status: accepted and implemented 2026-09-13. Superseded by [ADR 013](013-desktop-distribution.md) (2026-10-02, implemented): a desktop app replaces the Docker Compose release.
 
 ## Context
 

@@ -1,6 +1,6 @@
 # ADR 013 — Desktop distribution with SQLite and stdio MCP
 
-Date: 2026-10-02. Status: accepted, not implemented. Supersedes [ADR 003](003-local-packaging.md); revises [ADR 001](001-local-typescript-postgresql.md), [ADR 004](004-drizzle-persistence.md), [ADR 006](006-model-access-path.md) and [ADR 008](008-assistant-surface-over-mcp.md).
+Date: 2026-10-02. Status: accepted, implemented (2026-10-02, PRs #58–#65). Supersedes [ADR 003](003-local-packaging.md); revises [ADR 001](001-local-typescript-postgresql.md), [ADR 004](004-drizzle-persistence.md), [ADR 006](006-model-access-path.md) and [ADR 008](008-assistant-surface-over-mcp.md).
 
 ## Context
 
@@ -14,7 +14,7 @@ The assistant workflow has a second constraint. Under ADR 008 the user's harness
 
 **Electron shell.** Landed ships as an Electron desktop app. The main process is a thin supervisor: it owns the data directory, runs migrations with a backup first, starts and stops the server, opens the window and handles updates. The existing Next.js standalone server runs unchanged in an Electron `utilityProcess`, bound to 127.0.0.1 on a free port, and the window loads it over HTTP.
 
-**HTTP, not IPC.** The interface is Server Components and Server Actions. Moving it onto IPC would require a static export and rewriting every route's data loading. MCP clients, and any future hosted mode, speak HTTP or stdio anyway, so IPC would add a second transport rather than replace one. IPC is reserved for native needs, currently update status and restart and entering the model key into the OS keychain ([ADR 006](006-model-access-path.md#revision-2026-10-02-adr-013)), each on an allowlisted channel whose sender origin main checks.
+**HTTP, not IPC.** The interface is Server Components and Server Actions. Moving it onto IPC would require a static export and rewriting every route's data loading. MCP clients, and any future hosted mode, speak HTTP or stdio anyway, so IPC would add a second transport rather than replace one. IPC is reserved for native needs, currently saving and removing the model setting, whose key goes into the OS keychain ([ADR 006](006-model-access-path.md#revision-2026-10-02-adr-013); on Linux without a usable keychain the key is refused rather than stored weakly), each on an allowlisted channel whose sender origin main checks.
 
 The renderer runs with `contextIsolation` and `sandbox` on, `nodeIntegration` off and a minimal preload. External links open in the system browser; navigation is restricted to the local origin; permission requests are denied. The Electron fuses for `RunAsNode`, `NODE_OPTIONS` and the inspector are off. Main sets a per-launch session secret as an `HttpOnly`, `SameSite=Strict` cookie on the window's session, and the server refuses requests without it, so only the Landed window can drive the server. The existing Host and Origin guard stays.
 
@@ -22,13 +22,13 @@ The renderer runs with `contextIsolation` and `sandbox` on, `nodeIntegration` of
 
 Concurrency: one writer connection, on which every write happens inside a transaction serialized by an in-process async mutex and opened with `BEGIN IMMEDIATE`; nested calls become savepoints, as they do now. A separate read-only connection serves reads outside transactions. This replaces the PostgreSQL advisory locks and `FOR UPDATE` row locks; version tokens and stale checks are unchanged. Across processes (the stdio command below), SQLite's file lock and busy timeout serialize writers. Timestamps are stored as integer milliseconds so compare-and-set keeps its precision; JSON is stored as text; ids remain app-generated UUID text.
 
-**MCP over stdio.** The harness launches the installed app with `--mcp`. That mode opens no window, opens the same database file and artifact folder, and registers the same tools with the same validation, grounding check and run records. No token is needed because stdio is private to the process that launched it. The HTTP `/mcp` endpoint and `LANDED_MCP_TOKEN` are removed. `render_pdf` returns a file path instead of a download address. A background daemon was rejected (see Alternatives).
+**MCP over stdio.** The harness launches the installed app with `--mcp`. That mode opens no window, opens the same database file and artifact folder, and registers the same tools with the same validation, grounding check and run records. No token is needed because stdio is private to the process that launched it. The HTTP `/mcp` endpoint and `LANDED_MCP_TOKEN` are removed. `render_pdf` returns the PDF's absolute file path instead of a download address. A background daemon was rejected (see Alternatives).
 
-**No Docker.** The Compose file, the Dockerfile and the launchers are removed. Contributors run `pnpm dev` or `pnpm start` against a local SQLite file and need no Docker.
+**No Docker.** The Compose file, the Dockerfile and the launchers are removed. Contributors run `pnpm dev` or `pnpm start` against a local SQLite file and need no Docker. The main process and preload are bundled with plain esbuild (`desktop/build.mjs`), and electron-builder packages the installers.
 
-**Updates and migrations.** Installers are built from tags and published on GitHub Releases. The app checks for updates and installs one only on restart, never mid-session. Before applying pending migrations, main copies the database with `VACUUM INTO` to a backups folder and keeps the last few copies; migrations then run in one transaction before the server starts. A database carrying migrations unknown to the running build is refused, with an offer to restore a backup. Migrations are forward-only and additive, and a stdio process from an older version refuses to operate on a newer schema.
+**Updates and migrations.** Installers are built from tags and published on GitHub Releases. At launch the app asks GitHub for the latest release and, when it is newer, offers to open its download page; it never updates mid-session. Before applying pending migrations, main copies the database with `VACUUM INTO` to a backups folder and keeps the last few copies; migrations then run in one transaction before the server starts. The migration step lives in `src/infrastructure/migrate.ts` and is shared by the app and `--mcp`. A database carrying migrations unknown to the running build is refused with a message to install the latest version. Migrations are forward-only and additive, and a stdio process from an older version refuses to operate on a newer schema (checked when it starts).
 
-macOS builds are unsigned at first. Squirrel.Mac installs updates only for a signed app, so macOS has no automatic install and the app links to the release page instead; Windows (NSIS) and Linux (AppImage) update automatically. Existing Compose installations move their data with a one-time import script that reads PostgreSQL and writes the SQLite file.
+macOS and Windows builds are unsigned at first. Squirrel.Mac installs updates only for a signed app. As implemented, no platform installs updates automatically: every platform gets the download page, and automatic install is to be revisited with code signing. Existing Compose installations move their data with a one-time import script that reads PostgreSQL and writes the SQLite file.
 
 ```mermaid
 flowchart LR
@@ -38,7 +38,7 @@ flowchart LR
     window["Window<br/>sandboxed renderer"]
     main -->|"starts, stops"| server
     window <-->|"HTTP 127.0.0.1<br/>session cookie"| server
-    main <-->|"IPC: updates, model key"| window
+    main <-->|"IPC: model setting"| window
   end
   harness["Your assistant<br/>(harness)"] -->|"stdio"| stdio["Landed --mcp<br/>no window"]
   server --> data[("SQLite file<br/>and artifacts folder")]
