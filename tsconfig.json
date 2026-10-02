@@ -31,5 +31,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "db/migrations"]
+  "exclude": ["node_modules", "db/migrations", "release", "dist-desktop"]
 }

@@ -20,7 +20,7 @@ import {
 } from "electron";
 import { serveLandedStdio } from "../src/app/mcp/stdio";
 import { sessionCookieName } from "../src/infrastructure/session-guard";
-import { migrateWithBackup, NewerDatabaseError } from "./migrate";
+import { migrateWithBackup, NewerDatabaseError } from "../src/infrastructure/migrate";
 import { clearModelSettings, loadModelEnv, saveModelSettings } from "./model-settings";
 
 let window: BrowserWindow | null = null;

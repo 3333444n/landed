@@ -15,7 +15,7 @@ import * as repo from "./repository";
 export interface RenderedArtifact {
   bytes: Buffer;
   filename: string;
-  /** Absolute path of the stored file, which an assistant over stdio can open directly. */
+  /** Path of the stored file (absolute when artifactDir is), which an assistant over stdio can open. */
   path: string;
   reused: boolean;
 }
@@ -49,7 +49,7 @@ export async function getOrRenderPdf(
   const existing = await repo.findArtifact(deps.db, profileId, revisionId, "pdf", templateVersion);
   if (existing) {
     try {
-      const file = path.resolve(artifactDir, existing.storageKey);
+      const file = path.join(artifactDir, existing.storageKey);
       const bytes = await readFile(file);
       if (sha256(bytes) === existing.checksum)
         return { ok: true, value: { bytes, filename, path: file, reused: true } };
@@ -71,7 +71,7 @@ export async function getOrRenderPdf(
         );
   const storageKey =
     existing?.storageKey ?? path.join(profileId, `${revisionId}-pdf-v${templateVersion}.pdf`);
-  const file = path.resolve(artifactDir, storageKey);
+  const file = path.join(artifactDir, storageKey);
   await writeFileAtomically(file, bytes);
 
   if (!existing) {

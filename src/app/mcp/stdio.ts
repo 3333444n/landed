@@ -4,9 +4,9 @@
  * to stderr. Pending migrations run first, so an assistant works before the app was ever opened.
  */
 import { mkdirSync } from "node:fs";
-import { dirname } from "node:path";
+import { dirname, resolve } from "node:path";
 import { serveStdio } from "@modelcontextprotocol/server/stdio";
-import { migrateWithBackup, NewerDatabaseError } from "../../../desktop/migrate";
+import { migrateWithBackup, NewerDatabaseError } from "@/infrastructure/migrate";
 import { createDatabase } from "@/infrastructure/database";
 import { createMcpServer } from "./server";
 
@@ -26,5 +26,7 @@ export function serveLandedStdio(options: {
     process.exit(1);
   }
   const deps = createDatabase(options.dbPath);
-  serveStdio(() => createMcpServer({ deps, artifactDir: options.artifactDir, userAgent: "stdio" }));
+  serveStdio(() =>
+    createMcpServer({ deps, artifactDir: resolve(options.artifactDir), userAgent: "stdio" }),
+  );
 }
