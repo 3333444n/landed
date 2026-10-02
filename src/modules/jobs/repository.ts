@@ -102,17 +102,6 @@ export async function updateJobSource(
     .returning();
   return rows[0] ?? null;
 }
-export async function lockJob(db: DbHandle, profileId: string, id: string) {
-  return (
-    (
-      await db
-        .select()
-        .from(jobs)
-        .where(and(eq(jobs.profileId, profileId), eq(jobs.id, id)))
-        .for("update")
-    )[0] ?? null
-  );
-}
 export async function selectedFindingIds(db: DbHandle, profileId: string, jobId: string) {
   return (
     await db
@@ -162,7 +151,7 @@ export async function invalidateFindingJobs(
     await db
       .update(jobs)
       .set({
-        updatedAt: sql`greatest(${at.toISOString()}::timestamptz, ${jobs.updatedAt} + interval '1 millisecond')`,
+        updatedAt: sql`max(${at.getTime()}, ${jobs.updatedAt} + 1)`,
       })
       .where(
         and(
@@ -173,8 +162,4 @@ export async function invalidateFindingJobs(
           ),
         ),
       );
-}
-
-export async function lockFindingContext(db: DbHandle, profileId: string) {
-  await db.execute(sql`select pg_advisory_xact_lock(hashtextextended(${profileId}, 0))`);
 }

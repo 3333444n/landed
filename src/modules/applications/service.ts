@@ -50,7 +50,7 @@ export async function createApplication(
   const id = input.id ?? newId(deps);
 
   try {
-    return await deps.db.transaction(async (tx) => {
+    return await deps.runInTransaction(async (tx) => {
       const existing = await repo.findApplicationForJob(tx, profileId, input.jobId);
       if (existing) return { ok: true as const, value: existing };
       const created = await repo.insertApplication(tx, {
@@ -82,7 +82,7 @@ export async function updateApplication(
   const input = parsed.data;
 
   try {
-    return await deps.db.transaction(async (tx) => {
+    return await deps.runInTransaction(async (tx) => {
       const current = await repo.findApplication(tx, profileId, id);
       if (!current) return notFound("Application");
       const at = now(deps);
@@ -115,7 +115,7 @@ export async function updateInterest(
   const parsed = updateInterestInput.safeParse(rawInput);
   if (!parsed.success) return validation(fieldErrorsFromZod(parsed.error));
   try {
-    return await deps.db.transaction(async (tx) => {
+    return await deps.runInTransaction(async (tx) => {
       const current = await repo.findApplication(tx, profileId, id);
       if (!current) return notFound("Application");
       const updated = await repo.updateApplication(

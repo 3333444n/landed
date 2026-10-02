@@ -40,5 +40,3 @@ export {
   getSelectedFindingIds,
   invalidateJobsForFinding,
 } from "./service";
-
-export { lockJobFindingContext } from "./service";
