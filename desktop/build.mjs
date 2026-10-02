@@ -1,5 +1,5 @@
 // Run after `next build` (pnpm desktop:build): completes the standalone server the way the
-// Dockerfile does and bundles the Electron main process into dist-desktop/main.cjs.
+// Dockerfile does and bundles the Electron main process and the window's preload into dist-desktop/.
 import { cpSync, existsSync, lstatSync, readdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { build } from "esbuild";
@@ -15,8 +15,9 @@ for (const entry of readdirSync(".next/standalone", { recursive: true })) {
 }
 
 await build({
-  entryPoints: ["desktop/main.ts"],
-  outfile: "dist-desktop/main.cjs",
+  entryPoints: ["desktop/main.ts", "desktop/preload.ts"],
+  outdir: "dist-desktop",
+  outExtension: { ".js": ".cjs" },
   bundle: true,
   platform: "node",
   format: "cjs",

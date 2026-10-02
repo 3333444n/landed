@@ -11,6 +11,7 @@ import {
   app,
   BrowserWindow,
   dialog,
+  ipcMain,
   session,
   shell,
   utilityProcess,
@@ -18,6 +19,7 @@ import {
 } from "electron";
 import { sessionCookieName } from "../src/infrastructure/session-guard";
 import { migrateWithBackup, NewerDatabaseError } from "./migrate";
+import { clearModelSettings, loadModelEnv, saveModelSettings } from "./model-settings";
 
 let window: BrowserWindow | null = null;
 let server: UtilityProcess | null = null;
@@ -86,31 +88,30 @@ async function startApp() {
     path: "/",
   });
 
-  server = utilityProcess.fork(join(serverDir, "server.js"), [], {
-    cwd: serverDir,
-    env: {
-      ...process.env,
-      PORT: String(port),
-      HOSTNAME: "127.0.0.1",
-      LANDED_DATABASE_PATH: dbPath,
-      LANDED_ARTIFACT_DIR: artifactDir,
-      LANDED_SESSION_SECRET: secret,
-      NODE_ENV: "production",
-    },
-    stdio: "pipe",
-  });
-  server.stdout?.pipe(process.stdout);
-  server.stderr?.pipe(process.stderr);
-  server.on("exit", (code) => {
-    if (!quitting) fail(new Error(`The Landed server stopped unexpectedly (exit code ${code}).`));
-  });
-  await waitForServer(origin);
+  const env = {
+    ...process.env,
+    PORT: String(port),
+    HOSTNAME: "127.0.0.1",
+    LANDED_DATABASE_PATH: dbPath,
+    LANDED_ARTIFACT_DIR: artifactDir,
+    LANDED_SESSION_SECRET: secret,
+    LANDED_DESKTOP: "1",
+    NODE_ENV: "production" as const,
+  };
+  const start = () => startServer(serverDir, { ...env, ...loadModelEnv(userData) }, origin);
+  await start();
+  handleModelSettings(origin, userData, start);
 
   window = new BrowserWindow({
     width: 1280,
     height: 800,
     show: false,
-    webPreferences: { contextIsolation: true, sandbox: true, nodeIntegration: false },
+    webPreferences: {
+      contextIsolation: true,
+      sandbox: true,
+      nodeIntegration: false,
+      preload: join(__dirname, "preload.cjs"),
+    },
   });
   window.once("ready-to-show", () => window?.show());
   window.webContents.setWindowOpenHandler(({ url }) => {
@@ -126,6 +127,52 @@ async function startApp() {
     callback(false),
   );
   await window.loadURL(origin);
+}
+
+async function startServer(serverDir: string, env: NodeJS.ProcessEnv, origin: string) {
+  const child = utilityProcess.fork(join(serverDir, "server.js"), [], {
+    cwd: serverDir,
+    env,
+    stdio: "pipe",
+  });
+  server = child;
+  child.stdout?.pipe(process.stdout);
+  child.stderr?.pipe(process.stderr);
+  child.on("exit", (code) => {
+    if (!quitting && child === server) {
+      fail(new Error(`The Landed server stopped unexpectedly (exit code ${code}).`));
+    }
+  });
+  await waitForServer(origin);
+}
+
+/**
+ * Settings → Model setup in the window saves or removes the model setting here (ADR 006 revision).
+ * The server reads it only at start, so a change restarts it and reloads the window.
+ */
+function handleModelSettings(origin: string, userData: string, start: () => Promise<void>) {
+  async function restart() {
+    const old = server!;
+    server = null;
+    const exited = new Promise((resolve) => old.once("exit", resolve));
+    old.kill();
+    await exited;
+    await start();
+    window?.reload();
+  }
+  ipcMain.handle("model:save", async (event, input: unknown) => {
+    if (new URL(event.senderFrame!.url).origin !== origin) return "Not allowed.";
+    const problem = saveModelSettings(userData, input);
+    if (problem) return problem;
+    await restart();
+    return null;
+  });
+  ipcMain.handle("model:clear", async (event) => {
+    if (new URL(event.senderFrame!.url).origin !== origin) return "Not allowed.";
+    clearModelSettings(userData);
+    await restart();
+    return null;
+  });
 }
 
 function freePort(): Promise<number> {

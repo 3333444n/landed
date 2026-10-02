@@ -2,6 +2,7 @@ import { Settings } from "lucide-react";
 import { Card } from "@/components/Card";
 import { Column } from "@/components/Column";
 import { getModelStatus } from "@/infrastructure/server";
+import { ModelForm } from "./ModelForm";
 import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
@@ -54,9 +55,26 @@ const recipes: { title: string; note: string; lines: string[] }[] = [
   },
 ];
 
-/** Reads the environment and shows what is configured (ADR 006). The key is never rendered. */
+/**
+ * Reads the environment and shows what is configured (ADR 006). The key is never rendered. The
+ * desktop app sets the model here instead of in an environment file (ADR 006 revision).
+ */
 export default function ModelSetupPage() {
   const status = getModelStatus();
+  if (process.env.LANDED_DESKTOP === "1") {
+    return (
+      <Column
+        icon={<Settings />}
+        title="Model setup"
+        subtitle="Where generated documents come from."
+        parentHref="/settings"
+        parentTitle="Settings"
+        width="detail"
+      >
+        <ModelForm status={status} />
+      </Column>
+    );
+  }
   return (
     <Column
       icon={<Settings />}
