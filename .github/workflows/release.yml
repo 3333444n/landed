@@ -44,4 +44,5 @@ jobs:
       - name: Attach the installers to the draft release
         run: |
           shopt -s nullglob
-          gh release upload "$GITHUB_REF_NAME" release/*.dmg release/*.exe release/*.AppImage
+          gh release upload "$GITHUB_REF_NAME" release/*.dmg release/*.exe release/*.AppImage \
+            release/latest*.yml release/*.blockmap

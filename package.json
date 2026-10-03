@@ -1,6 +1,6 @@
 {
   "name": "landed",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "Locally run job-search application: factual tailored materials and application tracking.",
   "license": "MIT",
@@ -45,6 +45,7 @@
     "@tiptap/starter-kit": "3.31.3",
     "ai": "7.0.100",
     "drizzle-orm": "1.0.0-beta.22",
+    "electron-updater": "6.8.9",
     "lucide-react": "1.46.0",
     "next": "16.3.5",
     "react": "19.3.0",

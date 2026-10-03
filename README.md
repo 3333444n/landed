@@ -30,7 +30,7 @@ Download the installer for your computer from [GitHub Releases](https://github.c
 - **Windows:** run the installer; at the SmartScreen warning choose More info → Run anyway.
 - **Linux:** `chmod +x Landed-*.AppImage`, then run it.
 
-Landed tells you when a new version is out. Install it over the old one: your data stays where it is and is backed up before the new version upgrades it.
+Landed tells you in the sidebar when a new version is out. On Windows and Linux it downloads in the background; choose Restart to update. On macOS, until the builds are signed, choose Download: Landed checks the download and opens it, and you drag Landed to Applications to replace the old app, then reopen it. Your data stays where it is and is backed up before the new version upgrades it.
 
 ## Use it with your assistant
 
