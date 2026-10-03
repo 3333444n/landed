@@ -12,11 +12,10 @@ const demo = {
     "Example Analytics is looking for a full-stack developer to build internal reporting tools.\n\nYou will work with PostgreSQL and TypeScript.",
 };
 
-async function editText(page: Page, label: string, text: string, newLabel = label) {
-  await page.getByRole("button", { name: `Edit ${label}`, exact: true }).click();
+// The editor moves the cursor to the end once mounted, which can race fill's select-all, so
+// retry until the field holds exactly the new text.
+async function fillEditor(page: Page, label: string, text: string) {
   const editor = page.getByLabel(`Text of ${label}`, { exact: true });
-  // The editor moves the cursor to the end once mounted, which can race fill's select-all, so
-  // retry until the field holds exactly the new text.
   await expect(editor).toBeFocused();
   await expect(async () => {
     if (text) await editor.fill(text);
@@ -26,6 +25,11 @@ async function editText(page: Page, label: string, text: string, newLabel = labe
     }
     await expect(editor).toHaveText(text, { timeout: 500 });
   }).toPass();
+}
+
+async function editText(page: Page, label: string, text: string, newLabel = label) {
+  await page.getByRole("button", { name: `Edit ${label}`, exact: true }).click();
+  await fillEditor(page, label, text);
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(page.getByRole("button", { name: `Edit ${newLabel}`, exact: true })).toBeVisible();
 }
@@ -140,9 +144,11 @@ test("a document is generated, reviewed in place, and another is pasted back", a
 
   // Inline editing saves a new revision
   await page.getByRole("button", { name: "Edit bullet 1 of Example Workshop" }).click();
-  await page
-    .getByLabel("Text of bullet 1 of Example Workshop")
-    .fill("Built a PostgreSQL-backed reporting tool for weekly reports.");
+  await fillEditor(
+    page,
+    "bullet 1 of Example Workshop",
+    "Built a PostgreSQL-backed reporting tool for weekly reports.",
+  );
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(page.getByRole("button", { name: "Edit bullet 1 of Example Workshop" })).toHaveText(
     "Built a PostgreSQL-backed reporting tool for weekly reports.",
@@ -189,7 +195,7 @@ test("a document is generated, reviewed in place, and another is pasted back", a
   await headline.focus();
   await page.keyboard.press("Enter");
   await expect(page.getByLabel("Text of headline", { exact: true })).toBeFocused();
-  await page.getByLabel("Text of headline", { exact: true }).fill("x".repeat(121));
+  await fillEditor(page, "headline", "x".repeat(121));
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(editorError(page, "headline")).toBeVisible();
   await expect(page.getByLabel("Text of headline", { exact: true })).toHaveText("x".repeat(121));
@@ -201,7 +207,7 @@ test("a document is generated, reviewed in place, and another is pasted back", a
   const oldTab = await page.context().newPage();
   await oldTab.goto(`${jobUrl}/resume`);
   await oldTab.getByRole("button", { name: "Edit headline", exact: true }).click();
-  await oldTab.getByLabel("Text of headline", { exact: true }).fill("Text from the older tab");
+  await fillEditor(oldTab, "headline", "Text from the older tab");
   await oldTab.getByLabel("Text of headline", { exact: true }).press("ControlOrMeta+a");
   await oldTab
     .getByRole("group", { name: "Selection formatting", exact: true })
@@ -303,9 +309,11 @@ test("a document is generated, reviewed in place, and another is pasted back", a
   await page.getByRole("button", { name: "Approve?", exact: true }).click();
   await expect(page.getByRole("button", { name: "Approved", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Edit bullet 1 of Example Workshop" }).click();
-  await page
-    .getByLabel("Text of bullet 1 of Example Workshop")
-    .fill("Built a reporting tool with accessible filters.");
+  await fillEditor(
+    page,
+    "bullet 1 of Example Workshop",
+    "Built a reporting tool with accessible filters.",
+  );
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(page.getByRole("button", { name: "Approve?", exact: true })).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });

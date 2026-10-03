@@ -13,6 +13,7 @@ import {
   BrowserWindow,
   dialog,
   ipcMain,
+  nativeTheme,
   session,
   shell,
   utilityProcess,
@@ -123,12 +124,19 @@ async function startApp() {
     width: 1280,
     height: 800,
     show: false,
+    // Chromium paints this before the page and while the window closes; white would flash.
+    backgroundColor: windowColors().color,
+    ...titleBar(),
     webPreferences: {
       contextIsolation: true,
       sandbox: true,
       nodeIntegration: false,
       preload: join(__dirname, "preload.cjs"),
     },
+  });
+  nativeTheme.on("updated", () => {
+    window?.setBackgroundColor(windowColors().color);
+    if (process.platform === "win32") window?.setTitleBarOverlay(windowColors());
   });
   window.once("ready-to-show", () => {
     window?.show();
@@ -193,6 +201,35 @@ function handleModelSettings(origin: string, userData: string, start: () => Prom
     await restart();
     return null;
   });
+}
+
+/*
+ * The canvas and text colours from palettes.css, by the system scheme. A theme chosen inside
+ * Landed lives in the page's localStorage, so the window follows the system scheme only.
+ */
+function windowColors() {
+  return nativeTheme.shouldUseDarkColors
+    ? { color: "#0c0e10", symbolColor: "#eef0ee" }
+    : { color: "#f6f4ee", symbolColor: "#171c21" };
+}
+
+/*
+ * The page draws under the title bar, in a 40px strip of canvas (`--desktop-titlebar` in
+ * globals.css). At least 1200px wide, the sidebar never gives way to the drawer, whose menu
+ * button would sit under the window controls.
+ */
+function titleBar(): Electron.BrowserWindowConstructorOptions {
+  if (process.platform === "darwin") {
+    return { titleBarStyle: "hidden", trafficLightPosition: { x: 24, y: 13 }, minWidth: 1200 };
+  }
+  if (process.platform === "win32") {
+    return {
+      titleBarStyle: "hidden",
+      titleBarOverlay: { ...windowColors(), height: 40 },
+      minWidth: 1200,
+    };
+  }
+  return {};
 }
 
 function freePort(): Promise<number> {

@@ -81,3 +81,24 @@ a {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+
+/*
+ * Desktop title bar (DESIGN.md "Layout"): on macOS and Windows the page draws under the title
+ * bar, so a strip of canvas across the top holds the window controls, drags the window, and keeps
+ * the links, buttons and fields inside it clickable. desktop/main.ts uses the same height.
+ */
+:root[data-desktop] {
+  --desktop-titlebar: 40px;
+}
+
+:root[data-desktop] body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: var(--desktop-titlebar);
+  -webkit-app-region: drag;
+}
+
+:root[data-desktop] :is(a, button, input, select, textarea, summary, [role="button"]) {
+  -webkit-app-region: no-drag;
+}
