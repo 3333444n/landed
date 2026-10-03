@@ -213,18 +213,20 @@ function windowColors() {
 
 /*
  * The page draws under the title bar, in a 40px strip of canvas (`--desktop-titlebar` in
- * globals.css). At least 1200px wide, the sidebar never gives way to the drawer, whose menu
- * button would sit under the window controls.
+ * globals.css). The minimum size keeps the two-column layout and enough height for a column; below
+ * 1200px wide the sidebar becomes the drawer, which starts below the strip.
  */
+const minSize = { minWidth: 768, minHeight: 640 };
+
 function titleBar(): Electron.BrowserWindowConstructorOptions {
   if (process.platform === "darwin") {
-    return { titleBarStyle: "hidden", trafficLightPosition: { x: 24, y: 13 }, minWidth: 1200 };
+    return { titleBarStyle: "hidden", trafficLightPosition: { x: 24, y: 13 }, ...minSize };
   }
   if (process.platform === "win32") {
     return {
       titleBarStyle: "hidden",
       titleBarOverlay: { ...windowColors(), height: 40 },
-      minWidth: 1200,
+      ...minSize,
     };
   }
   return {};
