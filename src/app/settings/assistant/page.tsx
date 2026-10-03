@@ -13,7 +13,9 @@ export const dynamic = "force-dynamic";
  */
 function launchCommand(): { command: string; args: string[] } {
   const executable = process.env.LANDED_EXECUTABLE_PATH;
-  if (executable) return { command: executable, args: ["--mcp"] };
+  // Linux: --mcp opens no window, and the flag lets Electron start without a display.
+  const linux = process.platform === "linux" ? ["--ozone-platform=headless"] : [];
+  if (executable) return { command: executable, args: ["--mcp", ...linux] };
   return { command: "pnpm", args: ["--silent", "--dir", process.cwd(), "mcp"] };
 }
 

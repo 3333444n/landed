@@ -1,5 +1,5 @@
 // Release smoke test: starts the packaged app with --mcp on a throwaway data folder and checks
-// that the tools answer over stdio. Run after `pnpm desktop:dist`; Linux needs `xvfb-run -a`.
+// that the tools answer over stdio. Run after `pnpm desktop:dist`.
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -13,8 +13,9 @@ const command = {
 }[process.platform];
 const userData = mkdtempSync(join(tmpdir(), "landed-smoke-"));
 const args = ["--mcp", `--user-data-dir=${userData}`];
-// GitHub's Ubuntu runners refuse Chromium's sandbox helper; no page is ever loaded here.
-if (process.platform === "linux") args.push("--no-sandbox");
+// GitHub's Ubuntu runners refuse Chromium's sandbox helper, and there is no display; no page is
+// ever loaded here (Settings shows Linux users the same headless flag).
+if (process.platform === "linux") args.push("--no-sandbox", "--ozone-platform=headless");
 
 const client = new Client({ name: "smoke", version: "1" });
 await client.connect(new StdioClientTransport({ command, args, stderr: "inherit" }));
