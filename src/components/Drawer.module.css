@@ -58,6 +58,12 @@
   }
 }
 
+/* In the desktop app the menu and the drawer start below the title bar strip (globals.css). */
+:root[data-desktop] .menu,
+:root[data-desktop] .drawer {
+  top: var(--desktop-titlebar);
+}
+
 /* While the drawer is open the hamburger gives way to a close button in the drawer's corner. */
 .menu.hidden {
   visibility: hidden;
