@@ -6,7 +6,7 @@
  */
 import { randomBytes } from "node:crypto";
 import { mkdirSync } from "node:fs";
-import { createServer, type AddressInfo } from "node:net";
+import { createServer, Socket, type AddressInfo } from "node:net";
 import { join } from "node:path";
 import {
   app,
@@ -43,8 +43,21 @@ const migrationsDir = app.isPackaged
 
 if (process.argv.includes("--mcp")) {
   app.dock?.hide();
-  serveLandedStdio({ dbPath, artifactDir, migrationsDir, backupDir, appVersion: app.getVersion() });
-  process.stdin.on("end", () => app.quit());
+  // In Electron's main process on Windows, process.stdin ends at once without data; a socket on
+  // the same descriptor reads the pipe.
+  const input =
+    process.platform === "win32"
+      ? new Socket({ fd: 0, readable: true, writable: false })
+      : process.stdin;
+  serveLandedStdio({
+    dbPath,
+    artifactDir,
+    migrationsDir,
+    backupDir,
+    appVersion: app.getVersion(),
+    input,
+  });
+  input.on("end", () => app.quit());
 } else if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {

@@ -5,7 +5,8 @@
  */
 import { mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { serveStdio } from "@modelcontextprotocol/server/stdio";
+import type { Readable } from "node:stream";
+import { serveStdio, StdioServerTransport } from "@modelcontextprotocol/server/stdio";
 import { migrateWithBackup, NewerDatabaseError } from "@/infrastructure/migrate";
 import { createDatabase } from "@/infrastructure/database";
 import { createMcpServer } from "./server";
@@ -16,6 +17,8 @@ export function serveLandedStdio(options: {
   migrationsDir: string;
   backupDir: string;
   appVersion: string;
+  /** Where requests arrive; defaults to process.stdin (see desktop/main.ts for Windows). */
+  input?: Readable;
 }): void {
   mkdirSync(dirname(options.dbPath), { recursive: true });
   try {
@@ -26,7 +29,8 @@ export function serveLandedStdio(options: {
     process.exit(1);
   }
   const deps = createDatabase(options.dbPath);
-  serveStdio(() =>
-    createMcpServer({ deps, artifactDir: resolve(options.artifactDir), userAgent: "stdio" }),
+  serveStdio(
+    () => createMcpServer({ deps, artifactDir: resolve(options.artifactDir), userAgent: "stdio" }),
+    { transport: new StdioServerTransport(options.input, process.stdout) },
   );
 }
