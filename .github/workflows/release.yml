@@ -21,6 +21,8 @@ jobs:
   installers:
     needs: draft
     strategy:
+      # One platform failing should not hide the others' results.
+      fail-fast: false
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
@@ -38,7 +40,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm desktop:dist --publish never
       - name: Tools answer over stdio from the packaged app
-        run: ${{ runner.os == 'Linux' && 'xvfb-run -a' || '' }} node scripts/smoke-mcp.mjs
+        run: node scripts/smoke-mcp.mjs
       - name: Attach the installers to the draft release
         run: |
           shopt -s nullglob
