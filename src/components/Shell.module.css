@@ -5,6 +5,11 @@
   overflow: hidden;
 }
 
+/* In the desktop app the panels start below the title bar strip (globals.css). */
+:root[data-desktop] .shell {
+  padding-top: calc(var(--desktop-titlebar) - var(--space-4));
+}
+
 .sidebar {
   position: relative;
   display: none;

@@ -15,9 +15,15 @@ export const metadata: Metadata = {
  */
 const themeScript = `try{var d=document.documentElement,s=localStorage,q=new URLSearchParams(location.search);var t=s.getItem("landed-theme");if(t==="light"||t==="dark")d.dataset.theme=t;if(q.has("palette")){var p=q.get("palette");if(p)s.setItem("landed-palette",p);else s.removeItem("landed-palette")}var c=s.getItem("landed-palette");if(c)d.dataset.palette=c}catch(e){}`;
 
+// In the desktop app the page draws under the title bar on macOS and Windows (globals.css).
+const desktop =
+  process.env.LANDED_DESKTOP === "1"
+    ? { darwin: "mac", win32: "windows" }[process.platform as string]
+    : undefined;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" data-desktop={desktop} suppressHydrationWarning>
       <head>
         <Script id="landed-theme" strategy="beforeInteractive">
           {themeScript}
