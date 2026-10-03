@@ -23,7 +23,7 @@ import { serveLandedStdio } from "../src/app/mcp/stdio";
 import { sessionCookieName } from "../src/infrastructure/session-guard";
 import { migrateWithBackup, NewerDatabaseError } from "../src/infrastructure/migrate";
 import { clearModelSettings, loadModelEnv, saveModelSettings } from "./model-settings";
-import { checkForUpdate } from "./updates";
+import { handleUpdates } from "./updates";
 
 let window: BrowserWindow | null = null;
 let server: UtilityProcess | null = null;
@@ -138,10 +138,8 @@ async function startApp() {
     window?.setBackgroundColor(windowColors().color);
     if (process.platform === "win32") window?.setTitleBarOverlay(windowColors());
   });
-  window.once("ready-to-show", () => {
-    window?.show();
-    if (app.isPackaged) void checkForUpdate();
-  });
+  window.once("ready-to-show", () => window?.show());
+  handleUpdates(origin, window);
   window.webContents.setWindowOpenHandler(({ url }) => {
     if (/^https?:\/\//.test(url)) void shell.openExternal(url);
     return { action: "deny" };

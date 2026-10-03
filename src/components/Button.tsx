@@ -5,7 +5,7 @@ export function Button({
   variant = "primary",
   className,
   ...rest
-}: ComponentProps<"button"> & { variant?: "primary" | "secondary" }) {
+}: ComponentProps<"button"> & { variant?: "primary" | "secondary" | "tertiary" }) {
   return (
     <button
       type="button"

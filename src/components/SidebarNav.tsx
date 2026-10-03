@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { IconTile } from "./IconTile";
 import { ThemeToggle } from "./ThemeToggle";
+import { UpdateBanner } from "./UpdateBanner";
 import styles from "./SidebarNav.module.css";
 
 const items = [
@@ -15,7 +16,7 @@ const items = [
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
-/** The brand, at most five items and the theme switch; shared by the sidebar and the drawer. */
+/** The brand, at most five items, the desktop update banner and the theme switch; shared by the sidebar and the drawer. */
 export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   return (
@@ -59,6 +60,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
         );
       })}
       <div className={styles.footer}>
+        <UpdateBanner />
         <ThemeToggle />
       </div>
     </nav>

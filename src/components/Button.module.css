@@ -27,3 +27,8 @@
   background: var(--bg-surface-raised);
   color: var(--text-primary);
 }
+
+.tertiary {
+  background: transparent;
+  color: var(--text-secondary);
+}
