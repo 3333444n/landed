@@ -1,6 +1,6 @@
 {
   "name": "landed",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "private": true,
   "description": "Locally run job-search application: factual tailored materials and application tracking.",
   "license": "MIT",
