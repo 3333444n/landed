@@ -4,6 +4,7 @@
  * window that alone holds the per-launch session cookie the server requires. Started with `--mcp`
  * by an assistant, it opens no window and serves the tools over stdio on the same data.
  */
+import { execFile } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { mkdirSync } from "node:fs";
 import { createServer, Socket, type AddressInfo } from "node:net";
@@ -43,7 +44,16 @@ const migrationsDir = app.isPackaged
   : join(root, "db/migrations");
 
 if (process.argv.includes("--mcp")) {
-  app.dock?.hide();
+  if (process.platform === "darwin") {
+    // macOS still counts this process as a running Landed: opening Landed from the Finder or the
+    // Dock activates it instead of starting the app. Keep it background-only and hand any such
+    // activation to a new instance, which opens the window or focuses the one already open.
+    app.setActivationPolicy("prohibited");
+    app.on("activate", () => {
+      execFile("open", ["-n", join(process.execPath, "../../..")]);
+      app.setActivationPolicy("prohibited");
+    });
+  }
   // In Electron's main process on Windows, process.stdin ends at once without data; a socket on
   // the same descriptor reads the pipe.
   const input =
